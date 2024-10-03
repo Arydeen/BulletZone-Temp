@@ -1,25 +1,41 @@
 package edu.unh.cs.cs619.bulletzone.util;
 
-import java.io.Serializable;
-
-/**
- * Created by simon on 10/1/14.
- */
-public class ResultWrapper<T> implements Serializable {
-    private T result;
+public class ResultWrapper {
+    private boolean success;
+    private String message;
+    private Long userId;
 
     public ResultWrapper() {
+        // Default constructor
     }
 
-    public ResultWrapper(T result) {
-        this.result = result;
+    public ResultWrapper(boolean success, String message, Long userId) {
+        this.success = success;
+        this.message = message;
+        this.userId = userId;
     }
 
-    public T getResult() {
-        return this.result;
+    public boolean isSuccess() {
+        return success;
     }
 
-    public void setResult(T result) {
-        this.result = result;
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }
