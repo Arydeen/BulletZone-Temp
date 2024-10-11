@@ -7,6 +7,7 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.GridView;
+import android.widget.TextView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -19,6 +20,7 @@ import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.NonConfigurationInstance;
 import org.androidannotations.annotations.ViewById;
+import org.androidannotations.annotations.UiThread;
 import org.androidannotations.rest.spring.annotations.RestService;
 import org.androidannotations.api.BackgroundExecutor;
 
@@ -44,6 +46,9 @@ public class ClientActivity extends Activity {
     @ViewById
     protected GridView gridView;
 
+    @ViewById
+    protected TextView userIdTextView;
+
     @NonConfigurationInstance
     @Bean
     GridPollerTask gridPollTask;
@@ -58,16 +63,19 @@ public class ClientActivity extends Activity {
      * Remote tank identifier
      */
     private long tankId = -1;
+    private long userId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.e(TAG, "onCreate");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(gridEventHandler);
+        Log.e(TAG, "onDestroy");
     }
 
     /**
@@ -80,8 +88,7 @@ public class ClientActivity extends Activity {
      * To get around the class hierarchy limitation, one can use a separate anonymous class to
      * handle the events.
      */
-    private Object gridEventHandler = new Object()
-    {
+    private Object gridEventHandler = new Object() {
         @Subscribe
         public void onUpdateGrid(GridUpdateEvent event) {
             updateGrid(event.gw);
@@ -91,6 +98,13 @@ public class ClientActivity extends Activity {
 
     @AfterViews
     protected void afterViewInjection() {
+        Log.d(TAG, "afterViewInjection");
+        userId = getIntent().getLongExtra("USER_ID", -1);
+        if (userId != -1) {
+            userIdTextView.setText("User ID: " + userId);
+        } else {
+            userIdTextView.setText("User ID: Not logged in");
+        }
         joinAsync();
         SystemClock.sleep(500);
         gridView.setAdapter(mGridAdapter);
@@ -98,6 +112,7 @@ public class ClientActivity extends Activity {
 
     @AfterInject
     void afterInject() {
+        Log.d(TAG, "afterInject");
         restClient.setRestErrorHandler(bzRestErrorhandler);
         EventBus.getDefault().register(gridEventHandler);
     }
@@ -108,6 +123,7 @@ public class ClientActivity extends Activity {
             tankId = restClient.join().getResult();
             gridPollTask.doPoll();
         } catch (Exception e) {
+            Log.e(TAG, "Error joining game", e);
         }
     }
 
@@ -115,11 +131,11 @@ public class ClientActivity extends Activity {
         mGridAdapter.updateList(gw.getGrid());
     }
 
-    @Click (R.id.eventSwitch)
+    @Click(R.id.eventSwitch)
     protected void onEventSwitch() {
         if (gridPollTask.toggleEventUsage()) {
             Log.d("EventSwitch", "ON");
-            eventProcessor.setBoard(mGridAdapter.getBoard()); //necessary because "board" keeps changing when it's int[][]
+            eventProcessor.setBoard(mGridAdapter.getBoard());
             eventProcessor.start();
         } else {
             Log.d("EventSwitch", "OFF");
@@ -169,11 +185,16 @@ public class ClientActivity extends Activity {
     }
 
     @Click(R.id.buttonLeave)
-    @Background
     void leaveGame() {
-        System.out.println("leaveGame() called, tank ID: "+tankId);
+        Log.d(TAG, "leaveGame() called, tank ID: " + tankId);
+        leaveGameAsync();
+    }
+
+    @Background
+    void leaveGameAsync() {
         BackgroundExecutor.cancelAll("grid_poller_task", true);
         restClient.leave(tankId);
+        logoutUI();
     }
 
     @Click(R.id.buttonLogin)
@@ -182,10 +203,29 @@ public class ClientActivity extends Activity {
         startActivity(intent);
     }
 
+    @Click(R.id.buttonLogout)
+    void logout() {
+        Log.d(TAG, "logout() called");
+        logoutUI();
+    }
+
     @Background
     void leaveAsync(long tankId) {
-        System.out.println("Leave called, tank ID: " + tankId);
+        Log.d(TAG, "Leave called, tank ID: " + tankId);
         BackgroundExecutor.cancelAll("grid_poller_task", true);
         restClient.leave(tankId);
+    }
+
+    @UiThread
+    void logoutUI() {
+        Log.d(TAG, "logoutUI() called");
+        userId = -1;
+        if (userIdTextView != null) {
+            userIdTextView.setText("User ID: Not logged in");
+        }
+        Intent intent = new Intent(this, AuthenticateActivity_.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 }
