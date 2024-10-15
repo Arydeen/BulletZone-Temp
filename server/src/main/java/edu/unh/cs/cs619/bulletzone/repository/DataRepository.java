@@ -57,8 +57,12 @@ public class DataRepository {
      * @return GameUser corresponding to the username/password if successful, null otherwise
      */
     public GameUser validateUser(String username, String password, boolean create) {
-        //TODO: something that invokes users.createUser(name, password) or
-        //      users.validateLogin(name, password) as appropriate, maybe does other bookkeeping
-        return null;
+        if (create) {
+            // Create a new user
+            return bzdata.users.createUser(username, username, password);
+        } else {
+            // Validate existing user
+            return bzdata.users.validateLogin(username, password);
+        }
     }
 }

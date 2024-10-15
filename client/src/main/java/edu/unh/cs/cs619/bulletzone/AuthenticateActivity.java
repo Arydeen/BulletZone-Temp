@@ -16,6 +16,8 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 
+import edu.unh.cs.cs619.bulletzone.util.ResultWrapper;
+
 @EActivity(R.layout.activity_authenticate)
 public class AuthenticateActivity extends AppCompatActivity {
     @ViewById
@@ -59,18 +61,15 @@ public class AuthenticateActivity extends AppCompatActivity {
         String username = username_editText.getText().toString();
         String password = password_editText.getText().toString();
 
-        boolean status = controller.register(username, password);
+        ResultWrapper result = controller.register(username, password);
 
-        if (!status) {
-            setStatus("User " + username + " already exists or server error.\nPlease login or try with a different username.");
-        } else { //register successful
-            setStatus("Registration successful.");
-            //Do you want to log in automatically, or force them to do it?
-            userID = controller.login(username, password);
-            if (userID < 0) {
-                setStatus("Registration unsuccessful--inconsistency with server.");
-            }
-            //do other login things?
+        if (result.isSuccess()) {
+            setStatus("Registration successful. User ID: " + result.getUserId());
+            // You might want to automatically log in the user here
+            userID = result.getUserId();
+            // Do other post-registration things here
+        } else {
+            setStatus("Registration failed: " + result.getMessage());
         }
     }
 
@@ -83,12 +82,13 @@ public class AuthenticateActivity extends AppCompatActivity {
         String username = username_editText.getText().toString();
         String password = password_editText.getText().toString();
 
-        userID = controller.login(username, password);
-        if (userID < 0) {
-            setStatus("Invalid username and/or password.\nPlease try again.");
-        } else { //register successful
-            setStatus("Login successful.");
-            //do other login things?
+        ResultWrapper result = controller.login(username, password);
+        if (result.isSuccess()) {
+            userID = result.getUserId();
+            setStatus("Login successful. User ID: " + userID);
+            // Do other login things here
+        } else {
+            setStatus("Login failed: " + result.getMessage());
         }
     }
 

@@ -5,10 +5,11 @@ import android.content.Context;
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.rest.spring.annotations.RestService;
+import org.springframework.web.client.RestClientException;
 
 import edu.unh.cs.cs619.bulletzone.rest.BulletZoneRestClient;
-import edu.unh.cs.cs619.bulletzone.util.BooleanWrapper;
 import edu.unh.cs.cs619.bulletzone.util.LongWrapper;
+import edu.unh.cs.cs619.bulletzone.util.ResultWrapper;
 
 @EBean
 public class AuthenticationController {
@@ -37,12 +38,18 @@ public class AuthenticationController {
      * @param username Username provided by user.
      * @param password Password for account provided by user.
      */
-    public long login(String username, String password) {
-        LongWrapper result = restClient.login(username, password);
-        if (result == null) {
-            return -1;
+    public ResultWrapper login(String username, String password) {
+        try {
+            LongWrapper result = restClient.login(username, password);
+            if (result == null) {
+                return new ResultWrapper(false, "Server error: No response", null);
+            }
+            return new ResultWrapper(true, "Login successful", result.getResult());
+        } catch (RestClientException e) {
+            return new ResultWrapper(false, "Network error: " + e.getMessage(), null);
+        } catch (Exception e) {
+            return new ResultWrapper(false, "Unexpected error: " + e.getMessage(), null);
         }
-        return result.getResult();
     }
 
     /**
@@ -51,12 +58,18 @@ public class AuthenticationController {
      * @param username New username provided by user.
      * @param password Password for new account provided by user.
      */
-    public boolean register(String username, String password) {
-        BooleanWrapper result = restClient.register(username, password);
-        if (result == null) {
-            return false;
+    public ResultWrapper register(String username, String password) {
+        try {
+            ResultWrapper result = restClient.register(username, password);
+            if (result == null) {
+                return new ResultWrapper(false, "Server error: No response", null);
+            }
+            return result;
+        } catch (RestClientException e) {
+            return new ResultWrapper(false, "Network error: " + e.getMessage(), null);
+        } catch (Exception e) {
+            return new ResultWrapper(false, "Unexpected error: " + e.getMessage(), null);
         }
-        return result.isResult();
     }
 
     /**
