@@ -16,12 +16,19 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <TextView
+            android:id="@+id/userIdTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:text="User ID: Not logged in"/>
+
         <GridView
             android:id="@+id/gridView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:background="#FFFFFF"
-            android:layout_weight=".5"
+            android:layout_weight="1"
             android:numColumns="16"
             tools:listitem="@layout/field_item"/>
 
@@ -29,15 +36,15 @@
             android:id="@+id/eventSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight=".5"
-            android:text="Update using events" />
+            android:text="Update using events"
+            android:layout_marginTop="8dp"/>
     </LinearLayout>
 
     <RelativeLayout
         android:id="@+id/LinearLayoutControl"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight=".5">
+        android:layout_weight="1">
 
         <Button
             android:id="@+id/buttonDown"
@@ -96,6 +103,14 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
             android:text="Login" />
+
+        <Button
+            android:id="@+id/buttonLogout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/buttonLogin"
+            android:text="Logout" />
 
     </RelativeLayout>
 

@@ -1,9 +1,11 @@
 package edu.unh.cs.cs619.bulletzone;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.SystemClock;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -15,6 +17,8 @@ import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
+
+import edu.unh.cs.cs619.bulletzone.util.ResultWrapper;
 
 @EActivity(R.layout.activity_authenticate)
 public class AuthenticateActivity extends AppCompatActivity {
@@ -59,18 +63,13 @@ public class AuthenticateActivity extends AppCompatActivity {
         String username = username_editText.getText().toString();
         String password = password_editText.getText().toString();
 
-        boolean status = controller.register(username, password);
+        ResultWrapper<Long> result = controller.register(username, password);
 
-        if (!status) {
-            setStatus("User " + username + " already exists or server error.\nPlease login or try with a different username.");
-        } else { //register successful
+        if (result.isSuccess()) {
             setStatus("Registration successful.");
-            //Do you want to log in automatically, or force them to do it?
-            userID = controller.login(username, password);
-            if (userID < 0) {
-                setStatus("Registration unsuccessful--inconsistency with server.");
-            }
-            //do other login things?
+            // Optionally, you can automatically log in the user here
+        } else {
+            setStatus("Registration failed: " + result.getMessage());
         }
     }
 
@@ -83,17 +82,38 @@ public class AuthenticateActivity extends AppCompatActivity {
         String username = username_editText.getText().toString();
         String password = password_editText.getText().toString();
 
-        userID = controller.login(username, password);
-        if (userID < 0) {
-            setStatus("Invalid username and/or password.\nPlease try again.");
-        } else { //register successful
-            setStatus("Login successful.");
-            //do other login things?
+        try {
+            ResultWrapper<Long> result = controller.login(username, password);
+
+            if (result.isSuccess()) {
+                Long userId = result.getResult();
+                setStatus("Login successful. User ID: " + userId);
+                onLoginSuccess(userId);
+            } else {
+                setStatus("Login failed: " + result.getMessage());
+            }
+        } catch (Exception e) {
+            setStatus("An unexpected error occurred: " + e.getMessage());
+            e.printStackTrace(); // Log the error
         }
+    }
+
+    @UiThread
+    public void onLoginSuccess(Long userId) {
+        Log.d("AuthenticateActivity", "onLoginSuccess called with userId: " + userId);
+
+        // Start the main game activity
+        Intent intent = new Intent(this, ClientActivity_.class);
+        intent.putExtra("USER_ID", userId);
+        Log.d("AuthenticateActivity", "Starting ClientActivity_");
+        startActivity(intent);
+        Log.d("AuthenticateActivity", "ClientActivity_ started");
+        finish(); // Close the login activity
     }
 
     @UiThread
     protected void setStatus(String message) {
         status_message.setText(message);
+        Log.e("AuthenticateActivity", message);
     }
 }
