@@ -25,9 +25,9 @@ import edu.unh.cs.cs619.bulletzone.util.ResultWrapper;
  * Created by simon on 10/1/14.
  */
 
-//@Rest(rootUrl = "http://10.0.0.53:8080/games",
+@Rest(rootUrl = "http://172.16.34.185:8080/games",
 //@Rest(rootUrl = "http://stman1.cs.unh.edu:6192/games",
-@Rest(rootUrl = "http://stman1.cs.unh.edu:61912/games",
+//@Rest(rootUrl = "http://stman1.cs.unh.edu:61912/games",
         converters = {StringHttpMessageConverter.class, MappingJackson2HttpMessageConverter.class}
         // TODO: disable intercepting and logging
         // , interceptors = { HttpLoggerInterceptor.class }
@@ -61,4 +61,7 @@ public interface BulletZoneRestClient extends RestClientErrorHandling {
 
     @Delete("/{tankId}/leave")
     BooleanWrapper leave(@Path long tankId);
+
+    @Get("/account/balance/{userId}")
+    Double getBalance(@Path long userId);
 }

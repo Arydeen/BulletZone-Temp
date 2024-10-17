@@ -50,6 +50,9 @@ public class ClientActivity extends Activity {
     @ViewById
     protected TextView userIdTextView;
 
+    @ViewById
+    protected TextView balanceTextView;
+
     @NonConfigurationInstance
     @Bean
     GridPollerTask gridPollTask;
@@ -103,12 +106,26 @@ public class ClientActivity extends Activity {
         userId = getIntent().getLongExtra("USER_ID", -1);
         if (userId != -1) {
             userIdTextView.setText("User ID: " + userId);
+            fetchAndUpdateBalance();  // Add this line
         } else {
             userIdTextView.setText("User ID: Not logged in");
+            updateBalanceUI(null);  // Add this line to clear the balance
         }
         joinAsync();
         SystemClock.sleep(500);
         gridView.setAdapter(mGridAdapter);
+    }
+
+    @Background
+    void fetchAndUpdateBalance() {
+        try {
+            Double balance = restClient.getBalance(userId);
+            Log.d(TAG, "Fetched balance: " + balance);  // Add this log
+            updateBalanceUI(balance);
+        } catch (Exception e) {
+            Log.e(TAG, "Error fetching balance", e);
+            updateBalanceUI(null);
+        }
     }
 
     @AfterInject
@@ -228,5 +245,16 @@ public class ClientActivity extends Activity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
+    }
+
+    @UiThread
+    void updateBalanceUI(Double balance) {
+        if (balanceTextView != null) {
+            if (balance != null) {
+                balanceTextView.setText(String.format("Balance: $%.2f", balance));
+            } else {
+                balanceTextView.setText("Balance: Unavailable");
+            }
+        }
     }
 }
