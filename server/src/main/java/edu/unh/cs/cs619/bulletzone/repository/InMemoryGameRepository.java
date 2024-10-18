@@ -389,11 +389,44 @@ public class InMemoryGameRepository implements GameRepository {
             FieldHolder targetHolder;
             FieldHolder rightHolder;
             FieldHolder downHolder;
+            FieldHolder leftHolder;
+            FieldHolder upHolder;
 
             // Build connections
             for (int i = 0; i < FIELD_DIM; i++) {
                 for (int j = 0; j < FIELD_DIM; j++) {
                     targetHolder = game.getHolderGrid().get(i * FIELD_DIM + j);
+//                    // Check if the current holder is at the grid edge
+//                    boolean isRightEdge = (j == FIELD_DIM - 1);  // Rightmost column
+//                    boolean isLeftEdge = (j == 0);               // Leftmost column
+//                    boolean isTopEdge = (i == 0);                // Top row
+//                    boolean isBottomEdge = (i == FIELD_DIM - 1); // Bottom row
+//
+//                    // Only add neighbors if not on the edge
+//                    if (!isRightEdge) {
+//                        rightHolder = game.getHolderGrid().get(i * FIELD_DIM + ((j + 1) % FIELD_DIM));
+//                        targetHolder.addNeighbor(Direction.Right, rightHolder);
+//                        rightHolder.addNeighbor(Direction.Left, targetHolder);
+//                    }
+//
+//                    if (!isBottomEdge) {
+//                        downHolder = game.getHolderGrid().get(((i + 1) % FIELD_DIM) * FIELD_DIM + j);
+//                        targetHolder.addNeighbor(Direction.Down, downHolder);
+//                        downHolder.addNeighbor(Direction.Up, targetHolder);
+//                    }
+//
+//                    if (!isLeftEdge) {
+//                        leftHolder = game.getHolderGrid().get(i * FIELD_DIM + ((j - 1 + FIELD_DIM) % FIELD_DIM));
+//                        targetHolder.addNeighbor(Direction.Left, leftHolder);
+//                        leftHolder.addNeighbor(Direction.Right, targetHolder);
+//                    }
+//
+//                    if (!isTopEdge) {
+//                        upHolder = game.getHolderGrid().get(((i - 1 + FIELD_DIM) % FIELD_DIM) * FIELD_DIM + j);
+//                        targetHolder.addNeighbor(Direction.Up, upHolder);
+//                        upHolder.addNeighbor(Direction.Down, targetHolder);
+//                    }
+
                     rightHolder = game.getHolderGrid().get(i * FIELD_DIM
                             + ((j + 1) % FIELD_DIM));
                     downHolder = game.getHolderGrid().get(((i + 1) % FIELD_DIM)

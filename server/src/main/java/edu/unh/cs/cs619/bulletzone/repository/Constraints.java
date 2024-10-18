@@ -16,7 +16,7 @@ public class Constraints {
 
     private final Timer timer = new Timer();
     private final AtomicLong idGenerator = new AtomicLong();
-    private final Object monitor = new Object();
+    private static final int FIELD_DIM = 16;
     private Game game = null;
 
 
@@ -47,12 +47,22 @@ public class Constraints {
             return false;
         }
 
-        // Check if the next field is out of bounds (border of the gameboard)
-//        if () {
-//            // Can't move outside the gameboard
-//            System.out.println("Next field is out of bounds, movement blocked.");
-//            return false;
-//        }
+        // Get grid dimensions
+        int fieldIndex = currentField.getPosition(); // Assuming getIndex() gives a 1D index for the grid
+        int row = fieldIndex / FIELD_DIM;
+        int col = fieldIndex % FIELD_DIM;
+
+        // Check if the tank is at the gameboard edges and trying to move out of bounds
+        boolean isAtLeftEdge = (col == 0) && direction == Direction.Left;
+        boolean isAtRightEdge = (col == FIELD_DIM - 1) && direction == Direction.Right;
+        boolean isAtTopEdge = (row == 0) && direction == Direction.Up;
+        boolean isAtBottomEdge = (row == FIELD_DIM - 1) && direction == Direction.Down;
+
+        if (isAtLeftEdge || isAtRightEdge || isAtTopEdge || isAtBottomEdge) {
+            // Tank can't move outside the gameboard
+            System.out.println("Next field is out of bounds, movement blocked.");
+            return false;
+        }
 
         // Check if the tank is visible on the field (just to prevent weird cases)
         if (isVisible) {
