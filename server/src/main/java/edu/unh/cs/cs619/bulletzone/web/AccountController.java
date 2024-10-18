@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import edu.unh.cs.cs619.bulletzone.datalayer.user.GameUser;
 import edu.unh.cs.cs619.bulletzone.repository.DataRepository;
 import edu.unh.cs.cs619.bulletzone.util.BooleanWrapper;
 import edu.unh.cs.cs619.bulletzone.util.LongWrapper;
@@ -39,19 +40,11 @@ public class AccountController {
     @RequestMapping(method = RequestMethod.PUT, value = "register/{name}/{password}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public ResponseEntity<BooleanWrapper> register(@PathVariable String name, @PathVariable String password)
-    {
-        // Log the request
+    public ResponseEntity<BooleanWrapper> register(@PathVariable String name, @PathVariable String password) {
         log.debug("Register '" + name + "' with password '" + password + "'");
-        // Return the response (true if account created)
-        /*
-        return new ResponseEntity<BooleanWrapper>(new BooleanWrapper(
-                TODO: something that invokes users.createUser(name, password) and does
-                      other setup in the DataRepository (actually calls data.validateUser(...))
-                ),
-                HttpStatus.CREATED);
-         */
-        return null;
+        GameUser newUser = data.validateUser(name, password, true);
+        boolean success = (newUser != null);
+        return new ResponseEntity<>(new BooleanWrapper(success), success ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST);
     }
 
     /**
@@ -64,19 +57,22 @@ public class AccountController {
     @RequestMapping(method = RequestMethod.PUT, value = "login/{name}/{password}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public ResponseEntity<LongWrapper> login(@PathVariable String name, @PathVariable String password)
-    {
-        // Log the request
+    public ResponseEntity<LongWrapper> login(@PathVariable String name, @PathVariable String password) {
         log.debug("Login '" + name + "' with password '" + password + "'");
-        // Return the response (return user ID if valid login)
-        /*
-        return new ResponseEntity<LongWrapper>(new LongWrapper(
-                TODO: something that invokes users.validateLogin(name, password) in
-                      the DataRepository (actually calls data.validateUser(...))
-                ),
-                HttpStatus.OK);
-         */
-        return null;
+        GameUser user = data.validateUser(name, password, false);
+        long userId = (user != null) ? user.getId() : -1;
+        return new ResponseEntity<>(new LongWrapper(userId), user != null ? HttpStatus.OK : HttpStatus.UNAUTHORIZED);
     }
 
+    @RequestMapping(method = RequestMethod.GET, value = "balance/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public ResponseEntity<Double> getBalance(@PathVariable int userId) {
+        log.debug("Get balance for user ID: " + userId);
+        double balance = data.getUserBalance(userId);
+        if (balance < 0) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(balance, HttpStatus.OK);
+    }
 }
