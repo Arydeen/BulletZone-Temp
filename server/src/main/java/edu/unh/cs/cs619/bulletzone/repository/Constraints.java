@@ -56,7 +56,7 @@ public class Constraints {
 
         // Check if the tank is visible on the field (just to prevent weird cases)
         if (isVisible) {
-            // Current field still contains the tank (something went wrong)
+            System.out.println("You have already been eliminated.");
             return false;
         }
 
