@@ -1,6 +1,7 @@
 package edu.unh.cs.cs619.bulletzone.repository;
 
 import org.greenrobot.eventbus.EventBus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;
@@ -12,8 +13,6 @@ import edu.unh.cs.cs619.bulletzone.model.Bullet;
 import edu.unh.cs.cs619.bulletzone.model.Direction;
 import edu.unh.cs.cs619.bulletzone.model.FieldHolder;
 import edu.unh.cs.cs619.bulletzone.model.Game;
-import edu.unh.cs.cs619.bulletzone.model.IllegalTransitionException;
-import edu.unh.cs.cs619.bulletzone.model.LimitExceededException;
 import edu.unh.cs.cs619.bulletzone.model.Tank;
 import edu.unh.cs.cs619.bulletzone.model.TankDoesNotExistException;
 import edu.unh.cs.cs619.bulletzone.model.Wall;
@@ -51,6 +50,13 @@ public class InMemoryGameRepository implements GameRepository {
     private final int[] bulletDamage = {10, 30, 50};
     private final int[] bulletDelay = {500, 1000, 1500};
     private final int[] trackActiveBullets = {0, 0};
+
+    private final Constraints tankConstraintChecker;
+
+    @Autowired
+    public InMemoryGameRepository(Constraints tankConstraintChecker) {
+        this.tankConstraintChecker = tankConstraintChecker;
+    }
 
     @Override
     public Tank join(String ip) {
@@ -115,6 +121,9 @@ public class InMemoryGameRepository implements GameRepository {
             }
 
             long millis = System.currentTimeMillis();
+            if (!tankConstraintChecker.isValidTurn(tank, direction)) {
+                return false;
+            }
             if(millis < tank.getLastMoveTime())
                 return false;
 
@@ -146,6 +155,13 @@ public class InMemoryGameRepository implements GameRepository {
             }
 
             long millis = System.currentTimeMillis();
+            if (!tankConstraintChecker.canMove(tankId)) {
+                return false;
+            }
+
+            if (!tankConstraintChecker.isValidMove(tank, direction)) {
+                return false;
+            }
             if(millis < tank.getLastMoveTime())
                 return false;
 
@@ -195,11 +211,11 @@ public class InMemoryGameRepository implements GameRepository {
                 throw new TankDoesNotExistException(tankId);
             }
 
-            if(tank.getNumberOfBullets() >= tank.getAllowedNumberOfBullets())
+            if(tankConstraintChecker.canFireMoreBullets(tank))
                 return false;
 
             long millis = System.currentTimeMillis();
-            if(millis < tank.getLastFireTime()/*>tank.getAllowedFireInterval()*/){
+            if(tankConstraintChecker.canFire(tank, millis)){
                 return false;
             }
 
