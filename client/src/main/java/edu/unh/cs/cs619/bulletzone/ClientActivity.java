@@ -60,6 +60,9 @@ public class ClientActivity extends Activity {
     @Bean
     BZRestErrorhandler bzRestErrorhandler;
 
+    @Bean
+    TankEventController tankEventController;
+
     /**
      * Remote tank identifier
      */
@@ -166,36 +169,27 @@ public class ClientActivity extends Activity {
                 Log.e(TAG, "Unknown movement button id: " + viewId);
                 break;
         }
-        this.moveAsync(tankId, direction);
-    }
-
-    @Background
-    void moveAsync(long tankId, byte direction) {
-        restClient.move(tankId, direction);
-    }
-
-    @Background
-    void turnAsync(long tankId, byte direction) {
-        restClient.turn(tankId, direction);
+        this.tankEventController.moveAsync(tankId, direction);
     }
 
     @Click(R.id.buttonFire)
-    @Background
     protected void onButtonFire() {
-        restClient.fire(tankId);
+        tankEventController.fire(tankId);
     }
 
     @Click(R.id.buttonLeave)
     void leaveGame() {
         Log.d(TAG, "leaveGame() called, tank ID: " + tankId);
-        leaveGameAsync();
+        BackgroundExecutor.cancelAll("grid_poller_task", true);
+        tankEventController.leaveGameAsync(tankId);
+        logoutUI();
     }
 
     @Background
-    void leaveGameAsync() {
+    void leaveAsync(long tankId) {
+        Log.d(TAG, "Leave called, tank ID: " + tankId);
         BackgroundExecutor.cancelAll("grid_poller_task", true);
         restClient.leave(tankId);
-        logoutUI();
     }
 
     @Click(R.id.buttonLogin)
@@ -208,13 +202,6 @@ public class ClientActivity extends Activity {
     void logout() {
         Log.d(TAG, "logout() called");
         logoutUI();
-    }
-
-    @Background
-    void leaveAsync(long tankId) {
-        Log.d(TAG, "Leave called, tank ID: " + tankId);
-        BackgroundExecutor.cancelAll("grid_poller_task", true);
-        restClient.leave(tankId);
     }
 
     @UiThread
