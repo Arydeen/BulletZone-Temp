@@ -6,9 +6,7 @@ import org.androidannotations.rest.spring.annotations.Path;
 import org.androidannotations.rest.spring.annotations.Post;
 import org.androidannotations.rest.spring.annotations.Put;
 import org.androidannotations.rest.spring.annotations.Rest;
-import org.androidannotations.rest.spring.annotations.RestService.*;
 import org.androidannotations.rest.spring.api.RestClientErrorHandling;
-import org.androidannotations.rest.spring.api.RestClientHeaders.*;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestClientException;
@@ -25,13 +23,13 @@ import edu.unh.cs.cs619.bulletzone.util.ResultWrapper;
  * Created by simon on 10/1/14.
  */
 
-//@Rest(rootUrl = "http://132.177.49.29:61912/games",
+//@Rest(rootUrl = "http://10.0.0.53:8080/games",
 //@Rest(rootUrl = "http://stman1.cs.unh.edu:6192/games",
 @Rest(rootUrl = "http://stman1.cs.unh.edu:61912/games",
-        converters = {StringHttpMessageConverter.class, MappingJackson2HttpMessageConverter.class}
+        converters = {StringHttpMessageConverter.class, MappingJackson2HttpMessageConverter.class})
         // TODO: disable intercepting and logging
         // , interceptors = { HttpLoggerInterceptor.class }
-)
+
 public interface BulletZoneRestClient extends RestClientErrorHandling {
     void setRootUrl(String rootUrl);
 
@@ -39,29 +37,26 @@ public interface BulletZoneRestClient extends RestClientErrorHandling {
     LongWrapper join() throws RestClientException;
 
     @Get("")
-    GridWrapper grid();
+    GridWrapper grid() throws RestClientException;
 
     @Get("/events/{sinceTime}")
-    GameEventCollectionWrapper events(@Path long sinceTime);
+    GameEventCollectionWrapper events(@Path long sinceTime) throws RestClientException;
 
     @Put("/account/register/{username}/{password}")
-    BooleanWrapper register(@Path String username, @Path String password);
+    ResultWrapper register(@Path String username, @Path String password) throws RestClientException;
 
     @Put("/account/login/{username}/{password}")
-    LongWrapper login(@Path String username, @Path String password);
+    LongWrapper login(@Path String username, @Path String password) throws RestClientException;
 
     @Put("/{tankId}/move/{direction}")
-    BooleanWrapper move(@Path long tankId, @Path byte direction);
+    BooleanWrapper move(@Path long tankId, @Path byte direction) throws RestClientException;
 
     @Put("/{tankId}/turn/{direction}")
-    BooleanWrapper turn(@Path long tankId, @Path byte direction);
+    BooleanWrapper turn(@Path long tankId, @Path byte direction) throws RestClientException;
 
     @Put("/{tankId}/fire/1")
-    BooleanWrapper fire(@Path long tankId);
+    BooleanWrapper fire(@Path long tankId) throws RestClientException;
 
     @Delete("/{tankId}/leave")
-    BooleanWrapper leave(@Path long tankId);
-
-    @Get("/account/balance/{userId}")
-    Double getBalance(@Path long userId);
+    BooleanWrapper leave(@Path long tankId) throws RestClientException;
 }
