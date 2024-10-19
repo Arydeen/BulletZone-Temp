@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import edu.unh.cs.cs619.bulletzone.datalayer.user.GameUser;
 import edu.unh.cs.cs619.bulletzone.repository.DataRepository;
 import edu.unh.cs.cs619.bulletzone.util.BooleanWrapper;
 import edu.unh.cs.cs619.bulletzone.util.LongWrapper;
-import edu.unh.cs.cs619.bulletzone.datalayer.user.GameUser;
 
 @RestController
 @RequestMapping(value = "/games/account")
@@ -42,8 +42,8 @@ public class AccountController {
     @ResponseBody
     public ResponseEntity<BooleanWrapper> register(@PathVariable String name, @PathVariable String password) {
         log.debug("Register '" + name + "' with password '" + password + "'");
-        GameUser user = data.validateUser(name, password, true);
-        boolean success = user != null;
+        GameUser newUser = data.validateUser(name, password, true);
+        boolean success = (newUser != null);
         return new ResponseEntity<>(new BooleanWrapper(success), success ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST);
     }
 
@@ -60,10 +60,19 @@ public class AccountController {
     public ResponseEntity<LongWrapper> login(@PathVariable String name, @PathVariable String password) {
         log.debug("Login '" + name + "' with password '" + password + "'");
         GameUser user = data.validateUser(name, password, false);
-        if (user != null) {
-            return new ResponseEntity<>(new LongWrapper(user.getId()), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new LongWrapper(-1L), HttpStatus.UNAUTHORIZED);
+        long userId = (user != null) ? user.getId() : -1;
+        return new ResponseEntity<>(new LongWrapper(userId), user != null ? HttpStatus.OK : HttpStatus.UNAUTHORIZED);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "balance/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public ResponseEntity<Double> getBalance(@PathVariable int userId) {
+        log.debug("Get balance for user ID: " + userId);
+        double balance = data.getUserBalance(userId);
+        if (balance < 0) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+        return new ResponseEntity<>(balance, HttpStatus.OK);
     }
 }
