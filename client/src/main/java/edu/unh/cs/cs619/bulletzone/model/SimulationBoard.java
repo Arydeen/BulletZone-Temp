@@ -6,25 +6,21 @@ import org.json.JSONException;
 
 import edu.unh.cs.cs619.bulletzone.events.GameEventProcessor;
 
+/**
+ * SimulationBoard Class.
+ * Holds Cell information about all cells in board at a time which is known from updates in GridAdapter
+ * from event updates to board int array.
+ * Sam Harris 10/19/2024.
+ */
 public class SimulationBoard extends GameEventProcessor {
     private int numRows, numCols;
     private BoardCell[] cells;
     private BoardCell badCell = new BoardCell(0, -1, -1);
-    private static SimulationBoard singleInstance = null;
-    public boolean boardUpdated = false;
 
-    private SimulationBoard(int rows, int cols) {
+    public SimulationBoard(int rows, int cols) {
         numRows = rows;
         numCols = cols;
         cells = new BoardCell[numRows * numCols];
-    }
-
-    public static synchronized SimulationBoard getInstance(int rows, int cols) {
-        if (singleInstance == null) {
-            singleInstance = new SimulationBoard(rows, cols);
-        }
-
-        return singleInstance;
     }
 
     public BoardCell getCell(int index) {
@@ -51,18 +47,19 @@ public class SimulationBoard extends GameEventProcessor {
 
     public int size() {return numRows * numCols;}
 
-//    public void setUsingJSON(JSONArray arr) throws JSONException { // Not using JSON should react to events I think?
-//        int index = 0;
-//        BoardCellFactory factory = new BoardCellFactory();
-//        for (int i = 0; i < arr.length(); i++) {
-//            JSONArray row = arr.getJSONArray(i);
-//
-//            for (int j = 0; j < row.length(); j++) {
-//                int rawVal = row.getInt(j);
-//                BoardCell newCell = factory.makeCell(rawVal, i, j);
-//                setCell(index, newCell);
-//                index++;
-//            }
-//        }
-//    }
+    /**
+     * Called in GridAdapter from listener to Event Bus and sets Simulation Board based on int array board.
+     * @param board Integer array board used by events.
+     */
+    public void setUsingBoard(int[][] board) {
+        int index = 0;
+        BoardCellFactory factory = new BoardCellFactory();
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
+                BoardCell newCell = factory.makeCell(board[i][j], i, j);
+                setCell(index, newCell);
+                index++;
+            }
+        }
+    }
 }
