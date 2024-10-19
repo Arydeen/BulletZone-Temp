@@ -112,6 +112,16 @@
             android:layout_below="@id/buttonLogin"
             android:text="Logout" />
 
+        <TextView
+            android:id="@+id/balanceTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/buttonLogout"
+            android:layout_alignParentLeft="true"
+            android:layout_marginTop="16dp"
+            android:text="Balance: $0.00"
+            android:textSize="16sp"/>
+
     </RelativeLayout>
 
 </LinearLayout>

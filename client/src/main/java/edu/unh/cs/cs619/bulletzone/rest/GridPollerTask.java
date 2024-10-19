@@ -37,28 +37,29 @@ public class GridPollerTask {
     }
 
     @Background(id = "grid_poller_task")
+    //Removed updating by changing whole grid to guarantee only
+    //updating by events
     public void doPoll() {
+        //Update whole grid once using initial layout
+        GridWrapper grid = restClient.grid();
+        onGridUpdate(grid);
+        previousTimeStamp = grid.getTimeStamp();
         while (true) {
+             //Update using events after that
 
-            if (previousTimeStamp < 0 || !updateUsingEvents) {
-                //Log.d("Poller", "Updating whole grid");
-                GridWrapper grid = restClient.grid();
-                onGridUpdate(grid);
-                previousTimeStamp = grid.getTimeStamp();
-            }
-            else {
-                //Log.d("Poller", "Updating using events");
+                Log.d("Poller", "Updating board using events");
+                Log.d("PollerTS", "Previous Timestamp: " + previousTimeStamp);
                 GameEventCollectionWrapper events = restClient.events(previousTimeStamp);
                 boolean haveEvents = false;
                 for (GameEvent event : events.getEvents()) {
-                    //Log.d("Event-check", event.toString());
+                    Log.d("Event-check", event.toString());
                     EventBus.getDefault().post(event);
                     previousTimeStamp = event.getTimeStamp();
+                    Log.d("PollerTS", "Current Timestamp: " + previousTimeStamp);
                     haveEvents = true;
                 }
                 if (haveEvents)
                     EventBus.getDefault().post(new UpdateBoardEvent());
-            }
 
             // poll server every 100ms
             SystemClock.sleep(100);
