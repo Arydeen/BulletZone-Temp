@@ -2,14 +2,12 @@ package edu.unh.cs.cs619.bulletzone.repository;
 
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicLong;
 
 import edu.unh.cs.cs619.bulletzone.datalayer.BulletZoneData;
-import edu.unh.cs.cs619.bulletzone.datalayer.account.BankAccount;
 import edu.unh.cs.cs619.bulletzone.datalayer.user.GameUser;
 import edu.unh.cs.cs619.bulletzone.model.Bullet;
 import edu.unh.cs.cs619.bulletzone.model.Direction;
@@ -41,7 +39,13 @@ public class DataRepository {
     private BulletZoneData bzdata;
 
     DataRepository() {
-        bzdata = new BulletZoneData(); // just use in-memory database
+        //TODO: Replace database name, username, and password with what's appropriate for your group
+//        String url = "jdbc:mysql://stman1.cs.unh.edu:3306/cs6190";
+//        String username = "mdp";
+//        String password = "Drag56kes";
+//
+//        bzdata = new BulletZoneData(url, username, password);
+        bzdata = new BulletZoneData(); //just use in-memory database
     }
 
     /**
@@ -54,29 +58,11 @@ public class DataRepository {
      */
     public GameUser validateUser(String username, String password, boolean create) {
         if (create) {
+            // Create a new user
             return bzdata.users.createUser(username, username, password);
         } else {
+            // Validate existing user
             return bzdata.users.validateLogin(username, password);
         }
-    }
-
-    public BulletZoneData getBulletZoneData() {
-        return bzdata;
-    }
-
-    public GameUser getUserById(int userId) {
-        return bzdata.users.getUser(userId);
-    }
-
-    public double getUserBalance(long userId) {
-        GameUser user = bzdata.users.getUser((int)userId);
-        if (user == null) {
-            return 0;
-        }
-        Collection<BankAccount> accounts = user.getOwnedAccounts();
-        if (accounts.isEmpty()) {
-            return 0;
-        }
-        return accounts.iterator().next().getBalance();
     }
 }
