@@ -232,7 +232,6 @@ public class InMemoryGameRepository implements GameRepository {
             bullet.setParent(parent);
             bullet.setBulletId(bulletId);
             EventBus.getDefault().post(new SpawnEvent(bullet.getIntValue(), bullet.getPosition()));
-
             // TODO make it nicer
             timer.schedule(new TimerTask() {
 
@@ -271,19 +270,17 @@ public class InMemoryGameRepository implements GameRepository {
                                 }
                             if (isVisible) {
                                 // Remove bullet from field
-                                int pos = bullet.getPosition();
-                                EventBus.getDefault().post(new RemoveEvent(bullet.getIntValue(), pos));
                                 currentField.clearField();
                             }
                             trackActiveBullets[bullet.getBulletId()]=0;
                             tank.setNumberOfBullets(tank.getNumberOfBullets()-1);
+                            int pos = bullet.getPosition();
+                            EventBus.getDefault().post(new RemoveEvent(bullet.getIntValue(), pos));
                             cancel();
 
                         } else {
                             if (isVisible) {
                                 // Remove bullet from field
-                                int pos = bullet.getPosition();
-                                EventBus.getDefault().post(new RemoveEvent(bullet.getIntValue(), pos));
                                 currentField.clearField();
                             }
 
