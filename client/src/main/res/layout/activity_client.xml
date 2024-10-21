@@ -27,10 +27,10 @@
             android:id="@+id/gridView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:background="#FFFFFF"
             android:layout_weight="1"
+            android:background="#FFFFFF"
             android:numColumns="16"
-            tools:listitem="@layout/field_item"/>
+            tools:listitem="@layout/field_item" />
 
         <Switch
             android:id="@+id/eventSwitch"

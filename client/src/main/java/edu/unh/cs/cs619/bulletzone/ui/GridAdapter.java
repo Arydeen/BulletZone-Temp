@@ -4,6 +4,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.androidannotations.annotations.AfterInject;
@@ -15,6 +17,8 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import edu.unh.cs.cs619.bulletzone.R;
 import edu.unh.cs.cs619.bulletzone.events.UpdateBoardEvent;
+import edu.unh.cs.cs619.bulletzone.model.BoardCell;
+import edu.unh.cs.cs619.bulletzone.model.SimulationBoard;
 
 @EBean
 public class GridAdapter extends BaseAdapter {
@@ -23,11 +27,15 @@ public class GridAdapter extends BaseAdapter {
     @SystemService
     protected LayoutInflater inflater;
     private int[][] mEntities = new int[16][16];
+    private final SimulationBoard simBoard = new SimulationBoard(16,16);
+    public boolean isUpdated = false;
 
     public void updateList(int[][] entities) {
         synchronized (monitor) {
             this.mEntities = entities;
             this.notifyDataSetChanged();
+            simBoard.setUsingBoard(mEntities); // Not sure if this is needed here
+            this.isUpdated = true;
         }
     }
 
@@ -39,6 +47,8 @@ public class GridAdapter extends BaseAdapter {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void handleUpdate(UpdateBoardEvent event) {
         this.notifyDataSetChanged();
+        simBoard.setUsingBoard(mEntities); // Updates simulation board when events are posted
+        this.isUpdated = true;
     }
 
     public int[][] getBoard() { return mEntities; }
@@ -61,32 +71,26 @@ public class GridAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
+        ImageView imageView;
+
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.field_item, null);
+            imageView = new ImageView(parent.getContext());
+            imageView.setLayoutParams(new GridView.LayoutParams(50, 50));
+            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            imageView.setPadding(1, 1, 1, 1);
+        } else {
+            imageView = (ImageView) convertView;
         }
 
-        int row = position / 16;
-        int col = position % 16;
-
-        int val = mEntities[row][col];
-
-        if (convertView instanceof TextView) {
-            synchronized (monitor) {
-                if (val > 0) {
-                    if (val == 1000 || (val>1000&&val<=2000)) {
-                        ((TextView) convertView).setText("W");
-                    } else if (val >= 2000000 && val <= 3000000) {
-                        ((TextView) convertView).setText("B");
-                    } else if (val >= 10000000 && val <= 20000000) {
-                        ((TextView) convertView).setText("T");
-                    }
-                } else {
-                    ((TextView) convertView).setText("");
-                }
-            }
+        if (this.isUpdated) {
+            BoardCell currCell = simBoard.getCell(position);
+            imageView.setImageResource(currCell.getResourceID());
+            imageView.setRotation(currCell.getRotation());
+        } else {
+            imageView.setImageResource(R.drawable.blank);
         }
 
-        return convertView;
+        return imageView;
     }
 }
 
