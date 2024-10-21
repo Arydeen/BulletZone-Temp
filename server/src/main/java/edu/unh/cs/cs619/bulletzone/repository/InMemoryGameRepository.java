@@ -14,6 +14,7 @@ import edu.unh.cs.cs619.bulletzone.model.Direction;
 import edu.unh.cs.cs619.bulletzone.model.FieldHolder;
 import edu.unh.cs.cs619.bulletzone.model.Game;
 import edu.unh.cs.cs619.bulletzone.model.Tank;
+import edu.unh.cs.cs619.bulletzone.repository.GameBoardBuilder;
 import edu.unh.cs.cs619.bulletzone.model.TankDoesNotExistException;
 import edu.unh.cs.cs619.bulletzone.model.Wall;
 import edu.unh.cs.cs619.bulletzone.model.events.MoveEvent;
@@ -52,10 +53,12 @@ public class InMemoryGameRepository implements GameRepository {
     private final int[] trackActiveBullets = {0, 0};
 
     private final Constraints tankConstraintChecker;
+    private GameBoardBuilder gameBoardBuilder;
 
     @Autowired
-    public InMemoryGameRepository(Constraints tankConstraintChecker) {
+    public InMemoryGameRepository(Constraints tankConstraintChecker, GameBoardBuilder gameBoardBuilder) {
         this.tankConstraintChecker = tankConstraintChecker;
+        this.gameBoardBuilder = gameBoardBuilder;
     }
 
     @Override
@@ -155,46 +158,20 @@ public class InMemoryGameRepository implements GameRepository {
             }
 
             long millis = System.currentTimeMillis();
-            if (!tankConstraintChecker.canMove(tankId)) {
-                return false;
-            }
 
-            if (!tankConstraintChecker.isValidMove(tank, direction)) {
-                return false;
-            }
             if(millis < tank.getLastMoveTime())
                 return false;
 
             tank.setLastMoveTime(millis + tank.getAllowedMoveInterval());
 
-            FieldHolder parent = tank.getParent();
-
-            FieldHolder nextField = parent.getNeighbor(direction);
-            checkNotNull(parent.getNeighbor(direction), "Neightbor is not available");
-
-            boolean isCompleted;
-            if (!nextField.isPresent()) {
-                // If the next field is empty move the user
-
-                /*try {
-                    Thread.sleep(500);
-                } catch(InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                }*/
-
-                int oldPos = tank.getPosition();
-                parent.clearField();
-                nextField.setFieldEntity(tank);
-                tank.setParent(nextField);
-                int newPos = tank.getPosition();
-                EventBus.getDefault().post(new MoveEvent(tank.getIntValue(), oldPos, newPos));
-
-                isCompleted = true;
-            } else {
-                isCompleted = false;
+            if (!tankConstraintChecker.canMove(tankId)) {
+                return false;
+            }
+            if (!tankConstraintChecker.isValidMove(tank, direction)) {
+                return false;
             }
 
-            return isCompleted;
+            return true;
         }
     }
 
@@ -210,36 +187,21 @@ public class InMemoryGameRepository implements GameRepository {
                 //return false;
                 throw new TankDoesNotExistException(tankId);
             }
-
-            if(tankConstraintChecker.canFireMoreBullets(tank))
-                return false;
-
             long millis = System.currentTimeMillis();
-            if(tankConstraintChecker.canFire(tank, millis)){
-                return false;
-            }
 
             //Log.i(TAG, "Cannot find user with id: " + tankId);
             Direction direction = tank.getDirection();
             FieldHolder parent = tank.getParent();
             tank.setNumberOfBullets(tank.getNumberOfBullets() + 1);
-
-            if(!(bulletType>=1 && bulletType<=3)) {
-                System.out.println("Bullet type must be 1, 2 or 3, set to 1 by default.");
-                bulletType = 1;
+            if(!tankConstraintChecker.canFire(tank, millis, bulletType, bulletDelay)){
+                return false;
             }
 
-            tank.setLastFireTime(millis + bulletDelay[bulletType - 1]);
-
-            int bulletId=0;
-            if(trackActiveBullets[0]==0){
-                bulletId = 0;
-                trackActiveBullets[0] = 1;
-            }else if(trackActiveBullets[1]==0){
-                bulletId = 1;
-                trackActiveBullets[1] = 1;
+            int bulletId = tankConstraintChecker.assignBulletId(trackActiveBullets);
+            if (bulletId == -1) {
+                // No available bullet slots
+                return false;
             }
-
             // Create a new bullet to fire
             final Bullet bullet = new Bullet(tankId, direction, bulletDamage[bulletType-1]);
             // Set the same parent for the bullet.
@@ -255,55 +217,7 @@ public class InMemoryGameRepository implements GameRepository {
                 public void run() {
                     synchronized (monitor) {
                         System.out.println("Active Bullet: "+tank.getNumberOfBullets()+"---- Bullet ID: "+bullet.getIntValue());
-                        FieldHolder currentField = bullet.getParent();
-                        Direction direction = bullet.getDirection();
-                        FieldHolder nextField = currentField
-                                .getNeighbor(direction);
-
-                        // Is the bullet visible on the field?
-                        boolean isVisible = currentField.isPresent()
-                                && (currentField.getEntity() == bullet);
-
-
-                            if (nextField.isPresent()) {
-                                // Something is there, hit it
-                                nextField.getEntity().hit(bullet.getDamage());
-
-                                if ( nextField.getEntity() instanceof  Tank){
-                                    Tank t = (Tank) nextField.getEntity();
-                                    System.out.println("tank is hit, tank life: " + t.getLife());
-                                    if (t.getLife() <= 0 ){
-                                        t.getParent().clearField();
-                                        t.setParent(null);
-                                        game.removeTank(t.getId());
-                                    }
-                                }
-                                else if ( nextField.getEntity() instanceof  Wall){
-                                    Wall w = (Wall) nextField.getEntity();
-                                    if (w.getIntValue() >1000 && w.getIntValue()<=2000 ){
-                                        game.getHolderGrid().get(w.getPos()).clearField();
-                                    }
-                                }
-                            if (isVisible) {
-                                // Remove bullet from field
-                                currentField.clearField();
-                            }
-                            trackActiveBullets[bullet.getBulletId()]=0;
-                            tank.setNumberOfBullets(tank.getNumberOfBullets()-1);
-                            cancel();
-
-                        } else {
-                            if (isVisible) {
-                                // Remove bullet from field
-                                currentField.clearField();
-                            }
-
-                            int oldPos = bullet.getPosition();
-                            nextField.setFieldEntity(bullet);
-                            bullet.setParent(nextField);
-                            int newPos = bullet.getPosition();
-                            EventBus.getDefault().post(new MoveEvent(bullet.getIntValue(), oldPos, newPos));
-                        }
+                        tankConstraintChecker.moveBulletAndHandleCollision(bullet, tank, trackActiveBullets, this);
                     }
                 }
             }, 0, BULLET_PERIOD);
@@ -334,48 +248,9 @@ public class InMemoryGameRepository implements GameRepository {
             return;
         }
         synchronized (this.monitor) {
-
             this.game = new Game();
-
             createFieldHolderGrid(game);
-
-            // Test // TODO Move to more appropriate place (and if desired, integrate map loader)
-            game.getHolderGrid().get(1).setFieldEntity(new Wall());
-            game.getHolderGrid().get(2).setFieldEntity(new Wall());
-            game.getHolderGrid().get(3).setFieldEntity(new Wall());
-
-            game.getHolderGrid().get(17).setFieldEntity(new Wall());
-            game.getHolderGrid().get(33).setFieldEntity(new Wall(1500, 33));
-            game.getHolderGrid().get(49).setFieldEntity(new Wall(1500, 49));
-            game.getHolderGrid().get(65).setFieldEntity(new Wall(1500, 65));
-
-            game.getHolderGrid().get(34).setFieldEntity(new Wall());
-            game.getHolderGrid().get(66).setFieldEntity(new Wall(1500, 66));
-
-            game.getHolderGrid().get(35).setFieldEntity(new Wall());
-            game.getHolderGrid().get(51).setFieldEntity(new Wall());
-            game.getHolderGrid().get(67).setFieldEntity(new Wall(1500, 67));
-
-            game.getHolderGrid().get(5).setFieldEntity(new Wall());
-            game.getHolderGrid().get(21).setFieldEntity(new Wall());
-            game.getHolderGrid().get(37).setFieldEntity(new Wall());
-            game.getHolderGrid().get(53).setFieldEntity(new Wall());
-            game.getHolderGrid().get(69).setFieldEntity(new Wall(1500, 69));
-
-            game.getHolderGrid().get(7).setFieldEntity(new Wall());
-            game.getHolderGrid().get(23).setFieldEntity(new Wall());
-            game.getHolderGrid().get(39).setFieldEntity(new Wall());
-            game.getHolderGrid().get(71).setFieldEntity(new Wall(1500, 71));
-
-            game.getHolderGrid().get(8).setFieldEntity(new Wall());
-            game.getHolderGrid().get(40).setFieldEntity(new Wall());
-            game.getHolderGrid().get(72).setFieldEntity(new Wall(1500, 72));
-
-            game.getHolderGrid().get(9).setFieldEntity(new Wall());
-            game.getHolderGrid().get(25).setFieldEntity(new Wall());
-            game.getHolderGrid().get(41).setFieldEntity(new Wall());
-            game.getHolderGrid().get(57).setFieldEntity(new Wall());
-            game.getHolderGrid().get(73).setFieldEntity(new Wall());
+            gameBoardBuilder.setupGame(game);
         }
     }
 
