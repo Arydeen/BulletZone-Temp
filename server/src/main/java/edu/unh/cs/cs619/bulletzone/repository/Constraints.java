@@ -3,6 +3,7 @@ package edu.unh.cs.cs619.bulletzone.repository;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.greenrobot.eventbus.EventBus;
+import org.springframework.stereotype.Component;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -17,6 +18,7 @@ import edu.unh.cs.cs619.bulletzone.model.Bullet;
 import edu.unh.cs.cs619.bulletzone.model.events.MoveEvent;
 import edu.unh.cs.cs619.bulletzone.model.events.GameEvent;
 
+@Component
 public class Constraints {
 
     private final Timer timer = new Timer();
@@ -25,7 +27,7 @@ public class Constraints {
     private final int[] bulletDelay = {500, 1000, 1500};
     private Game game = null;
 
-    public boolean canMove(long tankId) {
+    public boolean canMove(long tankId, Game game) {
         Tank tank = game.getTanks().get(tankId);
         FieldHolder currentField = tank.getParent();
         Direction direction = tank.getDirection();
