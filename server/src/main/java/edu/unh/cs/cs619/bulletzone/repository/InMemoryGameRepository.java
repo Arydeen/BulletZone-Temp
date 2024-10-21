@@ -19,6 +19,7 @@ import edu.unh.cs.cs619.bulletzone.model.TankDoesNotExistException;
 import edu.unh.cs.cs619.bulletzone.model.Wall;
 import edu.unh.cs.cs619.bulletzone.model.events.MoveEvent;
 import edu.unh.cs.cs619.bulletzone.model.events.SpawnEvent;
+import edu.unh.cs.cs619.bulletzone.model.events.RemoveEvent;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -231,7 +232,6 @@ public class InMemoryGameRepository implements GameRepository {
             bullet.setParent(parent);
             bullet.setBulletId(bulletId);
             EventBus.getDefault().post(new SpawnEvent(bullet.getIntValue(), bullet.getPosition()));
-
             // TODO make it nicer
             timer.schedule(new TimerTask() {
 
@@ -274,6 +274,8 @@ public class InMemoryGameRepository implements GameRepository {
                             }
                             trackActiveBullets[bullet.getBulletId()]=0;
                             tank.setNumberOfBullets(tank.getNumberOfBullets()-1);
+                            int pos = bullet.getPosition();
+                            EventBus.getDefault().post(new RemoveEvent(bullet.getIntValue(), pos));
                             cancel();
 
                         } else {
