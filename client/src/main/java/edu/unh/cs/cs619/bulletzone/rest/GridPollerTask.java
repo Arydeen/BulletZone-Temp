@@ -46,7 +46,6 @@ public class GridPollerTask {
         previousTimeStamp = grid.getTimeStamp();
         while (true) {
              //Update using events after that
-
                 Log.d("Poller", "Updating board using events");
                 Log.d("PollerTS", "Previous Timestamp: " + previousTimeStamp);
                 GameEventCollectionWrapper events = restClient.events(previousTimeStamp);

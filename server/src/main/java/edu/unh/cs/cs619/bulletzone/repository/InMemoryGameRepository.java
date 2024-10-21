@@ -19,6 +19,7 @@ import edu.unh.cs.cs619.bulletzone.model.TankDoesNotExistException;
 import edu.unh.cs.cs619.bulletzone.model.Wall;
 import edu.unh.cs.cs619.bulletzone.model.events.MoveEvent;
 import edu.unh.cs.cs619.bulletzone.model.events.SpawnEvent;
+import edu.unh.cs.cs619.bulletzone.model.events.RemoveEvent;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -270,6 +271,8 @@ public class InMemoryGameRepository implements GameRepository {
                                 }
                             if (isVisible) {
                                 // Remove bullet from field
+                                int pos = bullet.getPosition();
+                                EventBus.getDefault().post(new RemoveEvent(bullet.getIntValue(), pos));
                                 currentField.clearField();
                             }
                             trackActiveBullets[bullet.getBulletId()]=0;
@@ -279,6 +282,8 @@ public class InMemoryGameRepository implements GameRepository {
                         } else {
                             if (isVisible) {
                                 // Remove bullet from field
+                                int pos = bullet.getPosition();
+                                EventBus.getDefault().post(new RemoveEvent(bullet.getIntValue(), pos));
                                 currentField.clearField();
                             }
 
