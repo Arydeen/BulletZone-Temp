@@ -1,5 +1,6 @@
 package edu.unh.cs.cs619.bulletzone.ui;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,8 @@ import edu.unh.cs.cs619.bulletzone.R;
 import edu.unh.cs.cs619.bulletzone.events.UpdateBoardEvent;
 import edu.unh.cs.cs619.bulletzone.model.BoardCell;
 import edu.unh.cs.cs619.bulletzone.model.SimulationBoard;
+import edu.unh.cs.cs619.bulletzone.model.TankItem;
+import edu.unh.cs.cs619.bulletzone.model.TurnableGoblin;
 
 @EBean
 public class GridAdapter extends BaseAdapter {
@@ -29,6 +32,7 @@ public class GridAdapter extends BaseAdapter {
     private int[][] mEntities = new int[16][16];
     private final SimulationBoard simBoard = new SimulationBoard(16,16);
     public boolean isUpdated = false;
+    private long tankId = -1;
 
     public void updateList(int[][] entities) {
         synchronized (monitor) {
@@ -68,6 +72,8 @@ public class GridAdapter extends BaseAdapter {
         return position;
     }
 
+    public void setTankId(long tankId) {this.tankId = tankId;}
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
@@ -84,7 +90,21 @@ public class GridAdapter extends BaseAdapter {
 
         if (this.isUpdated) {
             BoardCell currCell = simBoard.getCell(position);
-            imageView.setImageResource(currCell.getResourceID());
+            // Check if the current cell is a Tank
+            if (currCell.getCellType().equals("Tank")) {
+                // If it is a tank, set get the TankID from the raw value;
+                int tankIdTest = (currCell.getRawValue() / 10000) - 1000;
+//                Log.d("tankID", "TankId: " + tankIdTest);
+//                Log.d("userTankID", "UserTankID: " + this.tankId);
+                // If the tankID is equal to the user's tank ID, set the resource different
+                if ( tankIdTest == this.tankId) {
+                    imageView.setImageResource(R.drawable.small_goblin_red);
+                } else { // Else set it to what it should be
+                    imageView.setImageResource(currCell.getResourceID());
+                }
+            } else {
+                imageView.setImageResource(currCell.getResourceID());
+            }
             imageView.setRotation(currCell.getRotation());
         } else {
             imageView.setImageResource(R.drawable.blank);
