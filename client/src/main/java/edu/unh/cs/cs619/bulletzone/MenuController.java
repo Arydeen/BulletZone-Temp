@@ -22,11 +22,6 @@ public class MenuController {
     @RestService
     BulletZoneRestClient restClient;
     ;
-    @Bean
-    protected GridAdapter mGridAdapter;
-
-    @Bean
-    protected GameEventProcessor eventProcessor;
 
     public MenuController() {}
 
