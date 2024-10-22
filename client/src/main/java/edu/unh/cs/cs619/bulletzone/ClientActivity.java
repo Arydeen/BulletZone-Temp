@@ -32,6 +32,7 @@ import edu.unh.cs.cs619.bulletzone.rest.GridUpdateEvent;
 import edu.unh.cs.cs619.bulletzone.ui.GridAdapter;
 import edu.unh.cs.cs619.bulletzone.util.GridWrapper;
 import edu.unh.cs.cs619.bulletzone.AuthenticateActivity;
+import edu.unh.cs.cs619.bulletzone.util.clientActivityShakeDriver;
 
 @EActivity(R.layout.activity_client)
 public class ClientActivity extends Activity {
@@ -63,6 +64,8 @@ public class ClientActivity extends Activity {
     @Bean
     TankEventController tankEventController;
 
+    clientActivityShakeDriver shakeDriver;
+
     /**
      * Remote tank identifier
      */
@@ -72,6 +75,14 @@ public class ClientActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        shakeDriver = new clientActivityShakeDriver(this, new clientActivityShakeDriver.OnShakeListener() {
+            @Override
+            public void onShake() {
+                onButtonFire();
+            }
+        });
+
         Log.e(TAG, "onCreate");
     }
 
@@ -79,6 +90,7 @@ public class ClientActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(gridEventHandler);
+        shakeDriver.stop();
         Log.e(TAG, "onDestroy");
     }
 
