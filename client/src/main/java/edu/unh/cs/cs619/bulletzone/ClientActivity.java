@@ -99,7 +99,6 @@ public class ClientActivity extends Activity {
         }
     };
 
-
     @AfterViews
     protected void afterViewInjection() {
         Log.d(TAG, "afterViewInjection");
@@ -114,13 +113,14 @@ public class ClientActivity extends Activity {
         gridView.setAdapter(mGridAdapter);
     }
 
+
     @AfterInject
     void afterInject() {
         Log.d(TAG, "afterInject");
         restClient.setRestErrorHandler(bzRestErrorhandler);
         EventBus.getDefault().register(gridEventHandler);
+        gridPollTask.doPoll(eventProcessor);
     }
-
 
     public void updateGrid(GridWrapper gw) {
         mGridAdapter.updateList(gw.getGrid());
@@ -142,7 +142,6 @@ public class ClientActivity extends Activity {
     protected void onButtonMove(View view) {
         final int viewId = view.getId();
         byte direction = 0;
-
         switch (viewId) {
             case R.id.buttonUp:
                 direction = 0;
@@ -160,7 +159,11 @@ public class ClientActivity extends Activity {
                 Log.e(TAG, "Unknown movement button id: " + viewId);
                 break;
         }
-        this.tankEventController.moveAsync(tankId, direction);
+        if(direction == 0 || direction == 4) {
+            this.tankEventController.moveAsync(tankId, direction);
+        } else {
+            this.tankEventController.turnAsync(tankId, direction);
+        }
     }
 
     @Click(R.id.buttonFire)

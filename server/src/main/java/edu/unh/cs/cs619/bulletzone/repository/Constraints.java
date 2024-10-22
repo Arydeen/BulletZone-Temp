@@ -16,6 +16,7 @@ import edu.unh.cs.cs619.bulletzone.model.Tank;
 import edu.unh.cs.cs619.bulletzone.model.Wall;
 import edu.unh.cs.cs619.bulletzone.model.Bullet;
 import edu.unh.cs.cs619.bulletzone.model.events.MoveEvent;
+import edu.unh.cs.cs619.bulletzone.model.events.RemoveEvent;
 import edu.unh.cs.cs619.bulletzone.model.events.GameEvent;
 
 @Component
@@ -31,7 +32,7 @@ public class Constraints {
         Tank tank = game.getTanks().get(tankId);
         FieldHolder currentField = tank.getParent();
         Direction direction = tank.getDirection();
-
+        System.out.println("DIRECTION TO MOVE:" + direction);
         FieldHolder nextField = currentField.getNeighbor(direction);
         checkNotNull(currentField.getNeighbor(direction), "Neightbor is not available");
 
@@ -145,7 +146,7 @@ public class Constraints {
             if (isVisible) {
                 currentField.clearField();
             }
-
+            EventBus.getDefault().post(new RemoveEvent(bullet.getIntValue(), bullet.getPosition()));
             trackActiveBullets[bullet.getBulletId()] = 0;
             tank.setNumberOfBullets(tank.getNumberOfBullets() - 1);
             timerTask.cancel();
@@ -169,10 +170,10 @@ public class Constraints {
 
     public boolean isValidTurn(Tank tank, Direction newDirection) {
         Direction currentDirection = tank.getDirection();
-        return (currentDirection != Direction.Up || newDirection == Direction.Left || newDirection == Direction.Right) &&
-                (currentDirection != Direction.Right || newDirection == Direction.Up || newDirection == Direction.Down) &&
-                (currentDirection != Direction.Down || newDirection == Direction.Left || newDirection == Direction.Right) &&
-                (currentDirection != Direction.Left || newDirection == Direction.Up || newDirection == Direction.Down);
+        return (currentDirection == Direction.Up && (newDirection == Direction.Left || newDirection == Direction.Right)) ||
+                (currentDirection == Direction.Right && (newDirection == Direction.Up || newDirection == Direction.Down)) ||
+                (currentDirection == Direction.Down && (newDirection == Direction.Left || newDirection == Direction.Right)) ||
+                (currentDirection == Direction.Left && (newDirection == Direction.Up || newDirection == Direction.Down));
     }
 
     public boolean isValidMove(Tank tank, Direction moveDirection) {

@@ -55,10 +55,6 @@ public class MenuActivity extends Activity {
     void join() {
         try {
             tankId = menuController.joinAsync();
-            gridPollTask.doPoll();
-            SystemClock.sleep(500); //Wait for poller to update initial board
-            eventProcessor.setBoard(mGridAdapter.getBoard()); //Set initial board to eventprocessor
-            eventProcessor.start(); //Subscribe to eventbus to start posting events
             // Start the Client activity
             Intent intent = new Intent(this, ClientActivity_.class);
             intent.putExtra("USER_ID", userId);

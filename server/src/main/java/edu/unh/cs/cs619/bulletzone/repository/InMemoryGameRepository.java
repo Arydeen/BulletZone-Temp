@@ -139,7 +139,6 @@ public class InMemoryGameRepository implements GameRepository {
             }*/
 
             tank.setDirection(direction);
-
             return true; // TODO check
         }
     }
@@ -164,12 +163,15 @@ public class InMemoryGameRepository implements GameRepository {
 
             tank.setLastMoveTime(millis + tank.getAllowedMoveInterval());
 
+            if (!tankConstraintChecker.isValidMove(tank, direction)) {
+                return false;
+            } else {
+                tank.setDirection(direction);
+            }
             if (!tankConstraintChecker.canMove(tankId, game)) {
                 return false;
             }
-            if (!tankConstraintChecker.isValidMove(tank, direction)) {
-                return false;
-            }
+
 
             return true;
         }
