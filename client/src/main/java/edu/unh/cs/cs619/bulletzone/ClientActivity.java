@@ -50,9 +50,6 @@ public class ClientActivity extends Activity {
     @ViewById
     protected TextView userIdTextView;
 
-    @ViewById
-    protected TextView balanceTextView;
-
     @NonConfigurationInstance
     @Bean
     GridPollerTask gridPollTask;
@@ -62,6 +59,9 @@ public class ClientActivity extends Activity {
 
     @Bean
     BZRestErrorhandler bzRestErrorhandler;
+
+    @Bean
+    TankEventController tankEventController;
 
     /**
      * Remote tank identifier
@@ -104,28 +104,14 @@ public class ClientActivity extends Activity {
     protected void afterViewInjection() {
         Log.d(TAG, "afterViewInjection");
         userId = getIntent().getLongExtra("USER_ID", -1);
+        tankId = getIntent().getLongExtra("TANK_ID", -1);
         if (userId != -1) {
             userIdTextView.setText("User ID: " + userId);
-            fetchAndUpdateBalance();  // Add this line
         } else {
             userIdTextView.setText("User ID: Not logged in");
-            updateBalanceUI(null);  // Add this line to clear the balance
         }
-        joinAsync();
         SystemClock.sleep(500);
         gridView.setAdapter(mGridAdapter);
-    }
-
-    @Background
-    void fetchAndUpdateBalance() {
-        try {
-            Double balance = restClient.getBalance(userId);
-            Log.d(TAG, "Fetched balance: " + balance);  // Add this log
-            updateBalanceUI(balance);
-        } catch (Exception e) {
-            Log.e(TAG, "Error fetching balance", e);
-            updateBalanceUI(null);
-        }
     }
 
     @AfterInject
@@ -135,18 +121,6 @@ public class ClientActivity extends Activity {
         EventBus.getDefault().register(gridEventHandler);
     }
 
-    @Background
-    void joinAsync() {
-        try {
-            tankId = restClient.join().getResult();
-            gridPollTask.doPoll();
-            SystemClock.sleep(500); //Wait for poller to update initial board
-            eventProcessor.setBoard(mGridAdapter.getBoard()); //Set initial board to eventprocessor
-            eventProcessor.start(); //Subscribe to eventbus to start posting events
-        } catch (Exception e) {
-            Log.e(TAG, "Error joining game", e);
-        }
-    }
 
     public void updateGrid(GridWrapper gw) {
         mGridAdapter.updateList(gw.getGrid());
@@ -186,36 +160,27 @@ public class ClientActivity extends Activity {
                 Log.e(TAG, "Unknown movement button id: " + viewId);
                 break;
         }
-        this.moveAsync(tankId, direction);
-    }
-
-    @Background
-    void moveAsync(long tankId, byte direction) {
-        restClient.move(tankId, direction);
-    }
-
-    @Background
-    void turnAsync(long tankId, byte direction) {
-        restClient.turn(tankId, direction);
+        this.tankEventController.moveAsync(tankId, direction);
     }
 
     @Click(R.id.buttonFire)
-    @Background
     protected void onButtonFire() {
-        restClient.fire(tankId);
+        tankEventController.fire(tankId);
     }
 
     @Click(R.id.buttonLeave)
     void leaveGame() {
         Log.d(TAG, "leaveGame() called, tank ID: " + tankId);
-        leaveGameAsync();
+        BackgroundExecutor.cancelAll("grid_poller_task", true);
+        tankEventController.leaveGameAsync(tankId);
+        logoutUI();
     }
 
     @Background
-    void leaveGameAsync() {
+    void leaveAsync(long tankId) {
+        Log.d(TAG, "Leave called, tank ID: " + tankId);
         BackgroundExecutor.cancelAll("grid_poller_task", true);
         restClient.leave(tankId);
-        logoutUI();
     }
 
     @Click(R.id.buttonLogin)
@@ -230,13 +195,6 @@ public class ClientActivity extends Activity {
         logoutUI();
     }
 
-    @Background
-    void leaveAsync(long tankId) {
-        Log.d(TAG, "Leave called, tank ID: " + tankId);
-        BackgroundExecutor.cancelAll("grid_poller_task", true);
-        restClient.leave(tankId);
-    }
-
     @UiThread
     void logoutUI() {
         Log.d(TAG, "logoutUI() called");
@@ -248,16 +206,5 @@ public class ClientActivity extends Activity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
-    }
-
-    @UiThread
-    void updateBalanceUI(Double balance) {
-        if (balanceTextView != null) {
-            if (balance != null) {
-                balanceTextView.setText(String.format("Balance: $%.2f", balance));
-            } else {
-                balanceTextView.setText("Balance: Unavailable");
-            }
-        }
     }
 }
