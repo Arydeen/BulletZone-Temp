@@ -13,7 +13,9 @@ import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.NonConfigurationInstance;
 
+import edu.unh.cs.cs619.bulletzone.events.GameEventProcessor;
 import edu.unh.cs.cs619.bulletzone.rest.GridPollerTask;
+import edu.unh.cs.cs619.bulletzone.ui.GridAdapter;
 
 @EActivity(R.layout.activity_menu)
 public class MenuActivity extends Activity {
@@ -23,6 +25,12 @@ public class MenuActivity extends Activity {
     @NonConfigurationInstance
     @Bean
     GridPollerTask gridPollTask;
+
+    @Bean
+    protected GridAdapter mGridAdapter;
+
+    @Bean
+    protected GameEventProcessor eventProcessor;
 
     private long userId = -1;
     private long tankId = -1;
@@ -55,6 +63,9 @@ public class MenuActivity extends Activity {
             Log.d("MenuActivity", "Starting ClientActivity_");
             startActivity(intent);
             Log.d("MenuActivity", "ClientActivity_ started");
+//            SystemClock.sleep(500); //Wait for poller to update initial board
+//            eventProcessor.setBoard(mGridAdapter.getBoard()); //Set initial board to eventprocessor
+//            eventProcessor.start(); //Subscribe to eventbus to start posting events
             finish();
         } catch (Exception e) {
             Log.e(TAG, "Error joining game", e);

@@ -103,7 +103,7 @@ public class AuthenticateActivity extends AppCompatActivity {
         Log.d("AuthenticateActivity", "onLoginSuccess called with userId: " + userId);
 
         // Start the main game activity
-        Intent intent = new Intent(this, ClientActivity_.class);
+        Intent intent = new Intent(this, MenuActivity_.class);
         intent.putExtra("USER_ID", userId);
         Log.d("AuthenticateActivity", "Starting ClientActivity_");
         startActivity(intent);

@@ -160,6 +160,7 @@ public class ClientActivity extends Activity {
                 Log.e(TAG, "Unknown movement button id: " + viewId);
                 break;
         }
+        this.tankEventController.turnAsync(tankId, direction);
         this.tankEventController.moveAsync(tankId, direction);
     }
 
