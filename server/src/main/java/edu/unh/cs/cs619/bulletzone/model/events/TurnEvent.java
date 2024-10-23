@@ -10,13 +10,14 @@ public class TurnEvent extends GameEvent {
 
     public TurnEvent() {}
 
-    public TurnEvent(int[][] board) {
-        board[position / 16][position % 16] = rawServerValue;
+    public TurnEvent(int rawServerValue, int pos) {
+        this.position = pos;
+        this.rawServerValue = rawServerValue;
     }
 
     @Override
     public String toString() {
-        return "Spawn " + rawServerValue +
+        return "Turn " + rawServerValue +
                 " at " + position +
                 super.toString();
     }

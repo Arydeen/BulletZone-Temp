@@ -23,7 +23,6 @@ import edu.unh.cs.cs619.bulletzone.util.ResultWrapper;
  * "http://10.0.0.145:6191/games"
  * http://10.0.2.2:8080/
  * Created by simon on 10/1/14.
- * Created by simon on 10/1/14.
  */
 
 @Rest(rootUrl = "http://stman1.cs.unh.edu:61912/games",

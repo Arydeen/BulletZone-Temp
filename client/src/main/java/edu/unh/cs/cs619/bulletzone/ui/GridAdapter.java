@@ -84,11 +84,13 @@ public class GridAdapter extends BaseAdapter {
 
 
     /**
-     * Updates the desired cell from events in the gridView, using SimulationBoard's Board Cells
-     * @param position The position in the SimulationBoard to be updated
-     * @param convertView The view to be updated, it is gridView
-     * @param parent The parent activity of the view, Client Activity
-     * @return Returns the updated view
+     * @param position
+     * @param convertView
+     * @param parent
+     * @return
+     *
+     * Standard getView, changed the logic where it calls imageView.setImageResource() to allow
+     * for the user's tank to be set to a different image from the rest of the tanks / goblins
      */
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -113,7 +115,7 @@ public class GridAdapter extends BaseAdapter {
 //                Log.d("tankID", "TankId: " + tankIdTest);
 //                Log.d("userTankID", "UserTankID: " + this.tankId);
                 // If the tankID is equal to the user's tank ID, set the resource different
-                if (tankIdTest == this.tankId) {
+                if ( tankIdTest == this.tankId) {
                     imageView.setImageResource(R.drawable.small_goblin_red);
                 } else { // Else set it to what it should be
                     imageView.setImageResource(currCell.getResourceID());

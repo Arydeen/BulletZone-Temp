@@ -144,8 +144,11 @@ public class ClientActivity extends Activity {
         mGridAdapter.updateList(gw.getGrid());
     }
 
-    @Click(R.id.eventSwitch)
+    //Remove functionality for now
+
+    /*@Click(R.id.eventSwitch)
     protected void onEventSwitch() {
+
         if (gridPollTask.toggleEventUsage()) {
             Log.d("EventSwitch", "ON");
             eventProcessor.setBoard(mGridAdapter.getBoard());
@@ -154,7 +157,7 @@ public class ClientActivity extends Activity {
             Log.d("EventSwitch", "OFF");
             eventProcessor.stop();
         }
-    }
+    }*/
 
     private int lastPressedButtonId = -1;
 
@@ -215,7 +218,7 @@ public class ClientActivity extends Activity {
         Log.d(TAG, "leaveGame() called, tank ID: " + tankId);
         BackgroundExecutor.cancelAll("grid_poller_task", true);
         tankEventController.leaveGameAsync(tankId);
-        logoutUI();
+        leaveUI();
     }
 
     @Background
@@ -235,6 +238,15 @@ public class ClientActivity extends Activity {
     void logout() {
         Log.d(TAG, "logout() called");
         logoutUI();
+    }
+
+    @UiThread
+    void leaveUI() {
+        Log.d(TAG, "leaveUI() called");
+        Intent intent = new Intent(this, MenuActivity_.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     @UiThread
