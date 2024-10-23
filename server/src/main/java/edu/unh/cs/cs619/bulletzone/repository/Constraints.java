@@ -17,9 +17,14 @@ import edu.unh.cs.cs619.bulletzone.model.Wall;
 import edu.unh.cs.cs619.bulletzone.model.Bullet;
 import edu.unh.cs.cs619.bulletzone.model.events.MoveEvent;
 import edu.unh.cs.cs619.bulletzone.model.events.RemoveEvent;
-import edu.unh.cs.cs619.bulletzone.model.events.GameEvent;
 import edu.unh.cs.cs619.bulletzone.model.events.TurnEvent;
 
+/**
+ * Written by Flynn O'Sullivan, Edited by Kyle Goodwin
+ *
+ * Splits constraints and allows cleaner code in InMemoryGameRepository to split up
+ * checking the game board, and posting new events.
+ */
 @Component
 public class Constraints {
 
