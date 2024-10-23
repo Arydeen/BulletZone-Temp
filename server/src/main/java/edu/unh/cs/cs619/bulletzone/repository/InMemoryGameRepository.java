@@ -194,7 +194,7 @@ public class InMemoryGameRepository implements GameRepository {
             // This should be only a one way reference.
             bullet.setParent(parent);
             bullet.setBulletId(bulletId);
-            EventBus.getDefault().post(new SpawnEvent(bullet.getIntValue(), bullet.getPosition()));
+            //EventBus.getDefault().post(new SpawnEvent(bullet.getIntValue(), bullet.getPosition()));
 
             // TODO make it nicer
             timer.schedule(new TimerTask() {

@@ -81,12 +81,6 @@ public class Constraints {
                 return false;
             }
 
-                /*try {
-                    Thread.sleep(500);
-                } catch(InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                }*/
-
             int oldPos = tank.getPosition();
             currentField.clearField();
             nextField.setFieldEntity(tank);
@@ -191,26 +185,6 @@ public class Constraints {
 
         boolean isVisible = currentField.isPresent() && (currentField.getEntity() == bullet);
 
-//        int fieldIndex = currentField.getPosition();
-//        int row = fieldIndex / FIELD_DIM;
-//        int col = fieldIndex % FIELD_DIM;
-//        // Check if the tank is at the gameboard edges and trying to move out of bounds
-//        boolean isAtLeftEdge = (col == 0) && direction == Direction.Left;
-//        boolean isAtRightEdge = (col == FIELD_DIM - 1) && direction == Direction.Right;
-//        boolean isAtTopEdge = (row == 0) && direction == Direction.Up;
-//        boolean isAtBottomEdge = (row == FIELD_DIM - 1) && direction == Direction.Down;
-//
-//        if (isAtLeftEdge || isAtRightEdge || isAtTopEdge || isAtBottomEdge) {
-//            System.out.println("Next field is out of bounds, bullet hit edge of gameboard.");
-//            if (isVisible) {
-//                currentField.clearField();
-//            }
-//            EventBus.getDefault().post(new RemoveEvent(bullet.getIntValue(), bullet.getPosition()));
-//            trackActiveBullets[bullet.getBulletId()] = 0;
-//            tank.setNumberOfBullets(tank.getNumberOfBullets() - 1);
-//            timerTask.cancel();
-//        }
-
         if (nextField.isPresent()) {
             nextField.getEntity().hit(bullet.getDamage());
 
@@ -245,7 +219,13 @@ public class Constraints {
             nextField.setFieldEntity(bullet);
             bullet.setParent(nextField);
             int newPos = bullet.getPosition();
-            EventBus.getDefault().post(new MoveEvent(bullet.getIntValue(), oldPos, newPos));
+            if(oldPos == tank.getPosition()){
+                System.out.println("Spawning");
+                EventBus.getDefault().post(new MoveEvent(bullet.getIntValue(), newPos, newPos));
+            } else {
+                System.out.println("Moving");
+                EventBus.getDefault().post(new MoveEvent(bullet.getIntValue(), oldPos, newPos));
+            }
         }
     }
 
