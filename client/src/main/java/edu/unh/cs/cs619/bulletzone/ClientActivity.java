@@ -144,8 +144,11 @@ public class ClientActivity extends Activity {
         mGridAdapter.updateList(gw.getGrid());
     }
 
-    @Click(R.id.eventSwitch)
+    //Remove functionality for now
+
+    /*@Click(R.id.eventSwitch)
     protected void onEventSwitch() {
+
         if (gridPollTask.toggleEventUsage()) {
             Log.d("EventSwitch", "ON");
             eventProcessor.setBoard(mGridAdapter.getBoard());
@@ -154,7 +157,7 @@ public class ClientActivity extends Activity {
             Log.d("EventSwitch", "OFF");
             eventProcessor.stop();
         }
-    }
+    }*/
 
     private int lastPressedButtonId = -1;
 
