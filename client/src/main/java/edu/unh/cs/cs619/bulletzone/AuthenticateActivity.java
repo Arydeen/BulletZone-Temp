@@ -22,6 +22,8 @@ import edu.unh.cs.cs619.bulletzone.util.ResultWrapper;
 
 @EActivity(R.layout.activity_authenticate)
 public class AuthenticateActivity extends AppCompatActivity {
+    private static final String TAG = "AuthenticateActivity";
+
     @ViewById
     EditText username_editText;
 
@@ -39,19 +41,16 @@ public class AuthenticateActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //Since we are using the @EActivity annotation, anything done past this point will
-        //be overridden by the work AndroidAnnotations does. If you need to do more setup,
-        //add to the methods under @AfterViews (for view items) or @AfterInject (for Bean items) below
     }
 
     @AfterViews
     protected void afterViewInjection() {
-        //Put any view-setup code here (that you might normally put in onCreate)
+        Log.d(TAG, "Views injected");
     }
 
     @AfterInject
     void afterInject() {
-        //Put any Bean-related setup code here (the you might normally put in onCreate)
+        Log.d(TAG, "Dependencies injected");
     }
 
     /**
@@ -63,13 +62,29 @@ public class AuthenticateActivity extends AppCompatActivity {
         String username = username_editText.getText().toString();
         String password = password_editText.getText().toString();
 
-        ResultWrapper<Long> result = controller.register(username, password);
+        if (username.isEmpty() || password.isEmpty()) {
+            setStatus("Username and password cannot be empty");
+            return;
+        }
 
-        if (result.isSuccess()) {
-            setStatus("Registration successful.");
-            // Optionally, you can automatically log in the user here
-        } else {
-            setStatus("Registration failed: " + result.getMessage());
+        try {
+            ResultWrapper<Long> result = controller.register(username, password);
+
+            if (result.isSuccess()) {
+                setStatus("Registration successful. Logging in...");
+                // Automatically log in after successful registration
+                ResultWrapper<Long> loginResult = controller.login(username, password);
+                if (loginResult.isSuccess()) {
+                    onLoginSuccess(loginResult.getResult());
+                } else {
+                    setStatus("Registration successful but login failed: " + loginResult.getMessage());
+                }
+            } else {
+                setStatus("Registration failed: " + result.getMessage());
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Registration error", e);
+            setStatus("Registration error: " + e.getMessage());
         }
     }
 
@@ -82,38 +97,55 @@ public class AuthenticateActivity extends AppCompatActivity {
         String username = username_editText.getText().toString();
         String password = password_editText.getText().toString();
 
+        if (username.isEmpty() || password.isEmpty()) {
+            setStatus("Username and password cannot be empty");
+            return;
+        }
+
         try {
             ResultWrapper<Long> result = controller.login(username, password);
 
             if (result.isSuccess()) {
                 Long userId = result.getResult();
-                setStatus("Login successful. User ID: " + userId);
+                Log.d(TAG, "Login successful for userId: " + userId);
+
+                // Verify balance access
+                ResultWrapper<Double> balanceResult = controller.getBalance(userId);
+                if (balanceResult.isSuccess()) {
+                    Log.d(TAG, "Balance retrieved successfully: " + balanceResult.getResult());
+                } else {
+                    Log.w(TAG, "Balance retrieval failed: " + balanceResult.getMessage());
+                }
+
+                setStatus("Login successful");
                 onLoginSuccess(userId);
             } else {
                 setStatus("Login failed: " + result.getMessage());
             }
         } catch (Exception e) {
+            Log.e(TAG, "Login error", e);
             setStatus("An unexpected error occurred: " + e.getMessage());
-            e.printStackTrace(); // Log the error
         }
     }
 
     @UiThread
     public void onLoginSuccess(Long userId) {
-        Log.d("AuthenticateActivity", "onLoginSuccess called with userId: " + userId);
+        Log.d(TAG, "onLoginSuccess called with userId: " + userId);
 
         // Start the Menu activity
         Intent intent = new Intent(this, MenuActivity_.class);
         intent.putExtra("USER_ID", userId);
-        Log.d("AuthenticateActivity", "Starting MenuActivity_");
+        Log.d(TAG, "Starting MenuActivity_");
         startActivity(intent);
-        Log.d("AuthenticateActivity", "MenuActivity_ started");
+        Log.d(TAG, "MenuActivity_ started");
         finish(); // Close the login activity
     }
 
     @UiThread
     protected void setStatus(String message) {
-        status_message.setText(message);
-        Log.e("AuthenticateActivity", message);
+        if (status_message != null) {
+            status_message.setText(message);
+            Log.d(TAG, "Status updated: " + message);
+        }
     }
 }

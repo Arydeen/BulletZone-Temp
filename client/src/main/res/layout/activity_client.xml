@@ -27,10 +27,10 @@
             android:id="@+id/gridView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
             android:background="#FFFFFF"
+            android:layout_weight="1"
             android:numColumns="16"
-            tools:listitem="@layout/field_item" />
+            tools:listitem="@layout/field_item"/>
 
         <Switch
             android:id="@+id/eventSwitch"
@@ -111,6 +111,35 @@
             android:layout_alignParentLeft="true"
             android:layout_below="@id/buttonLogin"
             android:text="Logout" />
+
+        <TextView
+            android:id="@+id/balanceTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/buttonLogout"
+            android:layout_alignParentLeft="true"
+            android:layout_marginTop="16dp"
+            android:text="Balance: $0.00"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/statusTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/buttonTest"
+            android:layout_alignParentLeft="true"
+            android:layout_marginTop="16dp"
+            android:textColor="#FF0000"
+            android:text="" />
+
+        <Button
+            android:id="@+id/buttonTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/balanceTextView"
+            android:layout_alignParentLeft="true"
+            android:layout_marginTop="16dp"
+            android:text="Test Deduct 100"/>
 
     </RelativeLayout>
 

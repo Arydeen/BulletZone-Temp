@@ -1,17 +1,10 @@
 package edu.unh.cs.cs619.bulletzone.web;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.*;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
 
 import edu.unh.cs.cs619.bulletzone.repository.DataRepository;
 import edu.unh.cs.cs619.bulletzone.util.BooleanWrapper;
@@ -30,10 +23,13 @@ public class AccountController {
         this.data = repo;
     }
 
+    @Autowired
+    private DataRepository repository;
+
     /**
      * Handles a PUT request to register a new user account
      *
-     * @param name The username
+     * @param name     The username
      * @param password The password
      * @return a response w/ success boolean
      */
@@ -50,7 +46,7 @@ public class AccountController {
     /**
      * Handles a PUT request to login a user
      *
-     * @param name The username
+     * @param name     The username
      * @param password The password
      * @return a response w/ the user ID (or -1 if invalid)
      */
@@ -65,5 +61,53 @@ public class AccountController {
         } else {
             return new ResponseEntity<>(new LongWrapper(-1L), HttpStatus.UNAUTHORIZED);
         }
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "balance/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public ResponseEntity<Double> getBalance(@PathVariable int userId) {
+        log.debug("Get balance for user ID: " + userId);
+        double balance = data.getUserBalance(userId);
+        if (balance < 0) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(balance, HttpStatus.OK);
+    }
+
+    @PutMapping("/balance/{userId}/deduct/{amount}")
+    @ResponseBody
+    public BooleanWrapper deductBalance(
+            @PathVariable("userId") long userId,
+            @PathVariable("amount") double amount) {
+        log.debug("Deduct balance called for user {} amount {}", userId, amount);
+        try {
+            double currentBalance = repository.getUserBalance(userId);
+            log.debug("Current balance for user {}: {}", userId, currentBalance);
+
+            if (currentBalance < amount) {
+                log.debug("Insufficient balance for user {}: {} < {}", userId, currentBalance, amount);
+                return new BooleanWrapper(false);
+            }
+
+            boolean success = repository.deductUserBalance(userId, amount);
+            log.debug("Deduction result for user {}: {}", userId, success);
+
+            if (success) {
+                double newBalance = repository.getUserBalance(userId);
+                log.debug("New balance for user {}: {}", userId, newBalance);
+            }
+
+            return new BooleanWrapper(success);
+        } catch (Exception e) {
+            log.error("Error deducting balance for user {}: {}", userId, e.getMessage(), e);
+            return new BooleanWrapper(false);
+        }
+    }
+
+    @GetMapping("/ping")
+    @ResponseBody
+    public String ping() {
+        return "AccountController is working";
     }
 }
