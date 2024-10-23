@@ -137,7 +137,7 @@ public class ClientActivity extends Activity {
         Log.d(TAG, "afterInject");
         restClient.setRestErrorHandler(bzRestErrorhandler);
         EventBus.getDefault().register(gridEventHandler);
-        gridPollTask.doPoll();
+        gridPollTask.doPoll(eventProcessor);
     }
 
     public void updateGrid(GridWrapper gw) {
