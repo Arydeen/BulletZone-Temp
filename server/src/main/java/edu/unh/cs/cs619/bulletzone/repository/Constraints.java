@@ -53,9 +53,9 @@ public class Constraints {
                     || (currentDirection == Direction.Right && (direction == Direction.Up || direction == Direction.Down))) {
                 // Turn the tank and trigger a TurnEvent
                 tank.setDirection(direction);
-//                EventBus.getDefault().post(new TurnEvent(tank.getIntValue(), tank.getPosition()));  // Trigger turn event
+                EventBus.getDefault().post(new TurnEvent(tank.getIntValue(), tank.getPosition()));  // Trigger turn event
                 System.out.println("Tank is turning to " + direction);
-//                return true;  // Tank has turned, no movement yet
+                return true;  // Tank has turned, no movement yet
             }
         }
         if (!nextField.isPresent()) {
@@ -111,6 +111,46 @@ public class Constraints {
         tank.setLastMoveTime(currentTimeMillis + tank.getAllowedMoveInterval());
 
         return true;
+    }
+
+    public boolean canTurn(long tankId, Game game, Direction direction, long currentTimeMillis){
+        Tank tank = game.getTanks().get(tankId);
+        if (currentTimeMillis < tank.getLastFireTime()) {
+            return false;
+        }
+        FieldHolder currentField = tank.getParent();
+        System.out.println("DIRECTION TO TURN:" + direction);
+        checkNotNull(currentField.getNeighbor(direction), "Neightbor is not available");
+
+        boolean isVisible = currentField.isPresent()
+                && (currentField.getEntity() == tank);
+
+        // Get the current direction of the tank
+        Direction currentDirection = tank.getDirection();
+
+        if (currentDirection != direction) {
+            // Check if the direction is a valid turn (sideways)
+            if ((currentDirection == Direction.Up && (direction == Direction.Left || direction == Direction.Right))
+                    || (currentDirection == Direction.Down && (direction == Direction.Left || direction == Direction.Right))
+                    || (currentDirection == Direction.Left && (direction == Direction.Up || direction == Direction.Down))
+                    || (currentDirection == Direction.Right && (direction == Direction.Up || direction == Direction.Down))) {
+                // Turn the tank and trigger a TurnEvent
+                tank.setDirection(direction);
+                EventBus.getDefault().post(new TurnEvent(tank.getIntValue(), tank.getPosition()));  // Trigger turn event
+                System.out.println("Tank is turning to " + direction);
+                return true;  // Tank has turned, no movement yet
+            }
+        }
+
+        if (!isVisible) {
+            System.out.println("You have already been eliminated.");
+            return false;
+        }
+
+        tank.setLastMoveTime(currentTimeMillis+tank.getAllowedMoveInterval());
+
+
+        return false;
     }
 
     public boolean canFire(Tank tank, long currentTimeMillis, int bulletType, int[] bulletDelay) {

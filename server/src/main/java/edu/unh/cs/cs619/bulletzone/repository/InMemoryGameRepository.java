@@ -124,18 +124,16 @@ public class InMemoryGameRepository implements GameRepository {
             }
 
             long millis = System.currentTimeMillis();
-            if(millis < tank.getLastMoveTime())
+
+            if (!tankConstraintChecker.canTurn(tankId, game, direction, millis)) {
                 return false;
-
-            tank.setLastMoveTime(millis+tank.getAllowedMoveInterval());
-
+            }
             /*try {
                 Thread.sleep(500);
             } catch(InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }*/
 
-            tank.setDirection(direction);
             return true; // TODO check
         }
     }
