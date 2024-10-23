@@ -7,21 +7,17 @@ public class TurnEvent extends GameEvent {
     private int rawServerValue;
     @JsonProperty
     private int position;
-    @JsonProperty
-    private int direction;
 
     public TurnEvent() {}
 
-    public TurnEvent(int rawServerValue, int position, int direction) {
+    public TurnEvent(int rawServerValue, int pos) {
         this.rawServerValue = rawServerValue;
-        this.position = position;
-        this.direction = direction;
     }
 
     @Override
     public String toString() {
-        return "Turn " + rawServerValue +
-                " to face " + direction +
+        return "Spawn " + rawServerValue +
+                " at " + position +
                 super.toString();
     }
 

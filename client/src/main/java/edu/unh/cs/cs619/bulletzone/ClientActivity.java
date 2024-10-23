@@ -112,7 +112,6 @@ public class ClientActivity extends Activity {
         }
     };
 
-
     @AfterViews
     protected void afterViewInjection() {
         Log.d(TAG, "afterViewInjection");
@@ -129,13 +128,14 @@ public class ClientActivity extends Activity {
         gridView.setAdapter(mGridAdapter);
     }
 
+
     @AfterInject
     void afterInject() {
         Log.d(TAG, "afterInject");
         restClient.setRestErrorHandler(bzRestErrorhandler);
         EventBus.getDefault().register(gridEventHandler);
+        gridPollTask.doPoll(eventProcessor);
     }
-
 
     public void updateGrid(GridWrapper gw) {
         mGridAdapter.updateList(gw.getGrid());
@@ -153,11 +153,27 @@ public class ClientActivity extends Activity {
         }
     }
 
+    private int lastPressedButtonId = -1;
+
+    private boolean onePointTurn(int currentButtonId) {
+        // Check if the previous and current directions are 90-degree turns
+        if ((lastPressedButtonId == R.id.buttonUp && currentButtonId == R.id.buttonLeft) ||
+                (lastPressedButtonId == R.id.buttonUp && currentButtonId == R.id.buttonRight) ||
+                (lastPressedButtonId == R.id.buttonDown && currentButtonId == R.id.buttonLeft) ||
+                (lastPressedButtonId == R.id.buttonDown && currentButtonId == R.id.buttonRight) ||
+                (lastPressedButtonId == R.id.buttonLeft && currentButtonId == R.id.buttonUp) ||
+                (lastPressedButtonId == R.id.buttonLeft && currentButtonId == R.id.buttonDown) ||
+                (lastPressedButtonId == R.id.buttonRight && currentButtonId == R.id.buttonUp) ||
+                (lastPressedButtonId == R.id.buttonRight && currentButtonId == R.id.buttonDown)) {
+            return true;
+        }
+        return false;
+    }
+
     @Click({R.id.buttonUp, R.id.buttonDown, R.id.buttonLeft, R.id.buttonRight})
     protected void onButtonMove(View view) {
         final int viewId = view.getId();
         byte direction = 0;
-
         switch (viewId) {
             case R.id.buttonUp:
                 direction = 0;
@@ -175,7 +191,15 @@ public class ClientActivity extends Activity {
                 Log.e(TAG, "Unknown movement button id: " + viewId);
                 break;
         }
-        this.tankEventController.moveAsync(tankId, direction);
+
+        if (lastPressedButtonId != -1 && onePointTurn(viewId)) {
+            Log.d(TAG, "One-point turn detected: from " + lastPressedButtonId + " to " + viewId);
+            this.tankEventController.turnAsync(tankId, direction);
+        } else {
+            this.tankEventController.moveAsync(tankId, direction);
+        }
+        lastPressedButtonId = viewId;
+
     }
 
     @Click(R.id.buttonFire)
