@@ -124,6 +124,8 @@ public class ClientActivity extends Activity {
             userIdTextView.setText("User ID: Not logged in");
         }
         SystemClock.sleep(500);
+        // Set the TankID to be used when determining if it is the user's tank
+        mGridAdapter.setTankId(tankId);
         gridView.setAdapter(mGridAdapter);
     }
 

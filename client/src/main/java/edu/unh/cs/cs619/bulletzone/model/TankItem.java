@@ -25,4 +25,6 @@ public class TankItem extends edu.unh.cs.cs619.bulletzone.model.BoardCell {
     public String getCellInfo() {
         return super.getCellInfo() + "\nTank ID: " + tankID;
     }
+
+    public int getTankID() {return tankID;}
 }
