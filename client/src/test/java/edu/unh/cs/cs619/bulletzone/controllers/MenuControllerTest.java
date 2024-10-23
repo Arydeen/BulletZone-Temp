@@ -24,6 +24,13 @@ import edu.unh.cs.cs619.bulletzone.MenuController;
 import edu.unh.cs.cs619.bulletzone.R;
 import edu.unh.cs.cs619.bulletzone.TankEventController;
 
+/**
+ * Made by Alec Rydeen
+ * Tests for correct rest-calling functions to be called based on user input in ClientActivity
+ * Tests for the Login Button correctly calling join function
+ * Will likely implement more test methods in the future, once more functionality is introduced.
+ */
+
 @RunWith(MockitoJUnitRunner.class)
 public class MenuControllerTest {
 
