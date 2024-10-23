@@ -30,9 +30,10 @@ import edu.unh.cs.cs619.bulletzone.rest.BulletZoneRestClient;
 import edu.unh.cs.cs619.bulletzone.rest.GridPollerTask;
 import edu.unh.cs.cs619.bulletzone.rest.GridUpdateEvent;
 import edu.unh.cs.cs619.bulletzone.ui.GridAdapter;
+import edu.unh.cs.cs619.bulletzone.util.ClientActivityShakeDriver;
 import edu.unh.cs.cs619.bulletzone.util.GridWrapper;
 import edu.unh.cs.cs619.bulletzone.AuthenticateActivity;
-import edu.unh.cs.cs619.bulletzone.util.clientActivityShakeDriver;
+import edu.unh.cs.cs619.bulletzone.util.ClientActivityShakeDriver;
 
 @EActivity(R.layout.activity_client)
 public class ClientActivity extends Activity {
@@ -64,7 +65,7 @@ public class ClientActivity extends Activity {
     @Bean
     TankEventController tankEventController;
 
-    clientActivityShakeDriver shakeDriver;
+    ClientActivityShakeDriver shakeDriver;
 
     /**
      * Remote tank identifier
@@ -76,7 +77,7 @@ public class ClientActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        shakeDriver = new clientActivityShakeDriver(this, new clientActivityShakeDriver.OnShakeListener() {
+        shakeDriver = new ClientActivityShakeDriver(this, new ClientActivityShakeDriver.OnShakeListener() {
             @Override
             public void onShake() {
                 onButtonFire();

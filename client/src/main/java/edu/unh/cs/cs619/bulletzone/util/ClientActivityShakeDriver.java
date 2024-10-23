@@ -15,7 +15,7 @@ import org.androidannotations.annotations.EBean;
 import edu.unh.cs.cs619.bulletzone.ClientActivity;
 
 //@EBean
-public class clientActivityShakeDriver implements SensorEventListener {
+public class ClientActivityShakeDriver implements SensorEventListener {
 
     SensorManager sensorManager;
     private Sensor sensor;
@@ -27,7 +27,7 @@ public class clientActivityShakeDriver implements SensorEventListener {
         void onShake();
     }
 
-    public clientActivityShakeDriver(Context context, OnShakeListener listener) {
+    public ClientActivityShakeDriver(Context context, OnShakeListener listener) {
         this.listener = listener;
         this.lastUpdate = System.currentTimeMillis();
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
