@@ -62,6 +62,9 @@ public class MenuActivity extends Activity {
             Log.d("MenuActivity", "Starting ClientActivity_");
             startActivity(intent);
             Log.d("MenuActivity", "ClientActivity_ started");
+//            SystemClock.sleep(500); //Wait for poller to update initial board
+//            eventProcessor.setBoard(mGridAdapter.getBoard()); //Set initial board to eventprocessor
+//            eventProcessor.start(); //Subscribe to eventbus to start posting events
             finish();
         } catch (Exception e) {
             Log.e(TAG, "Error joining game", e);

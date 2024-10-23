@@ -7,6 +7,8 @@ public class TurnEvent extends GameEvent {
     private int rawServerValue;
     @JsonProperty
     private int position;
+    @JsonProperty
+    private int direction;
 
     public TurnEvent() {}
 
@@ -17,7 +19,7 @@ public class TurnEvent extends GameEvent {
     @Override
     public String toString() {
         return "Turn " + rawServerValue +
-                " at " + position +
+                " to face " + direction +
                 super.toString();
     }
 
