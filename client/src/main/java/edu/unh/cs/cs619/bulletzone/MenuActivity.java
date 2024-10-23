@@ -74,15 +74,23 @@ public class MenuActivity extends Activity {
             Intent intent = new Intent(this, ClientActivity_.class);
             intent.putExtra("USER_ID", userId);
             intent.putExtra("TANK_ID", tankId);
-            Log.d("MenuActivity", "Starting ClientActivity_");
+//            Log.d("MenuActivity", "Starting ClientActivity_");
             startActivity(intent);
-            Log.d("MenuActivity", "ClientActivity_ started");
+//            Log.d("MenuActivity", "ClientActivity_ started");
 //            SystemClock.sleep(500); //Wait for poller to update initial board
 //            eventProcessor.setBoard(mGridAdapter.getBoard()); //Set initial board to eventprocessor
 //            eventProcessor.start(); //Subscribe to eventbus to start posting events
             finish();
         } catch (Exception e) {
-            Log.e(TAG, "Error joining game", e);
+//            Log.e(TAG, "Error joining game", e);
         }
+    }
+
+    public void joinTest() {
+        this.join();
+    }
+
+    public void setMenuController(MenuController menuController) {
+        this.menuController = menuController;
     }
 }

@@ -30,7 +30,7 @@ public class MenuController {
 
     public MenuController() {}
 
-    long joinAsync() {
+    public long joinAsync() {
         return restClient.join().getResult();
     }
 }
