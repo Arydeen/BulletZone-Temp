@@ -3,17 +3,17 @@
     android:id="@+id/LinearLayout1"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:orientation="horizontal"
     android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".ClientActivity">
 
     <LinearLayout
         android:id="@+id/LinearLayoutDisplay"
-        android:layout_width="725dp"
-        android:layout_height="423dp"
+        android:layout_width="509dp"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
         <TextView
@@ -26,7 +26,7 @@
         <GridView
             android:id="@+id/gridView"
             android:layout_width="match_parent"
-            android:layout_height="376dp"
+            android:layout_height="0dp"
             android:layout_weight="1"
             android:background="#FFFFFF"
             android:numColumns="16"
@@ -42,7 +42,7 @@
 
     <RelativeLayout
         android:id="@+id/LinearLayoutControl"
-        android:layout_width="725dp"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1">
 
@@ -76,8 +76,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_marginLeft="4dp"
-            android:layout_marginBottom="-1dp"
             android:layout_toRightOf="@+id/buttonDown"
             android:text="@string/right" />
 
@@ -94,8 +92,8 @@
             android:id="@+id/buttonLeave"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
             android:text="Leave" />
 
         <Button
@@ -110,19 +108,9 @@
             android:id="@+id/buttonLogout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
             android:layout_below="@id/buttonLogin"
-            android:layout_alignParentLeft="true"
             android:text="Logout" />
-
-        <TextView
-            android:id="@+id/balanceTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/buttonLogout"
-            android:layout_alignParentLeft="true"
-            android:layout_marginTop="16dp"
-            android:text="Balance: $0.00"
-            android:textSize="16sp" />
 
     </RelativeLayout>
 
