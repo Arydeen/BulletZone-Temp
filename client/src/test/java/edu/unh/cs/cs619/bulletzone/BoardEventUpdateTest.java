@@ -1,6 +1,7 @@
 package edu.unh.cs.cs619.bulletzone;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -17,7 +18,10 @@ import org.mockito.Mock;
 import edu.unh.cs.cs619.bulletzone.events.GameEvent;
 import edu.unh.cs.cs619.bulletzone.events.GameEventProcessor;
 import edu.unh.cs.cs619.bulletzone.events.MoveEvent;
+import edu.unh.cs.cs619.bulletzone.events.SpawnEvent;
+import edu.unh.cs.cs619.bulletzone.events.TurnEvent;
 import edu.unh.cs.cs619.bulletzone.rest.BulletZoneRestClient;
+import edu.unh.cs.cs619.bulletzone.rest.GridPollerTask;
 import edu.unh.cs.cs619.bulletzone.ui.GridAdapter;
 
 public class BoardEventUpdateTest {
@@ -38,6 +42,18 @@ public class BoardEventUpdateTest {
 
     @Mock
     GridAdapter mockAdapter;
+
+    @Mock
+    SpawnEvent mockSpawnEvent;
+
+    @Mock
+    MoveEvent mockMoveEvent;
+
+    @Mock
+    TurnEvent mockTurnEvent;
+
+    @Mock
+    GameEvent mockGameEvent;
 
     GameEventProcessor testEventProcessor;
 
@@ -65,7 +81,7 @@ public class BoardEventUpdateTest {
                 {0, 0, 0, 3000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
         };
 
-        testEventProcessor = new GameEventProcessor();
+        testEventProcessor = spy(new GameEventProcessor());
         testEventProcessor.eb = mockEB;
 
         testEventProcessor.setBoard(initialGrid);
@@ -78,13 +94,37 @@ public class BoardEventUpdateTest {
     }
 
     @Test
-    public void gameEventProcessor_onMoveEvent_changesBoard() {
-//        mockEventProcessor.start();
-//
-//        MoveEvent move = new MoveEvent();
-//        mockEB.post(move);
-//
-//        verify(mockEventProcessor).onNewEvent(move);
+    public void GridPollerTask_OnEvent_PostsEvent() {
+        GridPollerTask poller = spy(new GridPollerTask());
+
+        poller.doPoll(testEventProcessor);
+
+        verify(poller).doPoll(testEventProcessor);
+
+    }
+
+    @Test
+    public void GameEventProcessor_onTurnEvent_callsToChangeBoard() {
+        testEventProcessor.start();
+        mockEB.post(mockTurnEvent);
+
+        verify(testEventProcessor).onNewEvent(mockTurnEvent);
+    }
+
+    @Test
+    public void GameEventProcessor_onSpawnEvent_callsToChangeBoard() {
+        testEventProcessor.start();
+        mockEB.post(mockSpawnEvent);
+
+        verify(testEventProcessor).onNewEvent(mockSpawnEvent);
+    }
+
+    @Test
+    public void gameEventProcessor_onMoveEvent_callsToChangeBoard() {
+        testEventProcessor.start();
+        mockEB.post(mockMoveEvent);
+
+        verify(testEventProcessor).onNewEvent(mockMoveEvent);
     }
 
 }
