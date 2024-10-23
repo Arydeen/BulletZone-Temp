@@ -18,6 +18,7 @@ import edu.unh.cs.cs619.bulletzone.model.Bullet;
 import edu.unh.cs.cs619.bulletzone.model.events.MoveEvent;
 import edu.unh.cs.cs619.bulletzone.model.events.RemoveEvent;
 import edu.unh.cs.cs619.bulletzone.model.events.GameEvent;
+import edu.unh.cs.cs619.bulletzone.model.events.TurnEvent;
 
 @Component
 public class Constraints {
@@ -28,10 +29,12 @@ public class Constraints {
     private final int[] bulletDelay = {500, 1000, 1500};
     private Game game = null;
 
-    public boolean canMove(long tankId, Game game) {
+    public boolean canMove(long tankId, Game game, Direction direction, long currentTimeMillis) {
         Tank tank = game.getTanks().get(tankId);
+        if (currentTimeMillis < tank.getLastFireTime()) {
+            return false;
+        }
         FieldHolder currentField = tank.getParent();
-        Direction direction = tank.getDirection();
         System.out.println("DIRECTION TO MOVE:" + direction);
         FieldHolder nextField = currentField.getNeighbor(direction);
         checkNotNull(currentField.getNeighbor(direction), "Neightbor is not available");
@@ -39,6 +42,22 @@ public class Constraints {
         boolean isVisible = currentField.isPresent()
                 && (currentField.getEntity() == tank);
 
+        // Get the current direction of the tank
+        Direction currentDirection = tank.getDirection();
+
+        if (currentDirection != direction) {
+            // Check if the direction is a valid turn (sideways)
+            if ((currentDirection == Direction.Up && (direction == Direction.Left || direction == Direction.Right))
+                    || (currentDirection == Direction.Down && (direction == Direction.Left || direction == Direction.Right))
+                    || (currentDirection == Direction.Left && (direction == Direction.Up || direction == Direction.Down))
+                    || (currentDirection == Direction.Right && (direction == Direction.Up || direction == Direction.Down))) {
+                // Turn the tank and trigger a TurnEvent
+                tank.setDirection(direction);
+//                EventBus.getDefault().post(new TurnEvent(tank.getIntValue(), tank.getPosition()));  // Trigger turn event
+                System.out.println("Tank is turning to " + direction);
+//                return true;  // Tank has turned, no movement yet
+            }
+        }
         if (!nextField.isPresent()) {
             // If the next field is empty move the user
             int fieldIndex = currentField.getPosition();
@@ -73,19 +92,23 @@ public class Constraints {
             nextField.setFieldEntity(tank);
             tank.setParent(nextField);
             int newPos = tank.getPosition();
+            tank.setDirection(direction);
             EventBus.getDefault().post(new MoveEvent(tank.getIntValue(), oldPos, newPos));
 
         } else if (nextField.getEntity() instanceof Wall) {
             Wall w = (Wall) nextField.getEntity();
             if (w.getIntValue() > 1000 && w.getIntValue() <= 2000) {
                 System.out.println("Next field contains a wall, movement blocked.");
+                tank.setDirection(direction);
                 return false;
             }
 
         } else if (nextField.getEntity() instanceof Tank) {
             System.out.println("Next field contains a tank, movement blocked.");
+            tank.setDirection(direction);
             return false;
         }
+        tank.setLastMoveTime(currentTimeMillis + tank.getAllowedMoveInterval());
 
         return true;
     }
@@ -94,6 +117,9 @@ public class Constraints {
         // Check if the tank is allowed to fire (0.5-second interval)
 
         if (currentTimeMillis < tank.getLastFireTime()) {
+            return false;
+        }
+        if (tank.getNumberOfBullets() == (tank.getAllowedNumberOfBullets())) {
             return false;
         }
         if (bulletType < 1 || bulletType > 3) {
@@ -118,7 +144,7 @@ public class Constraints {
         return bulletId;
     }
 
-    public void moveBulletAndHandleCollision(Bullet bullet, Tank tank, int[] trackActiveBullets, TimerTask timerTask) {
+    public void moveBulletAndHandleCollision(Game game, Bullet bullet, Tank tank, int[] trackActiveBullets, TimerTask timerTask) {
         FieldHolder currentField = bullet.getParent();
         Direction direction = bullet.getDirection();
         FieldHolder nextField = currentField.getNeighbor(direction);
@@ -165,29 +191,8 @@ public class Constraints {
 
 //    public boolean canFireMoreBullets(Tank tank) {
 //        // Check if the tank has reached the maximum number of bullets in the game (Z = 2)
-//        return tank.getNumberOfBullets() < tank.getAllowedNumberOfBullets();
+//        return tank.getNumberOfBullets() < (tank.getAllowedNumberOfBullets() + 1);
 //    }
 
-    public boolean isValidTurn(Tank tank, Direction newDirection) {
-        Direction currentDirection = tank.getDirection();
-        return (currentDirection == Direction.Up && (newDirection == Direction.Left || newDirection == Direction.Right)) ||
-                (currentDirection == Direction.Right && (newDirection == Direction.Up || newDirection == Direction.Down)) ||
-                (currentDirection == Direction.Down && (newDirection == Direction.Left || newDirection == Direction.Right)) ||
-                (currentDirection == Direction.Left && (newDirection == Direction.Up || newDirection == Direction.Down));
-    }
-
-    public boolean isValidMove(Tank tank, Direction moveDirection) {
-        // Only allow forward or backward movement
-        Direction currentDirection = tank.getDirection();
-        if ((currentDirection == Direction.Up || currentDirection == Direction.Down) &&
-                (moveDirection != Direction.Up && moveDirection != Direction.Down)) {
-            return false;
-        }
-        if ((currentDirection == Direction.Left || currentDirection == Direction.Right) &&
-                (moveDirection != Direction.Left && moveDirection != Direction.Right)) {
-            return false;
-        }
-        return true;
-    }
 }
 
