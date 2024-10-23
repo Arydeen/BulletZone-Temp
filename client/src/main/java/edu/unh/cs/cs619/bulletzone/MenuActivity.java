@@ -55,7 +55,6 @@ public class MenuActivity extends Activity {
     void join() {
         try {
             tankId = menuController.joinAsync();
-            gridPollTask.doPoll();
             // Start the Client activity
             Intent intent = new Intent(this, ClientActivity_.class);
             intent.putExtra("USER_ID", userId);
