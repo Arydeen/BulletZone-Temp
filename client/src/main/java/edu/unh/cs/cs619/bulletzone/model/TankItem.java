@@ -17,7 +17,7 @@ public class TankItem extends edu.unh.cs.cs619.bulletzone.model.BoardCell {
         int typeVal = BulletType;
         int scaleFactor = 1000;
 
-        resourceID = R.drawable.shovel_icon;
+        resourceID = R.drawable.spear_icon;
         cellType = "Bullet";
 
         tankID = (val - BulletType) / scaleFactor;
