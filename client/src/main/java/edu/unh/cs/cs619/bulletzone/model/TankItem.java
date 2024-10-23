@@ -2,6 +2,9 @@ package edu.unh.cs.cs619.bulletzone.model;
 
 import edu.unh.cs.cs619.bulletzone.R;
 
+/**
+ * Class to interpret the raw value from the server for bullets and be created from the factory.
+ */
 public class TankItem extends edu.unh.cs.cs619.bulletzone.model.BoardCell {
     protected  String cellType;
     int tankID;

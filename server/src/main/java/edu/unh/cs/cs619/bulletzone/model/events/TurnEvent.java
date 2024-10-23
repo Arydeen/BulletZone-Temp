@@ -10,8 +10,8 @@ public class TurnEvent extends GameEvent {
 
     public TurnEvent() {}
 
-    public TurnEvent(int rawServerValue, int pos) {
-        this.rawServerValue = rawServerValue;
+    public TurnEvent(int[][] board) {
+        board[position / 16][position % 16] = rawServerValue;
     }
 
     @Override

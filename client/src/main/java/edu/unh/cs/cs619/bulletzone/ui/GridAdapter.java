@@ -34,6 +34,10 @@ public class GridAdapter extends BaseAdapter {
     public boolean isUpdated = false;
     private long tankId = -1;
 
+    /**
+     * Updates the entities array of new input after events have changed it from the server
+     * @param entities Game board array
+     */
     public void updateList(int[][] entities) {
         synchronized (monitor) {
             this.mEntities = entities;
@@ -48,6 +52,10 @@ public class GridAdapter extends BaseAdapter {
         EventBus.getDefault().register(this);
     }
 
+    /**
+     * Subscribes to changes from events form the UpdateBoardEvent and updates the view
+     * @param event New event made to the board
+     */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void handleUpdate(UpdateBoardEvent event) {
         this.notifyDataSetChanged();
@@ -74,6 +82,14 @@ public class GridAdapter extends BaseAdapter {
 
     public void setTankId(long tankId) {this.tankId = tankId;}
 
+
+    /**
+     * Updates the desired cell from events in the gridView, using SimulationBoard's Board Cells
+     * @param position The position in the SimulationBoard to be updated
+     * @param convertView The view to be updated, it is gridView
+     * @param parent The parent activity of the view, Client Activity
+     * @return Returns the updated view
+     */
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
@@ -97,7 +113,7 @@ public class GridAdapter extends BaseAdapter {
 //                Log.d("tankID", "TankId: " + tankIdTest);
 //                Log.d("userTankID", "UserTankID: " + this.tankId);
                 // If the tankID is equal to the user's tank ID, set the resource different
-                if ( tankIdTest == this.tankId) {
+                if (tankIdTest == this.tankId) {
                     imageView.setImageResource(R.drawable.small_goblin_red);
                 } else { // Else set it to what it should be
                     imageView.setImageResource(currCell.getResourceID());
@@ -105,6 +121,7 @@ public class GridAdapter extends BaseAdapter {
             } else {
                 imageView.setImageResource(currCell.getResourceID());
             }
+            Log.d("fromAdapter", "Rotate Goblin");
             imageView.setRotation(currCell.getRotation());
         } else {
             imageView.setImageResource(R.drawable.blank);

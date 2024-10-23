@@ -77,6 +77,7 @@ public class ClientActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Initializes the shake driver / listener and defines what action to take when device is shaken
         shakeDriver = new ClientActivityShakeDriver(this, new ClientActivityShakeDriver.OnShakeListener() {
             @Override
             public void onShake() {
@@ -91,6 +92,8 @@ public class ClientActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(gridEventHandler);
+
+        //Un-attaches the shakeDriver and listener when activity is destroyed
         shakeDriver.stop();
         Log.e(TAG, "onDestroy");
     }

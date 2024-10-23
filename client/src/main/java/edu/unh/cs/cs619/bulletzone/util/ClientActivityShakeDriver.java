@@ -14,7 +14,9 @@ import org.androidannotations.annotations.EBean;
 
 import edu.unh.cs.cs619.bulletzone.ClientActivity;
 
-//@EBean
+/**
+ * Implements a shake listener and determines what to do after a certain acceleration on a device.
+ */
 public class ClientActivityShakeDriver implements SensorEventListener {
 
     SensorManager sensorManager;
@@ -44,6 +46,10 @@ public class ClientActivityShakeDriver implements SensorEventListener {
         sensorManager.unregisterListener(this);
     }
 
+    /**
+     * Tracks acceleration changes in accelerometer in device and determines appropriate "shake" level
+     * @param sensorEvent SensorEvent object that has the accelerometer data from device
+     */
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
@@ -60,7 +66,7 @@ public class ClientActivityShakeDriver implements SensorEventListener {
                 if ((actualTime-lastUpdate) > 1000) {
                     lastUpdate = actualTime;
 
-                    Log.d("ShakeToFire", "BOOM");
+//                    Log.d("ShakeToFire", "BOOM");
                     listener.onShake();
                 }
             }
