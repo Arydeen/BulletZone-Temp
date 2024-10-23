@@ -74,6 +74,15 @@ public class GridAdapter extends BaseAdapter {
 
     public void setTankId(long tankId) {this.tankId = tankId;}
 
+    /**
+     * @param position
+     * @param convertView
+     * @param parent
+     * @return
+     *
+     * Standard getView, changed the logic where it calls imageView.setImageResource() to allow
+     * for the user's tank to be set to a different image from the rest of the tanks / goblins
+     */
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 

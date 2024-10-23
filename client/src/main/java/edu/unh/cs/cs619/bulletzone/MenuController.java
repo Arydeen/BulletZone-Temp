@@ -14,6 +14,12 @@ import edu.unh.cs.cs619.bulletzone.rest.BulletZoneRestClient;
 import edu.unh.cs.cs619.bulletzone.rest.GridPollerTask;
 import edu.unh.cs.cs619.bulletzone.ui.GridAdapter;
 
+/**
+ * Made by Alec Rydeen
+ *
+ * Simple Class to take some of the Rest Client Calls out of MenuActivity
+ */
+
 @EBean
 public class MenuController {
 
@@ -21,7 +27,6 @@ public class MenuController {
 
     @RestService
     BulletZoneRestClient restClient;
-    ;
 
     public MenuController() {}
 
