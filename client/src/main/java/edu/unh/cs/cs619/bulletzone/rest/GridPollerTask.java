@@ -49,8 +49,8 @@ public class GridPollerTask {
         eventProcessor.start();
         while (true) {
              //Update using events after that
-//                Log.d("Poller", "Updating board using events");
-//                Log.d("PollerTS", "Previous Timestamp: " + previousTimeStamp);
+                Log.d("Poller", "Updating board using events");
+                Log.d("PollerTS", "Previous Timestamp: " + previousTimeStamp);
                 GameEventCollectionWrapper events = restClient.events(previousTimeStamp);
                 boolean haveEvents = false;
                 for (GameEvent event : events.getEvents()) {
@@ -62,7 +62,6 @@ public class GridPollerTask {
                 }
                 if (haveEvents)
                     EventBus.getDefault().post(new UpdateBoardEvent());
-
             // poll server every 100ms
             SystemClock.sleep(100);
         }

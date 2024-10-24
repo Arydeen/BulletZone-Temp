@@ -210,12 +210,12 @@ public class ClientActivity extends Activity {
                 direction = 2;
                 break;
             default:
-                Log.e(TAG, "Unknown movement button id: " + viewId);
+//                Log.e(TAG, "Unknown movement button id: " + viewId);
                 break;
         }
 
         if (lastPressedButtonId != -1 && onePointTurn(viewId)) {
-            Log.d(TAG, "One-point turn detected: from " + lastPressedButtonId + " to " + viewId);
+//            Log.d(TAG, "One-point turn detected: from " + lastPressedButtonId + " to " + viewId);
             this.tankEventController.turnAsync(tankId, direction);
         } else {
             this.tankEventController.moveAsync(tankId, direction);
@@ -276,6 +276,18 @@ public class ClientActivity extends Activity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
+    }
+
+    public void moveTest(View view) {
+        this.onButtonMove(view);
+    }
+
+    public void fireTest() {
+        this.onButtonFire();
+    }
+
+    public void setTankEventController(TankEventController tankEventController) {
+        this.tankEventController = tankEventController;
     }
 
     @UiThread

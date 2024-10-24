@@ -29,6 +29,7 @@ dependencies {
 }
 
 dependencies {
+    testImplementation "org.mockito:mockito-core:5.+"
     testImplementation 'junit:junit:4.12'
     implementation 'com.android.support.constraint:constraint-layout:2.0.4'
     implementation fileTree(include: ['*.jar'], dir: 'libs')

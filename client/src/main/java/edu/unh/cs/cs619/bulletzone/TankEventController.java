@@ -23,17 +23,17 @@ public class TankEventController {
     public TankEventController() {}
 
     @Background
-    void moveAsync(long tankId, byte direction) {
+    public void moveAsync(long tankId, byte direction) {
         restClient.move(tankId, direction);
     }
 
     @Background
-    void turnAsync(long tankId, byte direction) {
+    public void turnAsync(long tankId, byte direction) {
         restClient.turn(tankId, direction);
     }
 
     @Background
-    protected void fire(long tankId) {
+    public void fire(long tankId) {
         restClient.fire(tankId);
     }
 
