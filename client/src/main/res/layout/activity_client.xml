@@ -113,6 +113,35 @@
             android:layout_below="@id/buttonLogin"
             android:text="Logout" />
 
+        <TextView
+            android:id="@+id/balanceTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/buttonLogout"
+            android:layout_alignParentLeft="true"
+            android:layout_marginTop="16dp"
+            android:text="Balance: $0.00"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/statusTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/buttonTest"
+            android:layout_alignParentLeft="true"
+            android:layout_marginTop="16dp"
+            android:textColor="#FF0000"
+            android:text="" />
+
+        <Button
+            android:id="@+id/buttonTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/balanceTextView"
+            android:layout_alignParentLeft="true"
+            android:layout_marginTop="16dp"
+            android:text="Test Deduct 100"/>
+
     </RelativeLayout>
 
 </LinearLayout>

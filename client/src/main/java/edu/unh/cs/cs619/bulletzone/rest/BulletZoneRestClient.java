@@ -23,7 +23,6 @@ import edu.unh.cs.cs619.bulletzone.util.ResultWrapper;
  * "http://10.0.0.145:6191/games"
  * http://10.0.2.2:8080/
  * Created by simon on 10/1/14.
- * Created by simon on 10/1/14.
  */
 
 @Rest(rootUrl = "http://10.2.1.33:61912/games",
@@ -64,5 +63,8 @@ public interface BulletZoneRestClient extends RestClientErrorHandling {
     BooleanWrapper leave(@Path long tankId);
 
     @Get("/account/balance/{userId}")
-    Double getBalance(@Path long userId);
+    Double getBalance(@Path("userId") long userId) throws RestClientException;
+
+    @Put("/account/balance/{userId}/deduct/{amount}")
+    BooleanWrapper deductBalance(@Path("userId") long userId, @Path("amount") double amount);
 }

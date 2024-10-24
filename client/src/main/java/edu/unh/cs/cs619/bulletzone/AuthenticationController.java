@@ -7,6 +7,8 @@ import org.androidannotations.annotations.EBean;
 import org.androidannotations.rest.spring.annotations.RestService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestClientException;
 
 import edu.unh.cs.cs619.bulletzone.rest.BulletZoneRestClient;
 import edu.unh.cs.cs619.bulletzone.util.BooleanWrapper;
@@ -34,7 +36,7 @@ public class AuthenticationController {
         //Any initialization involving components annotated with things like @RestService or @Bean
         //goes here.
     }
-    
+
     /**
      * Uses restClient to login.
      *
@@ -95,4 +97,24 @@ public class AuthenticationController {
         restClient = restClientPassed;
     }
 
+    public ResultWrapper<Double> getBalance(long userId) {
+        try {
+            Double balance = restClient.getBalance(userId);
+            if (balance != null) {
+                return new ResultWrapper<>(true, "Balance retrieved", balance);
+            } else {
+                return new ResultWrapper<>(false, "Balance unavailable", null);
+            }
+        } catch (HttpServerErrorException e) {
+            String errorMessage = "Server error: " + e.getResponseBodyAsString();
+            if (e.getStatusCode() == HttpStatus.INTERNAL_SERVER_ERROR) {
+                return new ResultWrapper<>(false, "Server error while retrieving balance. Please try again later.", null);
+            }
+            return new ResultWrapper<>(false, errorMessage, null);
+        } catch (RestClientException e) {
+            return new ResultWrapper<>(false, "Error connecting to server: " + e.getMessage(), null);
+        } catch (Exception e) {
+            return new ResultWrapper<>(false, "Unexpected error: " + e.getMessage(), null);
+        }
+    }
 }
