@@ -42,7 +42,7 @@ public interface BulletZoneRestClient extends RestClientErrorHandling {
     GridWrapper grid();
 
     @Get("/events/{sinceTime}")
-    GameEventCollectionWrapper events(@Path long sinceTime);
+    GameEventCollectionWrapper events(@Path("sinceTime") long sinceTime);
 
     @Put("/account/register/{username}/{password}")
     BooleanWrapper register(@Path String username, @Path String password);
