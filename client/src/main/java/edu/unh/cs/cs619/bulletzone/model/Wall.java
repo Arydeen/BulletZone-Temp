@@ -14,10 +14,10 @@ public class Wall extends BoardCell{
         super(val, r, c);
 
         if (val == indestructibleWallType) {
-            resourceID = R.drawable.tree;
+            resourceID = R.drawable.indestwall;
             cellType = "IndestructibleWall";
         } else {
-            resourceID = R.drawable.tree;
+            resourceID = R.drawable.destwall;
             cellType = "DestructibleWall";
         }
     }
