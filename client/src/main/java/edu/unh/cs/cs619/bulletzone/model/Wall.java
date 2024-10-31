@@ -17,7 +17,7 @@ public class Wall extends BoardCell{
             resourceID = R.drawable.indestwall;
             cellType = "IndestructibleWall";
         } else {
-            resourceID = R.drawable.tree;
+            resourceID = R.drawable.destwall;
             cellType = "DestructibleWall";
         }
     }
