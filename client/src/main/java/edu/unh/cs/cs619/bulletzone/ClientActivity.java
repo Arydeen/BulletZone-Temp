@@ -52,6 +52,9 @@ public class ClientActivity extends Activity {
     @ViewById
     protected TextView statusTextView;
 
+    @ViewById
+    protected TextView eventBusStatus;
+
     @NonConfigurationInstance
     @Bean
     GridPollerTask gridPollTask;
@@ -91,11 +94,23 @@ public class ClientActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        EventBus.getDefault().unregister(gridEventHandler);
+        Log.d(TAG, "onDestroy called");
 
-        //Un-attaches the shakeDriver and listener when activity is destroyed
+        // Stop the grid poller
+        gridPollTask.stop();
+        BackgroundExecutor.cancelAll("grid_poller_task", true);
+
+        // Clean up event bus registrations
+        if (gridEventHandler != null) {
+            EventBus.getDefault().unregister(gridEventHandler);
+        }
+        if (eventProcessor != null) {
+            eventProcessor.stop();
+        }
+
+        // Clean up other resources
         shakeDriver.stop();
-        Log.e(TAG, "onDestroy");
+        Log.d(TAG, "onDestroy completed");
     }
 
     /**
@@ -153,6 +168,11 @@ public class ClientActivity extends Activity {
         Log.d(TAG, "afterInject");
         restClient.setRestErrorHandler(bzRestErrorhandler);
         EventBus.getDefault().register(gridEventHandler);
+
+        // Start the event processor before starting the poller
+        eventProcessor.start();
+
+        // Now start polling
         gridPollTask.doPoll(eventProcessor);
     }
 
@@ -333,5 +353,75 @@ public class ClientActivity extends Activity {
         }
         // Also show as a Toast for better visibility
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Click(R.id.buttonTestEventBus)
+    protected void runEventBusTest() {
+        Log.d(TAG, "Starting EventBus tests");
+        updateEventBusStatus("Starting tests...");
+        BackgroundExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    runTestSequence();
+                } catch (Exception e) {
+                    Log.e(TAG, "Test sequence failed", e);
+                    updateEventBusStatus("Tests failed: " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void runTestSequence() {
+        try {
+            // Test 1: Basic Registration
+            updateEventBusStatus("Test 1: Basic Registration");
+            Log.d(TAG, "=== Test 1: Basic Registration ===");
+            eventProcessor.start();
+            SystemClock.sleep(500);
+
+            // Test 2: Double Registration
+            updateEventBusStatus("Test 2: Double Registration");
+            Log.d(TAG, "=== Test 2: Double Registration ===");
+            eventProcessor.start();
+            SystemClock.sleep(500);
+
+            // Test 3: Stop and Start
+            updateEventBusStatus("Test 3: Stop and Start");
+            Log.d(TAG, "=== Test 3: Stop and Start ===");
+            eventProcessor.stop();
+            SystemClock.sleep(100);
+            eventProcessor.start();
+            SystemClock.sleep(500);
+
+            // Test 4: Rapid Toggle
+            updateEventBusStatus("Test 4: Rapid Toggle");
+            Log.d(TAG, "=== Test 4: Rapid Toggle ===");
+            for (int i = 0; i < 5; i++) {
+                eventProcessor.stop();
+                eventProcessor.start();
+                SystemClock.sleep(100);
+            }
+
+            // Test 5: Event Processing
+            updateEventBusStatus("Test 5: Event Processing");
+            Log.d(TAG, "=== Test 5: Event Processing ===");
+            tankEventController.moveAsync(tankId, (byte)0);
+            SystemClock.sleep(1000);
+
+            updateEventBusStatus("All tests completed successfully!");
+
+        } catch (Exception e) {
+            Log.e(TAG, "Test sequence failed", e);
+            updateEventBusStatus("Tests failed: " + e.getMessage());
+        }
+    }
+
+    @UiThread
+    void updateEventBusStatus(final String status) {
+        if (eventBusStatus != null) {
+            eventBusStatus.setText(status);
+            Log.d(TAG, "Status updated: " + status);
+        }
     }
 }
