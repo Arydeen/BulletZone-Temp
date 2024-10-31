@@ -7,6 +7,7 @@ import org.androidannotations.rest.spring.annotations.RestService;
 
 import edu.unh.cs.cs619.bulletzone.rest.BZRestErrorhandler;
 import edu.unh.cs.cs619.bulletzone.rest.BulletZoneRestClient;
+import edu.unh.cs.cs619.bulletzone.util.BooleanWrapper;
 
 
 /**
@@ -31,5 +32,13 @@ public class ClientController {
     @Background
     void setErrorHandler(BZRestErrorhandler bzRestErrorhandler) {
         restClient.setRestErrorHandler(bzRestErrorhandler);
+    }
+
+    double getBalance(long userId) {
+        return restClient.getBalance(userId);
+    }
+
+    BooleanWrapper deductBalance(long userId, double amount) {
+        return restClient.deductBalance(userId, amount);
     }
 }
