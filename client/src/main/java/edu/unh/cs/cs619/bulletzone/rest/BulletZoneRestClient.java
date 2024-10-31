@@ -42,7 +42,7 @@ public interface BulletZoneRestClient extends RestClientErrorHandling {
     GridWrapper grid();
 
     @Get("/events/{sinceTime}")
-    GameEventCollectionWrapper events(@Path long sinceTime);
+    GameEventCollectionWrapper events(@Path("sinceTime") long sinceTime);
 
     @Put("/account/register/{username}/{password}")
     BooleanWrapper register(@Path String username, @Path String password);
@@ -63,5 +63,8 @@ public interface BulletZoneRestClient extends RestClientErrorHandling {
     BooleanWrapper leave(@Path long tankId);
 
     @Get("/account/balance/{userId}")
-    Double getBalance(@Path long userId);
+    Double getBalance(@Path("userId") long userId) throws RestClientException;
+
+    @Put("/account/balance/{userId}/deduct/{amount}")
+    BooleanWrapper deductBalance(@Path("userId") long userId, @Path("amount") double amount);
 }

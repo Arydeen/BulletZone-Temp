@@ -8,19 +8,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import org.androidannotations.annotations.AfterInject;
-import org.androidannotations.annotations.AfterViews;
-import org.androidannotations.annotations.Background;
-import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.Click;
-import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.NonConfigurationInstance;
-import org.androidannotations.annotations.ViewById;
-import org.androidannotations.annotations.UiThread;
+import org.androidannotations.annotations.*;
 import org.androidannotations.rest.spring.annotations.RestService;
 import org.androidannotations.api.BackgroundExecutor;
 
@@ -30,6 +23,7 @@ import edu.unh.cs.cs619.bulletzone.rest.BulletZoneRestClient;
 import edu.unh.cs.cs619.bulletzone.rest.GridPollerTask;
 import edu.unh.cs.cs619.bulletzone.rest.GridUpdateEvent;
 import edu.unh.cs.cs619.bulletzone.ui.GridAdapter;
+import edu.unh.cs.cs619.bulletzone.util.BooleanWrapper;
 import edu.unh.cs.cs619.bulletzone.util.ClientActivityShakeDriver;
 import edu.unh.cs.cs619.bulletzone.util.GridWrapper;
 import edu.unh.cs.cs619.bulletzone.AuthenticateActivity;
@@ -51,6 +45,15 @@ public class ClientActivity extends Activity {
 
     @ViewById
     protected TextView userIdTextView;
+
+    @ViewById
+    protected TextView balanceTextView;
+
+    @ViewById
+    protected TextView statusTextView;
+
+    @ViewById
+    protected TextView eventBusStatus;
 
     @NonConfigurationInstance
     @Bean
@@ -91,11 +94,23 @@ public class ClientActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        EventBus.getDefault().unregister(gridEventHandler);
+        Log.d(TAG, "onDestroy called");
 
-        //Un-attaches the shakeDriver and listener when activity is destroyed
+        // Stop the grid poller
+        gridPollTask.stop();
+        BackgroundExecutor.cancelAll("grid_poller_task", true);
+
+        // Clean up event bus registrations
+        if (gridEventHandler != null) {
+            EventBus.getDefault().unregister(gridEventHandler);
+        }
+        if (eventProcessor != null) {
+            eventProcessor.stop();
+        }
+
+        // Clean up other resources
         shakeDriver.stop();
-        Log.e(TAG, "onDestroy");
+        Log.d(TAG, "onDestroy completed");
     }
 
     /**
@@ -122,8 +137,10 @@ public class ClientActivity extends Activity {
         tankId = getIntent().getLongExtra("TANK_ID", -1);
         if (userId != -1) {
             userIdTextView.setText("User ID: " + userId);
+            fetchAndUpdateBalance();
         } else {
             userIdTextView.setText("User ID: Not logged in");
+            updateBalanceUI(null);
         }
         SystemClock.sleep(500);
         // Set the TankID to be used when determining if it is the user's tank
@@ -131,12 +148,31 @@ public class ClientActivity extends Activity {
         gridView.setAdapter(mGridAdapter);
     }
 
+    @Background
+    void fetchAndUpdateBalance() {
+        try {
+            // Add debug logging
+            Log.d(TAG, "Fetching balance for userId: " + userId);
+            Double balance = restClient.getBalance(userId);
+            Log.d(TAG, "Received balance: " + balance);
+            updateBalanceUI(balance);
+        } catch (Exception e) {
+            // Enhanced error logging
+            Log.e(TAG, "Error fetching balance for userId: " + userId, e);
+            updateBalanceUI(null);
+        }
+    }
 
     @AfterInject
     void afterInject() {
         Log.d(TAG, "afterInject");
         clientController.setErrorHandler(bzRestErrorhandler);
         EventBus.getDefault().register(gridEventHandler);
+
+        // Start the event processor before starting the poller
+        eventProcessor.start();
+
+        // Now start polling
         gridPollTask.doPoll(eventProcessor);
     }
 
@@ -240,5 +276,120 @@ public class ClientActivity extends Activity {
 
     public void setTankEventController(TankEventController tankEventController) {
         this.tankEventController = tankEventController;
+    }
+
+    @UiThread
+    void updateBalanceUI(Double balance) {
+        if (balanceTextView != null) {
+            if (balance != null) {
+                balanceTextView.setText(String.format("Balance: $%.2f", balance));
+            } else {
+                balanceTextView.setText("Balance: Unavailable");
+            }
+        }
+    }
+
+    @Click(R.id.buttonTest)
+    void testDeduction() {
+        deductBalanceAsync();
+    }
+
+    @Background
+    void deductBalanceAsync() {
+        try {
+            Log.d(TAG, "Attempting to deduct 100 credits for user: " + userId);
+            // Try to deduct 100 credits
+            BooleanWrapper result = restClient.deductBalance(userId, 100.0);
+            if (result != null && result.isResult()) {
+                Log.d(TAG, "Successfully deducted 100 credits");
+                showStatus("Successfully deducted 100 credits");
+                fetchAndUpdateBalance();
+            } else {
+                Log.d(TAG, "Failed to deduct balance, result: " + (result != null ? result.isResult() : "null"));
+                showStatus("Failed to deduct balance");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error deducting balance", e);
+            showStatus("Error: " + e.getMessage());
+        }
+    }
+
+    @UiThread
+    void showStatus(String message) {
+        if (statusTextView != null) {
+            statusTextView.setText(message);
+        }
+        // Also show as a Toast for better visibility
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Click(R.id.buttonTestEventBus)
+    protected void runEventBusTest() {
+        Log.d(TAG, "Starting EventBus tests");
+        updateEventBusStatus("Starting tests...");
+        BackgroundExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    runTestSequence();
+                } catch (Exception e) {
+                    Log.e(TAG, "Test sequence failed", e);
+                    updateEventBusStatus("Tests failed: " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void runTestSequence() {
+        try {
+            // Test 1: Basic Registration
+            updateEventBusStatus("Test 1: Basic Registration");
+            Log.d(TAG, "=== Test 1: Basic Registration ===");
+            eventProcessor.start();
+            SystemClock.sleep(500);
+
+            // Test 2: Double Registration
+            updateEventBusStatus("Test 2: Double Registration");
+            Log.d(TAG, "=== Test 2: Double Registration ===");
+            eventProcessor.start();
+            SystemClock.sleep(500);
+
+            // Test 3: Stop and Start
+            updateEventBusStatus("Test 3: Stop and Start");
+            Log.d(TAG, "=== Test 3: Stop and Start ===");
+            eventProcessor.stop();
+            SystemClock.sleep(100);
+            eventProcessor.start();
+            SystemClock.sleep(500);
+
+            // Test 4: Rapid Toggle
+            updateEventBusStatus("Test 4: Rapid Toggle");
+            Log.d(TAG, "=== Test 4: Rapid Toggle ===");
+            for (int i = 0; i < 5; i++) {
+                eventProcessor.stop();
+                eventProcessor.start();
+                SystemClock.sleep(100);
+            }
+
+            // Test 5: Event Processing
+            updateEventBusStatus("Test 5: Event Processing");
+            Log.d(TAG, "=== Test 5: Event Processing ===");
+            tankEventController.moveAsync(tankId, (byte)0);
+            SystemClock.sleep(1000);
+
+            updateEventBusStatus("All tests completed successfully!");
+
+        } catch (Exception e) {
+            Log.e(TAG, "Test sequence failed", e);
+            updateEventBusStatus("Tests failed: " + e.getMessage());
+        }
+    }
+
+    @UiThread
+    void updateEventBusStatus(final String status) {
+        if (eventBusStatus != null) {
+            eventBusStatus.setText(status);
+            Log.d(TAG, "Status updated: " + status);
+        }
     }
 }
