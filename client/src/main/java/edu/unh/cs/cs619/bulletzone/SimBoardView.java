@@ -2,6 +2,7 @@ package edu.unh.cs.cs619.bulletzone;
 
 import android.widget.GridView;
 
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -14,7 +15,9 @@ import edu.unh.cs.cs619.bulletzone.util.GridWrapper;
 @EBean
 public class SimBoardView {
     private final SimulationBoard simBoard = new SimulationBoard(16,16);
-    public GridAdapter adapter;
+
+    @Bean
+    protected GridAdapter adapter;
 
     private Object gridEventHandler = new Object() {
         @Subscribe
@@ -27,8 +30,9 @@ public class SimBoardView {
         adapter.updateList(gw.getGrid());
     }
 
-    public void attach(GridView gView) {
-        adapter.simBoard = simBoard;
+    public void attach(GridView gView, Long tankID) {
+        adapter.setSimBoard(simBoard);
+        adapter.setTankId(tankID);
         gView.setAdapter(adapter);
         EventBus.getDefault().register(gridEventHandler);
     }
