@@ -54,12 +54,12 @@ public class InMemoryGameRepository implements GameRepository {
     private final int[] bulletDelay = {500, 1000, 1500};
     private final int[] trackActiveBullets = {0, 0};
 
-    private final Constraints tankConstraintChecker;
+    private final FireCommand fireCommand;
     private GameBoardBuilder gameBoardBuilder;
 
     @Autowired
     public InMemoryGameRepository(Constraints tankConstraintChecker, GameBoardBuilder gameBoardBuilder) {
-        this.tankConstraintChecker = new Constraints();
+        this.fireCommand = new FireCommand();
         this.gameBoardBuilder = new GameBoardBuilder();
     }
 
@@ -114,7 +114,7 @@ public class InMemoryGameRepository implements GameRepository {
 
     @Override
     public boolean turn(long tankId, Direction direction)
-            throws TankDoesNotExistException {
+            throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
         synchronized (this.monitor) {
             checkNotNull(direction);
 
@@ -127,16 +127,14 @@ public class InMemoryGameRepository implements GameRepository {
 
             long millis = System.currentTimeMillis();
 
-            if (!tankConstraintChecker.canTurn(tankId, game, direction, millis)) {
-                return false;
-            }
+            TurnCommand turnCommand = new TurnCommand(tankId, game, direction, millis);
+
             /*try {
                 Thread.sleep(500);
             } catch(InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }*/
-
-            return true; // TODO check
+            return turnCommand.execute();
         }
     }
 
@@ -178,11 +176,11 @@ public class InMemoryGameRepository implements GameRepository {
             Direction direction = tank.getDirection();
             FieldHolder parent = tank.getParent();
             tank.setNumberOfBullets(tank.getNumberOfBullets() + 1);
-            if(!tankConstraintChecker.canFire(tank, millis, bulletType, bulletDelay)){
+            if(!fireCommand.canFire(tank, millis, bulletType, bulletDelay)){
                 return false;
             }
 
-            int bulletId = tankConstraintChecker.assignBulletId(trackActiveBullets);
+            int bulletId = fireCommand.assignBulletId(trackActiveBullets);
             if (bulletId == -1) {
                 // No available bullet slots
                 return false;
@@ -202,7 +200,7 @@ public class InMemoryGameRepository implements GameRepository {
                 public void run() {
                     synchronized (monitor) {
                         System.out.println("Active Bullet: "+tank.getNumberOfBullets()+"---- Bullet ID: "+bullet.getIntValue());
-                        tankConstraintChecker.moveBulletAndHandleCollision(game, bullet, tank, trackActiveBullets, this);
+                        fireCommand.moveBulletAndHandleCollision(game, bullet, tank, trackActiveBullets, this);
                     }
                 }
             }, 0, BULLET_PERIOD);
