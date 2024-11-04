@@ -19,7 +19,6 @@ import edu.unh.cs.cs619.bulletzone.ui.GridAdapter;
 
 /**
  * Made by Alec Rydeen
- *
  * Activity that acts as an intermediary between logging in and joining the game.
  * Takes the join game responsibility away from the ClientActivity, and moves it between here and
  * MenuController.
@@ -81,6 +80,19 @@ public class MenuActivity extends Activity {
         } catch (Exception e) {
 //            Log.e(TAG, "Error joining game", e);
         }
+    }
+
+    @Click(R.id.replayButton)
+    @Background
+    void replays() {
+        try {
+            Intent intent = new Intent(this, ReplayActivity_.class);
+            startActivity(intent);
+            finish();
+        } catch (Exception e) {
+
+        }
+
     }
 
     public void joinTest() {

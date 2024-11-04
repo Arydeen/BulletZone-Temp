@@ -16,7 +16,6 @@ import edu.unh.cs.cs619.bulletzone.ui.GridAdapter;
 
 /**
  * Made by Alec Rydeen
- *
  * Simple Class to take some of the Rest Client Calls out of MenuActivity
  */
 
