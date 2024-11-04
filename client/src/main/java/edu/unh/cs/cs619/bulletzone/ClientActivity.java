@@ -34,8 +34,8 @@ public class ClientActivity extends Activity {
 
     private static final String TAG = "ClientActivity";
 
-    @Bean
-    protected GridAdapter mGridAdapter;
+//    @Bean
+//    protected GridAdapter mGridAdapter;
 
     @Bean
     protected GameEventProcessor eventProcessor;
@@ -67,6 +67,9 @@ public class ClientActivity extends Activity {
 
     @Bean
     ClientController clientController;
+
+    @Bean
+    SimBoardView simBoardView;
 
     ClientActivityShakeDriver shakeDriver;
 
@@ -103,9 +106,10 @@ public class ClientActivity extends Activity {
         BackgroundExecutor.cancelAll("grid_poller_task", true);
 
         // Clean up event bus registrations
-        if (gridEventHandler != null) {
-            EventBus.getDefault().unregister(gridEventHandler);
-        }
+//        if (gridEventHandler != null) {
+//            EventBus.getDefault().unregister(gridEventHandler);
+//        }
+        simBoardView.detach();
         if (eventProcessor != null) {
             eventProcessor.stop();
         }
@@ -125,12 +129,12 @@ public class ClientActivity extends Activity {
      * To get around the class hierarchy limitation, one can use a separate anonymous class to
      * handle the events.
      */
-    private Object gridEventHandler = new Object() {
-        @Subscribe
-        public void onUpdateGrid(GridUpdateEvent event) {
-            updateGrid(event.gw);
-        }
-    };
+//    private Object gridEventHandler = new Object() {
+//        @Subscribe
+//        public void onUpdateGrid(GridUpdateEvent event) {
+//            updateGrid(event.gw);
+//        }
+//    };
 
     @AfterViews
     protected void afterViewInjection() {
@@ -145,9 +149,10 @@ public class ClientActivity extends Activity {
             updateBalanceUI(null);
         }
         SystemClock.sleep(500);
+        simBoardView.attach(gridView, tankId);
         // Set the TankID to be used when determining if it is the user's tank
-        mGridAdapter.setTankId(tankId);
-        gridView.setAdapter(mGridAdapter);
+//        mGridAdapter.setTankId(tankId);
+//        gridView.setAdapter(mGridAdapter);
     }
 
     @Background
@@ -169,8 +174,7 @@ public class ClientActivity extends Activity {
     void afterInject() {
         Log.d(TAG, "afterInject");
         clientController.setErrorHandler(bzRestErrorhandler);
-        EventBus.getDefault().register(gridEventHandler);
-
+//        EventBus.getDefault().register(gridEventHandler);
         // Start the event processor before starting the poller
         eventProcessor.start();
 
@@ -178,9 +182,9 @@ public class ClientActivity extends Activity {
         gridPollTask.doPoll(eventProcessor);
     }
 
-    public void updateGrid(GridWrapper gw) {
-        mGridAdapter.updateList(gw.getGrid());
-    }
+//    public void updateGrid(GridWrapper gw) {
+//        mGridAdapter.updateList(gw.getGrid());
+//    }
 
     //Remove functionality for now
 
