@@ -83,6 +83,19 @@ public class MenuActivity extends Activity {
         }
     }
 
+    @Click(R.id.replayButton)
+    @Background
+    void replays() {
+        try {
+            Intent intent = new Intent(this, ReplayActivity_.class);
+            startActivity(intent)
+            finish();
+        } catch (Exception e) {
+
+        }
+
+    }
+
     public void joinTest() {
         this.join();
     }

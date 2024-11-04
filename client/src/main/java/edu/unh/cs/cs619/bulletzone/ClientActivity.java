@@ -153,7 +153,7 @@ public class ClientActivity extends Activity {
         try {
             // Add debug logging
             Log.d(TAG, "Fetching balance for userId: " + userId);
-            Double balance = restClient.getBalance(userId);
+            Double balance = clientController.getBalance(userId);
             Log.d(TAG, "Received balance: " + balance);
             updateBalanceUI(balance);
         } catch (Exception e) {
@@ -299,7 +299,7 @@ public class ClientActivity extends Activity {
         try {
             Log.d(TAG, "Attempting to deduct 100 credits for user: " + userId);
             // Try to deduct 100 credits
-            BooleanWrapper result = restClient.deductBalance(userId, 100.0);
+            BooleanWrapper result = clientController.deductBalance(userId, 100.0);
             if (result != null && result.isResult()) {
                 Log.d(TAG, "Successfully deducted 100 credits");
                 showStatus("Successfully deducted 100 credits");
