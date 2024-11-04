@@ -13,6 +13,8 @@ import edu.unh.cs.cs619.bulletzone.model.Bullet;
 import edu.unh.cs.cs619.bulletzone.model.Direction;
 import edu.unh.cs.cs619.bulletzone.model.FieldHolder;
 import edu.unh.cs.cs619.bulletzone.model.Game;
+import edu.unh.cs.cs619.bulletzone.model.IllegalTransitionException;
+import edu.unh.cs.cs619.bulletzone.model.LimitExceededException;
 import edu.unh.cs.cs619.bulletzone.model.Tank;
 import edu.unh.cs.cs619.bulletzone.repository.GameBoardBuilder;
 import edu.unh.cs.cs619.bulletzone.model.TankDoesNotExistException;
@@ -140,7 +142,7 @@ public class InMemoryGameRepository implements GameRepository {
 
     @Override
     public boolean move(long tankId, Direction direction)
-            throws TankDoesNotExistException {
+            throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
         synchronized (this.monitor) {
             // Find tank
 
@@ -152,12 +154,9 @@ public class InMemoryGameRepository implements GameRepository {
             }
 
             long millis = System.currentTimeMillis();
+            MoveCommand moveCommand = new MoveCommand(tankId, game, direction, millis);
 
-            if (!tankConstraintChecker.canMove(tankId, game, direction, millis)) {
-                return false;
-            }
-
-            return true;
+            return moveCommand.execute();
         }
     }
 
@@ -211,6 +210,34 @@ public class InMemoryGameRepository implements GameRepository {
             return true;
         }
     }
+
+    @Override
+    public boolean eject(long tankId, Direction direction) throws TankDoesNotExistException {
+        synchronized (this.monitor) {
+
+            // Find the tank
+            Tank tank = game.getTanks().get(tankId);
+            if (tank == null) {
+                throw new TankDoesNotExistException(tankId);
+            }
+
+            long millis = System.currentTimeMillis();
+
+            EjectCommand ejectCommand = new EjectCommand(tankId, game, direction, millis);
+
+            return ejectCommand.execute();
+
+        }
+    }
+
+//    @Override
+//    public boolean build(long builderId, String entity)
+//            throws TankDoesNotExistException {
+//        synchronized (this.monitor) {
+//            BuildCommand buildCommand = new BuildCommand(builderId, entity);
+//            return buildCommand.execute();
+//        }
+//    }
 
     @Override
     public void leave(long tankId)
