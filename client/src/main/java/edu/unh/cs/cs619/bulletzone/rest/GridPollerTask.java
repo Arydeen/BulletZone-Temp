@@ -1,7 +1,6 @@
 package edu.unh.cs.cs619.bulletzone.rest;
 
 import android.os.SystemClock;
-import android.text.style.UpdateAppearance;
 import android.util.Log;
 
 import edu.unh.cs.cs619.bulletzone.events.GameEventProcessor;
@@ -15,23 +14,21 @@ import org.androidannotations.rest.spring.annotations.RestService;
 import org.greenrobot.eventbus.EventBus;
 import org.springframework.web.client.RestClientException;
 
-import java.util.Collection;
-
 import edu.unh.cs.cs619.bulletzone.events.GameEvent;
 import edu.unh.cs.cs619.bulletzone.util.GameEventCollectionWrapper;
 import edu.unh.cs.cs619.bulletzone.util.GridWrapper;
-import edu.unh.cs.cs619.bulletzone.util.ResultWrapper;
 
-/**
- * Created by simon on 10/3/14.
- */
 @EBean
 public class GridPollerTask {
+    private static final String TAG = "GridPollerTask";
+
     @RestService
     BulletZoneRestClient restClient;
 
     private long previousTimeStamp = -1;
     private boolean updateUsingEvents = false;
+    private GameEventProcessor currentProcessor = null;
+    private boolean isRunning = true;
 
     public boolean toggleEventUsage() {
         updateUsingEvents = !updateUsingEvents;
@@ -41,40 +38,54 @@ public class GridPollerTask {
     @Background(id = "grid_poller_task")
     public void doPoll(GameEventProcessor eventProcessor) {
         try {
+            Log.d(TAG, "Starting GridPollerTask");
+            currentProcessor = eventProcessor;
+
+            // Get initial grid state
             GridWrapper grid = restClient.grid();
             onGridUpdate(grid);
             previousTimeStamp = grid.getTimeStamp();
+
+            // Set up board but DON'T start the processor
             eventProcessor.setBoard(grid.getGrid());
-            eventProcessor.start();
 
-            while (true) {
-                Log.d("Poller", "Updating board using events");
-                Log.d("PollerTS", "Previous Timestamp: " + previousTimeStamp);
-
+            while (isRunning) {
+                Log.d(TAG, "Polling for updates");
                 try {
                     GameEventCollectionWrapper events = restClient.events(previousTimeStamp);
                     boolean haveEvents = false;
 
                     for (GameEvent event : events.getEvents()) {
-                        Log.d("Event-check", event.toString());
-                        EventBus.getDefault().post(event);
-                        previousTimeStamp = event.getTimeStamp();
-                        Log.d("PollerTS", "Current Timestamp: " + previousTimeStamp);
-                        haveEvents = true;
+                        Log.d(TAG, "Processing event: " + event);
+                        if (currentProcessor != null && currentProcessor.isRegistered()) {
+                            EventBus.getDefault().post(event);
+                            previousTimeStamp = event.getTimeStamp();
+                            haveEvents = true;
+                        }
                     }
 
-                    if (haveEvents)
+                    if (haveEvents) {
                         EventBus.getDefault().post(new UpdateBoardEvent());
+                    }
 
                 } catch (RestClientException e) {
-                    Log.e("GridPollerTask", "Error fetching events", e);
+                    Log.e(TAG, "Error fetching events", e);
                 }
 
                 SystemClock.sleep(100);
             }
         } catch (Exception e) {
-            Log.e("GridPollerTask", "Unexpected error in doPoll", e);
+            Log.e(TAG, "Unexpected error in doPoll", e);
+        } finally {
+            Log.d(TAG, "GridPollerTask stopped");
+            currentProcessor = null;
         }
+    }
+
+    public void stop() {
+        Log.d(TAG, "Stopping GridPollerTask");
+        isRunning = false;
+        currentProcessor = null;
     }
 
     @UiThread

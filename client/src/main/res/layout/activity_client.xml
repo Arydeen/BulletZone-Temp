@@ -31,14 +31,6 @@
             android:background="#FFFFFF"
             android:numColumns="16"
             tools:listitem="@layout/field_item" />
-<!--
-        <Switch
-            android:id="@+id/eventSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Update using events" />
-            -->
     </LinearLayout>
 
     <RelativeLayout
@@ -47,6 +39,7 @@
         android:layout_height="match_parent"
         android:layout_weight="1">
 
+        <!-- Movement Controls -->
         <Button
             android:id="@+id/buttonDown"
             android:layout_width="wrap_content"
@@ -80,6 +73,7 @@
             android:layout_toRightOf="@+id/buttonDown"
             android:text="@string/right" />
 
+        <!-- Fire Button -->
         <Button
             android:id="@+id/buttonFire"
             android:layout_width="wrap_content"
@@ -89,6 +83,7 @@
             android:layout_toLeftOf="@+id/buttonRight"
             android:text="@string/fire" />
 
+        <!-- Top Navigation Buttons -->
         <Button
             android:id="@+id/buttonLeave"
             android:layout_width="wrap_content"
@@ -113,6 +108,7 @@
             android:layout_below="@id/buttonLogin"
             android:text="Logout" />
 
+        <!-- Status and Balance Section -->
         <TextView
             android:id="@+id/balanceTextView"
             android:layout_width="wrap_content"
@@ -123,16 +119,7 @@
             android:text="Balance: $0.00"
             android:textSize="16sp"/>
 
-        <TextView
-            android:id="@+id/statusTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/buttonTest"
-            android:layout_alignParentLeft="true"
-            android:layout_marginTop="16dp"
-            android:textColor="#FF0000"
-            android:text="" />
-
+        <!-- Test Buttons and Status Section -->
         <Button
             android:id="@+id/buttonTest"
             android:layout_width="wrap_content"
@@ -141,6 +128,34 @@
             android:layout_alignParentLeft="true"
             android:layout_marginTop="16dp"
             android:text="Test Deduct 100"/>
+
+        <Button
+            android:id="@+id/buttonTestEventBus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/buttonTest"
+            android:layout_alignParentLeft="true"
+            android:layout_marginTop="8dp"
+            android:text="Test EventBus"/>
+
+        <TextView
+            android:id="@+id/statusTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/buttonTestEventBus"
+            android:layout_alignParentLeft="true"
+            android:layout_marginTop="8dp"
+            android:textColor="#FF0000"
+            android:text="" />
+
+        <TextView
+            android:id="@+id/eventBusStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/statusTextView"
+            android:layout_alignParentLeft="true"
+            android:layout_marginTop="8dp"
+            android:textColor="#FF0000"/>
 
     </RelativeLayout>
 

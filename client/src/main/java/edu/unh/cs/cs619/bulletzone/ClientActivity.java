@@ -52,18 +52,21 @@ public class ClientActivity extends Activity {
     @ViewById
     protected TextView statusTextView;
 
+    @ViewById
+    protected TextView eventBusStatus;
+
     @NonConfigurationInstance
     @Bean
     GridPollerTask gridPollTask;
-
-    @RestService
-    BulletZoneRestClient restClient;
 
     @Bean
     BZRestErrorhandler bzRestErrorhandler;
 
     @Bean
     TankEventController tankEventController;
+
+    @Bean
+    ClientController clientController;
 
     @Bean
     SimBoardView simBoardView;
@@ -80,8 +83,6 @@ public class ClientActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        simBoardView.adapter = mGridAdapter;
-
         // Initializes the shake driver / listener and defines what action to take when device is shaken
         shakeDriver = new ClientActivityShakeDriver(this, new ClientActivityShakeDriver.OnShakeListener() {
             @Override
@@ -96,11 +97,23 @@ public class ClientActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        simBoardView.detach();
+        Log.d(TAG, "onDestroy called");
 
-        //Un-attaches the shakeDriver and listener when activity is destroyed
+        // Stop the grid poller
+        gridPollTask.stop();
+        BackgroundExecutor.cancelAll("grid_poller_task", true);
+
+        // Clean up event bus registrations
+        if (gridEventHandler != null) {
+            EventBus.getDefault().unregister(gridEventHandler);
+        }
+        if (eventProcessor != null) {
+            eventProcessor.stop();
+        }
+
+        // Clean up other resources
         shakeDriver.stop();
-        Log.e(TAG, "onDestroy");
+        Log.d(TAG, "onDestroy completed");
     }
 
     /**
@@ -113,7 +126,12 @@ public class ClientActivity extends Activity {
      * To get around the class hierarchy limitation, one can use a separate anonymous class to
      * handle the events.
      */
-
+    private Object gridEventHandler = new Object() {
+        @Subscribe
+        public void onUpdateGrid(GridUpdateEvent event) {
+            updateGrid(event.gw);
+        }
+    };
 
     @AfterViews
     protected void afterViewInjection() {
@@ -130,6 +148,7 @@ public class ClientActivity extends Activity {
         SystemClock.sleep(500);
         // Set the TankID to be used when determining if it is the user's tank
         mGridAdapter.setTankId(tankId);
+        gridView.setAdapter(mGridAdapter);
     }
 
     @Background
@@ -137,7 +156,7 @@ public class ClientActivity extends Activity {
         try {
             // Add debug logging
             Log.d(TAG, "Fetching balance for userId: " + userId);
-            Double balance = restClient.getBalance(userId);
+            Double balance = clientController.getBalance(userId);
             Log.d(TAG, "Received balance: " + balance);
             updateBalanceUI(balance);
         } catch (Exception e) {
@@ -150,9 +169,18 @@ public class ClientActivity extends Activity {
     @AfterInject
     void afterInject() {
         Log.d(TAG, "afterInject");
-        restClient.setRestErrorHandler(bzRestErrorhandler);
-        simBoardView.attach(gridView);
+        clientController.setErrorHandler(bzRestErrorhandler);
+        EventBus.getDefault().register(gridEventHandler);
+
+        // Start the event processor before starting the poller
+        eventProcessor.start();
+
+        // Now start polling
         gridPollTask.doPoll(eventProcessor);
+    }
+
+    public void updateGrid(GridWrapper gw) {
+        mGridAdapter.updateList(gw.getGrid());
     }
 
     //Remove functionality for now
@@ -169,23 +197,6 @@ public class ClientActivity extends Activity {
             eventProcessor.stop();
         }
     }*/
-
-    private int lastPressedButtonId = -1;
-
-    private boolean onePointTurn(int currentButtonId) {
-        // Check if the previous and current directions are 90-degree turns
-        if ((lastPressedButtonId == R.id.buttonUp && currentButtonId == R.id.buttonLeft) ||
-                (lastPressedButtonId == R.id.buttonUp && currentButtonId == R.id.buttonRight) ||
-                (lastPressedButtonId == R.id.buttonDown && currentButtonId == R.id.buttonLeft) ||
-                (lastPressedButtonId == R.id.buttonDown && currentButtonId == R.id.buttonRight) ||
-                (lastPressedButtonId == R.id.buttonLeft && currentButtonId == R.id.buttonUp) ||
-                (lastPressedButtonId == R.id.buttonLeft && currentButtonId == R.id.buttonDown) ||
-                (lastPressedButtonId == R.id.buttonRight && currentButtonId == R.id.buttonUp) ||
-                (lastPressedButtonId == R.id.buttonRight && currentButtonId == R.id.buttonDown)) {
-            return true;
-        }
-        return false;
-    }
 
     @Click({R.id.buttonUp, R.id.buttonDown, R.id.buttonLeft, R.id.buttonRight})
     protected void onButtonMove(View view) {
@@ -208,15 +219,7 @@ public class ClientActivity extends Activity {
 //                Log.e(TAG, "Unknown movement button id: " + viewId);
                 break;
         }
-
-        if (lastPressedButtonId != -1 && onePointTurn(viewId)) {
-//            Log.d(TAG, "One-point turn detected: from " + lastPressedButtonId + " to " + viewId);
-            this.tankEventController.turnAsync(tankId, direction);
-        } else {
-            this.tankEventController.moveAsync(tankId, direction);
-        }
-        lastPressedButtonId = viewId;
-
+        tankEventController.turnOrMove(viewId, tankId, direction);
     }
 
     @Click(R.id.buttonFire)
@@ -228,15 +231,8 @@ public class ClientActivity extends Activity {
     void leaveGame() {
         Log.d(TAG, "leaveGame() called, tank ID: " + tankId);
         BackgroundExecutor.cancelAll("grid_poller_task", true);
-        tankEventController.leaveGameAsync(tankId);
+        clientController.leaveGameAsync(tankId);
         leaveUI();
-    }
-
-    @Background
-    void leaveAsync(long tankId) {
-        Log.d(TAG, "Leave called, tank ID: " + tankId);
-        BackgroundExecutor.cancelAll("grid_poller_task", true);
-        restClient.leave(tankId);
     }
 
     @Click(R.id.buttonLogin)
@@ -306,7 +302,7 @@ public class ClientActivity extends Activity {
         try {
             Log.d(TAG, "Attempting to deduct 100 credits for user: " + userId);
             // Try to deduct 100 credits
-            BooleanWrapper result = restClient.deductBalance(userId, 100.0);
+            BooleanWrapper result = clientController.deductBalance(userId, 100.0);
             if (result != null && result.isResult()) {
                 Log.d(TAG, "Successfully deducted 100 credits");
                 showStatus("Successfully deducted 100 credits");
@@ -328,5 +324,75 @@ public class ClientActivity extends Activity {
         }
         // Also show as a Toast for better visibility
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Click(R.id.buttonTestEventBus)
+    protected void runEventBusTest() {
+        Log.d(TAG, "Starting EventBus tests");
+        updateEventBusStatus("Starting tests...");
+        BackgroundExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    runTestSequence();
+                } catch (Exception e) {
+                    Log.e(TAG, "Test sequence failed", e);
+                    updateEventBusStatus("Tests failed: " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void runTestSequence() {
+        try {
+            // Test 1: Basic Registration
+            updateEventBusStatus("Test 1: Basic Registration");
+            Log.d(TAG, "=== Test 1: Basic Registration ===");
+            eventProcessor.start();
+            SystemClock.sleep(500);
+
+            // Test 2: Double Registration
+            updateEventBusStatus("Test 2: Double Registration");
+            Log.d(TAG, "=== Test 2: Double Registration ===");
+            eventProcessor.start();
+            SystemClock.sleep(500);
+
+            // Test 3: Stop and Start
+            updateEventBusStatus("Test 3: Stop and Start");
+            Log.d(TAG, "=== Test 3: Stop and Start ===");
+            eventProcessor.stop();
+            SystemClock.sleep(100);
+            eventProcessor.start();
+            SystemClock.sleep(500);
+
+            // Test 4: Rapid Toggle
+            updateEventBusStatus("Test 4: Rapid Toggle");
+            Log.d(TAG, "=== Test 4: Rapid Toggle ===");
+            for (int i = 0; i < 5; i++) {
+                eventProcessor.stop();
+                eventProcessor.start();
+                SystemClock.sleep(100);
+            }
+
+            // Test 5: Event Processing
+            updateEventBusStatus("Test 5: Event Processing");
+            Log.d(TAG, "=== Test 5: Event Processing ===");
+            tankEventController.moveAsync(tankId, (byte)0);
+            SystemClock.sleep(1000);
+
+            updateEventBusStatus("All tests completed successfully!");
+
+        } catch (Exception e) {
+            Log.e(TAG, "Test sequence failed", e);
+            updateEventBusStatus("Tests failed: " + e.getMessage());
+        }
+    }
+
+    @UiThread
+    void updateEventBusStatus(final String status) {
+        if (eventBusStatus != null) {
+            eventBusStatus.setText(status);
+            Log.d(TAG, "Status updated: " + status);
+        }
     }
 }
