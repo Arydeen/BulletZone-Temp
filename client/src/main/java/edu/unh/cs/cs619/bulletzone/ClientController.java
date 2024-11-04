@@ -12,9 +12,8 @@ import edu.unh.cs.cs619.bulletzone.util.BooleanWrapper;
 
 /**
  * Made by Alec Rydeen
- *
  * This class takes the responsibility of communicating with the Rest Client away from the ClientActivity,
- * and moves it here, which is then used inside of ClientActivity focused on client interactions
+ * and moves it here, which is then used inside of ClientActivity. focused on Client interactions
  */
 @EBean
 public class ClientController {

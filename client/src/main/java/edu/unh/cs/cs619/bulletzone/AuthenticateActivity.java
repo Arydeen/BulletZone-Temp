@@ -36,6 +36,8 @@ public class AuthenticateActivity extends AppCompatActivity {
     @Bean
     AuthenticationController controller;
 
+    PlayerData playerData = PlayerData.getPlayerData();
+
     long userID;
 
     @Override
@@ -137,7 +139,7 @@ public class AuthenticateActivity extends AppCompatActivity {
 
         // Start the main game activity
         Intent intent = new Intent(this, MenuActivity_.class);
-        intent.putExtra("USER_ID", userId);
+        playerData.setUserId(userId);
         Log.d(TAG, "Starting MenuActivity_");
         startActivity(intent);
         Log.d(TAG, "MenuActivity_ started");

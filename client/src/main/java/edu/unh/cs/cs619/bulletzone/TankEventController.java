@@ -8,9 +8,8 @@ import edu.unh.cs.cs619.bulletzone.rest.BulletZoneRestClient;
 
 /**
  * Made by Alec Rydeen
- *
  * This class takes the responsibility of communicating with the Rest Client away from the ClientActivity,
- * and moves it here, which is then used inside of ClientActivity focused on Tank Controls
+ * and moves it here, which is then used inside of ClientActivity. Focused on Tank Controls
  */
 
 // Controller Class to move rest client calls for tank controls outside of ClientActivity

@@ -30,7 +30,7 @@ public class GridAdapter extends BaseAdapter {
     @SystemService
     protected LayoutInflater inflater;
     private int[][] mEntities = new int[16][16];
-    private final SimulationBoard simBoard = new SimulationBoard(16,16);
+    private SimulationBoard simBoard;
     public boolean isUpdated = false;
     private long tankId = -1;
 
@@ -61,6 +61,10 @@ public class GridAdapter extends BaseAdapter {
         this.notifyDataSetChanged();
         simBoard.setUsingBoard(mEntities); // Updates simulation board when events are posted
         this.isUpdated = true;
+    }
+
+    public void setSimBoard(SimulationBoard board) {
+        this.simBoard = board;
     }
 
     public int[][] getBoard() { return mEntities; }
@@ -121,7 +125,7 @@ public class GridAdapter extends BaseAdapter {
             } else {
                 imageView.setImageResource(currCell.getResourceID());
             }
-            Log.d("fromAdapter", "Rotate Goblin");
+//            Log.d("fromAdapter", "Rotate Goblin");
             imageView.setRotation(currCell.getRotation());
         } else {
             imageView.setImageResource(R.drawable.blank);
