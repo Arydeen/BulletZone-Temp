@@ -70,6 +70,8 @@ public class ClientActivity extends Activity {
 
     ClientActivityShakeDriver shakeDriver;
 
+    PlayerData playerData = PlayerData.getPlayerData();
+
     /**
      * Remote tank identifier
      */
@@ -133,8 +135,8 @@ public class ClientActivity extends Activity {
     @AfterViews
     protected void afterViewInjection() {
         Log.d(TAG, "afterViewInjection");
-        userId = getIntent().getLongExtra("USER_ID", -1);
-        tankId = getIntent().getLongExtra("TANK_ID", -1);
+        userId = playerData.getUserId();
+        tankId = playerData.getTankId();
         if (userId != -1) {
             userIdTextView.setText("User ID: " + userId);
             fetchAndUpdateBalance();

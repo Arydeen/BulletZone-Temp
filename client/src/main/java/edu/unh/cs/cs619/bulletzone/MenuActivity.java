@@ -45,6 +45,8 @@ public class MenuActivity extends Activity {
     @Bean
     MenuController menuController;
 
+    PlayerData playerData = PlayerData.getPlayerData();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,7 +59,8 @@ public class MenuActivity extends Activity {
     @AfterViews
     protected void afterViewInjection() {
         Log.d(TAG, "afterViewInjection");
-        userId = getIntent().getLongExtra("USER_ID", -1);
+//        userId = getIntent().getLongExtra("USER_ID", -1);
+        userId = playerData.getUserId();
     }
 
     /**
@@ -71,8 +74,7 @@ public class MenuActivity extends Activity {
             tankId = menuController.joinAsync();
             // Start the Client activity
             Intent intent = new Intent(this, ClientActivity_.class);
-            intent.putExtra("USER_ID", userId);
-            intent.putExtra("TANK_ID", tankId);
+            playerData.setTankId(tankId);
 //            Log.d("MenuActivity", "Starting ClientActivity_");
             startActivity(intent);
 //            Log.d("MenuActivity", "ClientActivity_ started");

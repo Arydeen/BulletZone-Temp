@@ -14,13 +14,17 @@ public class PlayerData {
     private long tankId = -1;
     private long userId = -1;
 
+    //Unused
+    private long tankHealth;
+    private long tankSpeed;
+
     private PlayerData() {}
 
     /**
      * @return
      * PlayerData singleton constructor, returns singleton class, or creates if does not already exist.
      */
-    public static synchronized PlayerData GetPlayerData() {
+    public static synchronized PlayerData getPlayerData() {
         if (playerData == null) {
             playerData = new PlayerData();
         }
