@@ -30,7 +30,7 @@ public class GridAdapter extends BaseAdapter {
     @SystemService
     protected LayoutInflater inflater;
     private int[][] mEntities = new int[16][16];
-    private final SimulationBoard simBoard = new SimulationBoard(16,16);
+    public SimulationBoard simBoard;
     public boolean isUpdated = false;
     private long tankId = -1;
 

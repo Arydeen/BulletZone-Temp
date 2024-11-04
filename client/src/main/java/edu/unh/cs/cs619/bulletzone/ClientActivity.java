@@ -65,6 +65,9 @@ public class ClientActivity extends Activity {
     @Bean
     TankEventController tankEventController;
 
+    @Bean
+    SimBoardView simBoardView;
+
     ClientActivityShakeDriver shakeDriver;
 
     /**
@@ -76,6 +79,8 @@ public class ClientActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        simBoardView.adapter = mGridAdapter;
 
         // Initializes the shake driver / listener and defines what action to take when device is shaken
         shakeDriver = new ClientActivityShakeDriver(this, new ClientActivityShakeDriver.OnShakeListener() {
@@ -91,7 +96,7 @@ public class ClientActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        EventBus.getDefault().unregister(gridEventHandler);
+        simBoardView.detach();
 
         //Un-attaches the shakeDriver and listener when activity is destroyed
         shakeDriver.stop();
@@ -108,12 +113,7 @@ public class ClientActivity extends Activity {
      * To get around the class hierarchy limitation, one can use a separate anonymous class to
      * handle the events.
      */
-    private Object gridEventHandler = new Object() {
-        @Subscribe
-        public void onUpdateGrid(GridUpdateEvent event) {
-            updateGrid(event.gw);
-        }
-    };
+
 
     @AfterViews
     protected void afterViewInjection() {
@@ -130,7 +130,6 @@ public class ClientActivity extends Activity {
         SystemClock.sleep(500);
         // Set the TankID to be used when determining if it is the user's tank
         mGridAdapter.setTankId(tankId);
-        gridView.setAdapter(mGridAdapter);
     }
 
     @Background
@@ -152,12 +151,8 @@ public class ClientActivity extends Activity {
     void afterInject() {
         Log.d(TAG, "afterInject");
         restClient.setRestErrorHandler(bzRestErrorhandler);
-        EventBus.getDefault().register(gridEventHandler);
+        simBoardView.attach(gridView);
         gridPollTask.doPoll(eventProcessor);
-    }
-
-    public void updateGrid(GridWrapper gw) {
-        mGridAdapter.updateList(gw.getGrid());
     }
 
     //Remove functionality for now
