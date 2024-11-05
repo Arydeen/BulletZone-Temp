@@ -1,21 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/LinearLayout1"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
+    android:padding="@dimen/activity_vertical_margin"
     tools:context=".ClientActivity">
 
+    <!-- Left Panel: Display -->
     <LinearLayout
         android:id="@+id/LinearLayoutDisplay"
         android:layout_width="509dp"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="8dp">
 
+        <!-- User Info -->
         <TextView
             android:id="@+id/userIdTextView"
             android:layout_width="wrap_content"
@@ -23,6 +24,29 @@
             android:text="User ID: Not logged in"
             android:textSize="18sp" />
 
+        <!-- Power-up Status Section -->
+        <LinearLayout
+            android:id="@+id/powerUpStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <TextView
+                android:id="@+id/powerUpLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Active Power-ups:"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/activeEffects"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#4CAF50" />
+        </LinearLayout>
+
+        <!-- GridView for the game board -->
         <GridView
             android:id="@+id/gridView"
             android:layout_width="match_parent"
@@ -33,130 +57,143 @@
             tools:listitem="@layout/field_item" />
     </LinearLayout>
 
-    <RelativeLayout
+    <!-- Right Panel: Controls -->
+    <LinearLayout
         android:id="@+id/LinearLayoutControl"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:padding="8dp">
 
-        <!-- Movement Controls -->
-        <Button
-            android:id="@+id/buttonDown"
-            android:layout_width="wrap_content"
+        <!-- Navigation Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:text="@string/down" />
+            android:orientation="horizontal"
+            android:gravity="center_horizontal"
+            android:paddingBottom="8dp">
 
-        <Button
-            android:id="@+id/buttonUp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@+id/buttonDown"
-            android:layout_alignLeft="@+id/buttonDown"
-            android:layout_alignRight="@+id/buttonDown"
-            android:text="@string/up" />
+            <Button
+                android:id="@+id/buttonLogin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Login" />
 
-        <Button
-            android:id="@+id/buttonLeft"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_toLeftOf="@+id/buttonDown"
-            android:text="@string/left" />
+            <Button
+                android:id="@+id/buttonLogout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:text="Logout" />
 
-        <Button
-            android:id="@+id/buttonRight"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_toRightOf="@+id/buttonDown"
-            android:text="@string/right" />
+            <Button
+                android:id="@+id/buttonLeave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:text="Leave" />
+        </LinearLayout>
 
-        <!-- Fire Button -->
-        <Button
-            android:id="@+id/buttonFire"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/buttonUp"
-            android:layout_centerVertical="true"
-            android:layout_toLeftOf="@+id/buttonRight"
-            android:text="@string/fire" />
-
-        <!-- Top Navigation Buttons -->
-        <Button
-            android:id="@+id/buttonLeave"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:text="Leave" />
-
-        <Button
-            android:id="@+id/buttonLogin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:text="Login" />
-
-        <Button
-            android:id="@+id/buttonLogout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@id/buttonLogin"
-            android:text="Logout" />
-
-        <!-- Status and Balance Section -->
+        <!-- Status and Balance -->
         <TextView
             android:id="@+id/balanceTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/buttonLogout"
-            android:layout_alignParentLeft="true"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:text="Balance: $0.00"
-            android:textSize="16sp"/>
+            android:textSize="16sp" />
 
-        <!-- Test Buttons and Status Section -->
-        <Button
-            android:id="@+id/buttonTest"
+        <TextView
+            android:id="@+id/itemInfoText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/balanceTextView"
-            android:layout_alignParentLeft="true"
-            android:layout_marginTop="16dp"
-            android:text="Test Deduct 100"/>
+            android:layout_marginTop="4dp"
+            android:textColor="#2196F3" />
+
+        <!-- Test Buttons -->
+        <Button
+            android:id="@+id/buttonTest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Test Deduct 100" />
 
         <Button
             android:id="@+id/buttonTestEventBus"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/buttonTest"
-            android:layout_alignParentLeft="true"
-            android:layout_marginTop="8dp"
-            android:text="Test EventBus"/>
+            android:layout_marginTop="4dp"
+            android:text="Test EventBus" />
 
+        <!-- Fire Button -->
+        <Button
+            android:id="@+id/buttonFire"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="FIRE" />
+
+        <!-- Movement Controls -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="16dp">
+
+            <Button
+                android:id="@+id/buttonUp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/up" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/buttonLeft"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/left" />
+
+                <Button
+                    android:id="@+id/buttonDown"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/down"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp" />
+
+                <Button
+                    android:id="@+id/buttonRight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/right" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Status Messages -->
         <TextView
             android:id="@+id/statusTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/buttonTestEventBus"
-            android:layout_alignParentLeft="true"
-            android:layout_marginTop="8dp"
-            android:textColor="#FF0000"
-            android:text="" />
+            android:layout_marginTop="16dp"
+            android:textColor="#FF0000" />
 
         <TextView
             android:id="@+id/eventBusStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/statusTextView"
-            android:layout_alignParentLeft="true"
-            android:layout_marginTop="8dp"
-            android:textColor="#FF0000"/>
+            android:layout_marginTop="4dp"
+            android:textColor="#FF0000" />
 
-    </RelativeLayout>
-
+        <Button
+            android:id="@+id/buttonEjectPowerup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Eject Power-up" />
+    </LinearLayout>
 </LinearLayout>
