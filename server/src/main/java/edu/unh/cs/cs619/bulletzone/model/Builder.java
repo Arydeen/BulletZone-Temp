@@ -1,3 +1,7 @@
+/**
+ * Builder class that extends the playable abstract class
+ * Made by Flynn O'Sullivan and Kyle Goodwin
+ */
 package edu.unh.cs.cs619.bulletzone.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

@@ -1,3 +1,9 @@
+/**
+ * Made by Kyle Goodwin, 11/4/2024
+ * Creates an implementable abstract class that allows for the instantiation of new
+ * playable objects ingame. Will make move, turn, etc. code much cleaner and allow
+ * for easier enforcement of constraints, and adding new playables if need be.
+ */
 package edu.unh.cs.cs619.bulletzone.model;
 
 import javax.management.ListenerNotFoundException;
