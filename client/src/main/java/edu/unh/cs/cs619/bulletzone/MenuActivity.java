@@ -19,7 +19,6 @@ import edu.unh.cs.cs619.bulletzone.ui.GridAdapter;
 
 /**
  * Made by Alec Rydeen
- *
  * Activity that acts as an intermediary between logging in and joining the game.
  * Takes the join game responsibility away from the ClientActivity, and moves it between here and
  * MenuController.
@@ -46,6 +45,8 @@ public class MenuActivity extends Activity {
     @Bean
     MenuController menuController;
 
+    PlayerData playerData = PlayerData.getPlayerData();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,7 +59,8 @@ public class MenuActivity extends Activity {
     @AfterViews
     protected void afterViewInjection() {
         Log.d(TAG, "afterViewInjection");
-        userId = getIntent().getLongExtra("USER_ID", -1);
+//        userId = getIntent().getLongExtra("USER_ID", -1);
+        userId = playerData.getUserId();
     }
 
     /**
@@ -72,8 +74,7 @@ public class MenuActivity extends Activity {
             tankId = menuController.joinAsync();
             // Start the Client activity
             Intent intent = new Intent(this, ClientActivity_.class);
-            intent.putExtra("USER_ID", userId);
-            intent.putExtra("TANK_ID", tankId);
+            playerData.setTankId(tankId);
 //            Log.d("MenuActivity", "Starting ClientActivity_");
             startActivity(intent);
 //            Log.d("MenuActivity", "ClientActivity_ started");
@@ -81,6 +82,19 @@ public class MenuActivity extends Activity {
         } catch (Exception e) {
 //            Log.e(TAG, "Error joining game", e);
         }
+    }
+
+    @Click(R.id.replayButton)
+    @Background
+    void replays() {
+        try {
+            Intent intent = new Intent(this, ReplayActivity_.class);
+            startActivity(intent);
+            finish();
+        } catch (Exception e) {
+
+        }
+
     }
 
     public void joinTest() {
