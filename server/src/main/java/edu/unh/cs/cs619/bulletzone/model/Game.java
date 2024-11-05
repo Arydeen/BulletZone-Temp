@@ -22,6 +22,10 @@ public final class Game {
 
     private final ConcurrentMap<Long, Tank> tanks = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, Long> playersIP = new ConcurrentHashMap<>();
+
+    private final ConcurrentMap<Long, Builder> builders = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Long> playersIPBuilders = new ConcurrentHashMap<>();
+
 //    private GameBoard gameBoard;
 
     public Game() {
@@ -87,6 +91,37 @@ public final class Game {
                 playersIP.remove(t.getIp());
             }
         }
+    }
+
+    public void addBuilder(String ip, Builder builder) {
+        synchronized (builders) {
+            builders.put(builder.getId(), builder);
+            playersIPBuilders.put(ip, builder.getId());
+        }
+    }
+
+    public void removeBuilder(long builderId){
+        synchronized (builders) {
+            Builder b = builders.remove(builderId);
+            if (b != null) {
+                playersIPBuilders.remove(b.getIp());
+            }
+        }
+    }
+
+    public Builder getBuilder(long builderId) {
+        return builders.get(builderId);
+    }
+
+    public Builder getBuilder(String ip){
+        if (playersIPBuilders.containsKey(ip)){
+            return builders.get(playersIPBuilders.get(ip));
+        }
+        return null;
+    }
+
+    public ConcurrentMap<Long, Builder> getBuilders() {
+        return builders;
     }
 
     public int[][] getGrid2D() {
