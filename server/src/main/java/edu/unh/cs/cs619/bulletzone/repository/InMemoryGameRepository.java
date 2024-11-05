@@ -45,7 +45,6 @@ public class InMemoryGameRepository implements GameRepository {
     /**
      * Tank's default life [life]
      */
-    private static final int TANK_LIFE = 100;
     private final Timer timer = new Timer();
     private final AtomicLong idGenerator = new AtomicLong();
     private final Object monitor = new Object();
@@ -78,7 +77,6 @@ public class InMemoryGameRepository implements GameRepository {
             Long tankId = this.idGenerator.getAndIncrement();
 
             tank = new Tank(tankId, Direction.Up, ip);
-            tank.setLife(TANK_LIFE);
 
             Random random = new Random();
             int x;
@@ -97,7 +95,6 @@ public class InMemoryGameRepository implements GameRepository {
             }
 
             game.addTank(ip, tank);
-
             return tank;
         }
     }

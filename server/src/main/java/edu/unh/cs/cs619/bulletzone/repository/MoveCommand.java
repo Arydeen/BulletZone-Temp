@@ -53,7 +53,7 @@ public class MoveCommand implements Command {
     @Override
     public boolean execute() throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
         Tank tank = game.getTanks().get(tankId);
-        if (millis < tank.getLastFireTime()) {
+        if (millis < tank.getLastMoveTime()) {
             return false;
         }
         FieldHolder currentField = tank.getParent();

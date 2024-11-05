@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 
+import edu.unh.cs.cs619.bulletzone.model.Builder;
 import edu.unh.cs.cs619.bulletzone.model.Direction;
 import edu.unh.cs.cs619.bulletzone.model.FieldHolder;
 import edu.unh.cs.cs619.bulletzone.model.Game;
@@ -37,7 +38,7 @@ public class BuildCommand implements Command {
      */
     @Override
     public boolean execute() throws TankDoesNotExistException {
-        Tank builder = game.getBuilders().get(builderId);
+        Builder builder = game.getBuilders().get(builderId);
         if (builder == null) {
             throw new TankDoesNotExistException(builderId);
         }

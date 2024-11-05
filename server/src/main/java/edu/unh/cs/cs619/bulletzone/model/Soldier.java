@@ -2,36 +2,28 @@ package edu.unh.cs.cs619.bulletzone.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class Soldier extends FieldEntity {
+public class Soldier extends Playable {
 
     private static final String TAG = "Soldier";
-
-    private final long id;
-    private final String ip;
-
-    private long lastMoveTime;
-    private final int allowedMoveInterval = 1000;  // Soldiers can move no faster than once per second
-
-    private long lastFireTime;
-    private final int allowedFireInterval = 250;  // Minimum 250 ms between shots
-
-    private int numberOfBullets;
-    private final int allowedNumberOfBullets = 6;  // Soldiers can fire up to 6 bullets
-
-    private int life = 25;  // Soldiers start with 25 life points
-
-    private Direction direction;
 
     private boolean recentlyEnteredTank;  // Tracks if the soldier recently re-entered a tank
 
     public Soldier(long id, Direction direction, String ip) {
-        this.id = id;
-        this.direction = direction;
-        this.ip = ip;
-        this.numberOfBullets = 0;
-        this.lastMoveTime = 0;
-        this.lastFireTime = 0;
-        this.recentlyEnteredTank = false;
+        super(id, direction, ip);
+        life = 25;  // Soldiers start with 25 life points
+
+        numberOfBullets = 0;
+        allowedFireInterval = 250;  // Minimum 250 ms between shots
+        allowedNumberOfBullets = 6; // Soldiers can fire up to 6 bullets
+        lastFireTime = 0;
+
+        allowedMoveInterval = 1000; // Soldiers can move no faster than once per second
+        lastMoveTime = 0;
+
+        allowedTurnInterval = 0; // Soldiers can turn as fast as they want
+        lastTurnTime = 0;
+
+        recentlyEnteredTank = false;
     }
 
     // Copy method for Soldier
@@ -74,41 +66,6 @@ public class Soldier extends FieldEntity {
     }
 
     @JsonIgnore
-    public long getId() {
-        return id;
-    }
-
-    public Direction getDirection() {
-        return direction;
-    }
-
-    public void setDirection(Direction direction) {
-        this.direction = direction;
-    }
-
-    public int getLife() {
-        return life;
-    }
-
-    public void setLife(int life) {
-        this.life = life;
-    }
-
-    public long getLastMoveTime() {
-        return lastMoveTime;
-    }
-
-    public void setLastMoveTime(long lastMoveTime) {
-        this.lastMoveTime = lastMoveTime;
-    }
-
-    public long getLastFireTime() {
-        return lastFireTime;
-    }
-
-    public void setLastFireTime(long lastFireTime) {
-        this.lastFireTime = lastFireTime;
-    }
 
     @Override
     public int getIntValue() {
@@ -120,7 +77,5 @@ public class Soldier extends FieldEntity {
         return "S";
     }
 
-    public String getIp() {
-        return ip;
-    }
+
 }

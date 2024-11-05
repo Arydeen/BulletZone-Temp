@@ -89,7 +89,7 @@ public class InMemoryGameRepositoryTest {
 
 
     @Test
-    public void turn_VehicleFacingUpTurnRight_TurnSucceeds() throws IllegalTransitionException, TankDoesNotExistException {
+    public void turn_VehicleFacingUpTurnRight_TurnSucceeds() throws IllegalTransitionException, TankDoesNotExistException, LimitExceededException {
         Tank tank = repo.join("turningVehicle");
 
         Assert.assertEquals(Direction.Up, tank.getDirection());
@@ -103,7 +103,7 @@ public class InMemoryGameRepositoryTest {
     }
 
     @Test
-    public void turn_VehicleFacingUpTurnLeft_TurnSucceeds() throws IllegalTransitionException, TankDoesNotExistException {
+    public void turn_VehicleFacingUpTurnLeft_TurnSucceeds() throws IllegalTransitionException, TankDoesNotExistException, LimitExceededException {
         Tank tank = repo.join("turningVehicle");
 
         Assert.assertEquals(Direction.Up, tank.getDirection());
@@ -149,7 +149,7 @@ public class InMemoryGameRepositoryTest {
     }
 
     @Test
-    public void turn_VehicleCanTurnAfterTimePasses_TurnFails() throws TankDoesNotExistException {
+    public void turn_VehicleCanTurnAfterTimePasses_TurnFails() throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
         // Mock the current time to simulate time-dependent behavior
         Tank tank = repo.join("turningVehicle");
         tank.setLastMoveTime(System.currentTimeMillis());
@@ -175,7 +175,7 @@ public class InMemoryGameRepositoryTest {
 
 
     @Test
-    public void move_VehicleFacingUpMoveForward_MoveSucceeds() throws IllegalTransitionException, TankDoesNotExistException {
+    public void move_VehicleFacingUpMoveForward_MoveSucceeds() throws IllegalTransitionException, TankDoesNotExistException, LimitExceededException {
         Tank tank = repo.join("movingVehicle");
 
         int tankPos = tank.getParent().getPosition();
@@ -191,7 +191,7 @@ public class InMemoryGameRepositoryTest {
     }
 
     @Test
-    public void move_VehicleFacingDownMoveForward_MoveSucceeds() throws TankDoesNotExistException {
+    public void move_VehicleFacingDownMoveForward_MoveSucceeds() throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
         Tank tank = repo.join("movingVehicle");
 
         int tankPos = tank.getParent().getPosition();
@@ -207,7 +207,7 @@ public class InMemoryGameRepositoryTest {
     }
 
     @Test
-    public void move_VehicleFacingRightMoveForward_MoveSucceeds() throws TankDoesNotExistException {
+    public void move_VehicleFacingRightMoveForward_MoveSucceeds() throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
         Tank tank = repo.join("movingVehicle");
 
         int tankPos = tank.getParent().getPosition();
@@ -223,7 +223,7 @@ public class InMemoryGameRepositoryTest {
     }
 
     @Test
-    public void move_VehicleFacingDownMoveBackwards_MoveSucceeds() throws TankDoesNotExistException {
+    public void move_VehicleFacingDownMoveBackwards_MoveSucceeds() throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
         Tank tank = repo.join("movingVehicle");
 
         int tankPos = tank.getParent().getPosition();
@@ -239,7 +239,7 @@ public class InMemoryGameRepositoryTest {
     }
 
     @Test
-    public void move_VehicleFacingRightMoveBackward_MoveSucceeds() throws TankDoesNotExistException {
+    public void move_VehicleFacingRightMoveBackward_MoveSucceeds() throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
         Tank tank = repo.join("movingVehicle");
 
         assert tank != null;
@@ -256,7 +256,7 @@ public class InMemoryGameRepositoryTest {
     }
 
     @Test
-    public void move_VehicleFacingLeftMoveForward_MoveSucceeds() throws TankDoesNotExistException {
+    public void move_VehicleFacingLeftMoveForward_MoveSucceeds() throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
         Tank tank = repo.join("movingVehicle");
 
         int tankPos = tank.getParent().getPosition();
@@ -272,7 +272,7 @@ public class InMemoryGameRepositoryTest {
     }
 
     @Test
-    public void move_VehicleFacingLeftMoveBackward_MoveSucceeds() throws TankDoesNotExistException {
+    public void move_VehicleFacingLeftMoveBackward_MoveSucceeds() throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
         Tank tank = repo.join("movingVehicle");
 
         int tankPos = tank.getParent().getPosition();
@@ -288,7 +288,7 @@ public class InMemoryGameRepositoryTest {
     }
 
     @Test
-    public void move_VehicleCanMoveAfterTimePasses_MoveSuccess() throws TankDoesNotExistException {
+    public void move_VehicleCanMoveAfterTimePasses_MoveSuccess() throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
         // Mock the current time to simulate time-dependent behavior
         Tank tank = repo.join("turningVehicle");
         tank.setLastMoveTime(System.currentTimeMillis());
