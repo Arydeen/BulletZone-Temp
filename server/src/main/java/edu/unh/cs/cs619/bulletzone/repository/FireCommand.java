@@ -15,6 +15,7 @@ import edu.unh.cs.cs619.bulletzone.model.FieldHolder;
 import edu.unh.cs.cs619.bulletzone.model.Game;
 import edu.unh.cs.cs619.bulletzone.model.IllegalTransitionException;
 import edu.unh.cs.cs619.bulletzone.model.Improvement;
+import edu.unh.cs.cs619.bulletzone.model.Item;
 import edu.unh.cs.cs619.bulletzone.model.LimitExceededException;
 import edu.unh.cs.cs619.bulletzone.model.Tank;
 import edu.unh.cs.cs619.bulletzone.model.TankDoesNotExistException;
@@ -32,8 +33,6 @@ public class FireCommand {
     private static final int FIELD_DIM = 16;
 
     public boolean canFire(Tank tank, long currentTimeMillis, int bulletType, int[] bulletDelay) {
-        // Check if the tank is allowed to fire (0.5-second interval)
-
         if (currentTimeMillis < tank.getLastFireTime()) {
             return false;
         }
@@ -45,7 +44,6 @@ public class FireCommand {
             bulletType = 1;
         }
 
-        // Update the tank's last fire time
         tank.setLastFireTime(currentTimeMillis + bulletDelay[bulletType - 1]);
         return true;
     }
@@ -85,6 +83,10 @@ public class FireCommand {
                 if (w.getIntValue() > 1000 && w.getIntValue() <= 2000) {
                     game.getHolderGrid().get(w.getPos()).clearField();
                 }
+            } else if (nextField.getEntity() instanceof Item) {
+                Item item = (Item) nextField.getEntity();
+                nextField.clearField();
+                EventBus.getDefault().post(new RemoveEvent(item.getIntValue(), item.getPosition()));
             }
 
             if (isVisible) {
@@ -112,5 +114,4 @@ public class FireCommand {
             }
         }
     }
-
 }

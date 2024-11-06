@@ -36,13 +36,29 @@ public class GridAdapter extends BaseAdapter {
 
     /**
      * Updates the entities array of new input after events have changed it from the server
+     *
      * @param entities Game board array
      */
     public void updateList(int[][] entities) {
         synchronized (monitor) {
+            // Add debug logging
+            boolean foundPowerUp = false;
+            for (int i = 0; i < entities.length; i++) {
+                for (int j = 0; j < entities[i].length; j++) {
+                    if (entities[i][j] >= 3000 && entities[i][j] <= 3003) {
+                        Log.d("GridAdapter", "Power-up found in update: " + entities[i][j]);
+                        Log.d("GridAdapter", "Position: [" + i + "," + j + "]");
+                        foundPowerUp = true;
+                    }
+                }
+            }
+            if (!foundPowerUp) {
+                Log.d("GridAdapter", "No power-ups found in update");
+            }
+
             this.mEntities = entities;
             this.notifyDataSetChanged();
-            simBoard.setUsingBoard(mEntities); // Not sure if this is needed here
+            simBoard.setUsingBoard(mEntities);
             this.isUpdated = true;
         }
     }
@@ -54,6 +70,7 @@ public class GridAdapter extends BaseAdapter {
 
     /**
      * Subscribes to changes from events form the UpdateBoardEvent and updates the view
+     *
      * @param event New event made to the board
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -67,7 +84,9 @@ public class GridAdapter extends BaseAdapter {
         this.simBoard = board;
     }
 
-    public int[][] getBoard() { return mEntities; }
+    public int[][] getBoard() {
+        return mEntities;
+    }
 
     @Override
     public int getCount() {
@@ -84,19 +103,21 @@ public class GridAdapter extends BaseAdapter {
         return position;
     }
 
-    public void setTankId(long tankId) {this.tankId = tankId;}
+    public void setTankId(long tankId) {
+        this.tankId = tankId;
+    }
 
 
     /**
      * Updates the desired cell from events in the gridView, using SimulationBoard's Board Cells
-     * @param position The position in the SimulationBoard to be updated
+     *
+     * @param position    The position in the SimulationBoard to be updated
      * @param convertView The view to be updated, it is gridView
-     * @param parent The parent activity of the view, Client Activity
+     * @param parent      The parent activity of the view, Client Activity
      * @return Returns the updated view
      */
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-
         ImageView imageView;
 
         if (convertView == null) {
@@ -109,24 +130,48 @@ public class GridAdapter extends BaseAdapter {
         }
 
         if (this.isUpdated) {
+            int value = mEntities[position / 16][position % 16];
             BoardCell currCell = simBoard.getCell(position);
-            // Check if the current cell is a Tank
-            if (currCell.getCellType().equals("Tank")) {
-                // If it is a tank, set get the TankID from the raw value;
+
+            // Handle power-ups
+            if (value >= 3000 && value <= 3003) {
+                Log.d("GridAdapter", "Found power-up at position " + position);
+                Log.d("GridAdapter", "Power-up value: " + value);
+                Log.d("GridAdapter", "Power-up type: " + (value - 3000));
+
+                switch (value - 3000) {
+                    case 1:
+                        Log.d("GridAdapter", "Setting Thingamajig icon");
+                        imageView.setImageResource(R.drawable.thingamajig_icon);
+                        break;
+                    case 2:
+                        Log.d("GridAdapter", "Setting AntiGrav icon");
+                        imageView.setImageResource(R.drawable.anti_grav_icon);
+                        break;
+                    case 3:
+                        Log.d("GridAdapter", "Setting FusionReactor icon");
+                        imageView.setImageResource(R.drawable.fusion_reactor_icon);
+                        break;
+                    default:
+                        imageView.setImageResource(R.drawable.blank);
+                }
+            }
+            // Handle tanks
+            else if (currCell.getCellType().equals("Tank")) {
                 int tankIdTest = (currCell.getRawValue() / 10000) - 1000;
-//                Log.d("tankID", "TankId: " + tankIdTest);
-//                Log.d("userTankID", "UserTankID: " + this.tankId);
-                // If the tankID is equal to the user's tank ID, set the resource different
                 if (tankIdTest == this.tankId) {
                     imageView.setImageResource(R.drawable.small_goblin_red);
-                } else { // Else set it to what it should be
+                } else {
                     imageView.setImageResource(currCell.getResourceID());
                 }
-            } else {
+            }
+            // Handle all other cells
+            else {
                 imageView.setImageResource(currCell.getResourceID());
             }
-//            Log.d("fromAdapter", "Rotate Goblin");
+
             imageView.setRotation(currCell.getRotation());
+            Log.d("GridAdapter", "Position " + position + " value: " + currCell.getRawValue());
         } else {
             imageView.setImageResource(R.drawable.blank);
         }
@@ -134,5 +179,3 @@ public class GridAdapter extends BaseAdapter {
         return imageView;
     }
 }
-
-

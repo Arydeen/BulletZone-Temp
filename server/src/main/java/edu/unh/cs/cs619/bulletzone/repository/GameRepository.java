@@ -22,8 +22,8 @@ public interface GameRepository {
     boolean fire(long tankId, int strength)
             throws TankDoesNotExistException, LimitExceededException;
 
-    boolean eject(long tankId, Direction direction)
-            throws TankDoesNotExistException, LimitExceededException;
+    boolean ejectPowerUp(long tankId)
+            throws TankDoesNotExistException;
 
     public void leave(long tankId)
             throws TankDoesNotExistException;

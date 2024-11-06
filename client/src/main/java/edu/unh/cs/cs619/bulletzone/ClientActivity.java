@@ -16,8 +16,10 @@ import org.greenrobot.eventbus.Subscribe;
 import org.androidannotations.annotations.*;
 import org.androidannotations.rest.spring.annotations.RestService;
 import org.androidannotations.api.BackgroundExecutor;
+import org.greenrobot.eventbus.ThreadMode;
 
 import edu.unh.cs.cs619.bulletzone.events.GameEventProcessor;
+import edu.unh.cs.cs619.bulletzone.events.ItemPickupEvent;
 import edu.unh.cs.cs619.bulletzone.rest.BZRestErrorhandler;
 import edu.unh.cs.cs619.bulletzone.rest.BulletZoneRestClient;
 import edu.unh.cs.cs619.bulletzone.rest.GridPollerTask;
@@ -84,6 +86,7 @@ public class ClientActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
 
         // Initializes the shake driver / listener and defines what action to take when device is shaken
         shakeDriver = new ClientActivityShakeDriver(this, new ClientActivityShakeDriver.OnShakeListener() {
@@ -98,6 +101,7 @@ public class ClientActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
         super.onDestroy();
         Log.d(TAG, "onDestroy called");
 
@@ -181,25 +185,6 @@ public class ClientActivity extends Activity {
         // Now start polling
         gridPollTask.doPoll(eventProcessor);
     }
-
-//    public void updateGrid(GridWrapper gw) {
-//        mGridAdapter.updateList(gw.getGrid());
-//    }
-
-    //Remove functionality for now
-
-    /*@Click(R.id.eventSwitch)
-    protected void onEventSwitch() {
-
-        if (gridPollTask.toggleEventUsage()) {
-            Log.d("EventSwitch", "ON");
-            eventProcessor.setBoard(mGridAdapter.getBoard());
-            eventProcessor.start();
-        } else {
-            Log.d("EventSwitch", "OFF");
-            eventProcessor.stop();
-        }
-    }*/
 
     @Click({R.id.buttonUp, R.id.buttonDown, R.id.buttonLeft, R.id.buttonRight})
     protected void onButtonMove(View view) {
@@ -396,6 +381,26 @@ public class ClientActivity extends Activity {
         if (eventBusStatus != null) {
             eventBusStatus.setText(status);
             Log.d(TAG, "Status updated: " + status);
+        }
+    }
+
+    @Bean
+    PowerUpController powerUpController;
+
+    @Click(R.id.buttonEject)
+    protected void onButtonEject() {
+        powerUpController.ejectPowerUpAsync(tankId);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onItemPickup(ItemPickupEvent event) {
+        if (event.getItemType() == 1) { // Thingamajig
+            // Show toast
+            String message = String.format("Picked up Thingamajig! Added $%.2f credits", event.getAmount());
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+
+            // Update balance display
+            fetchAndUpdateBalance();
         }
     }
 }

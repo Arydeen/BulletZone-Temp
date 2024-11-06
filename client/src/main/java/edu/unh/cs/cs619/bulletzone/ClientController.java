@@ -1,14 +1,17 @@
 package edu.unh.cs.cs619.bulletzone;
 
+import android.util.Log;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EBean;
-import org.androidannotations.rest.spring.annotations.Rest;
 import org.androidannotations.rest.spring.annotations.RestService;
+import org.greenrobot.eventbus.EventBus;
 
+import java.util.Random;
+
+import edu.unh.cs.cs619.bulletzone.events.ItemPickupEvent;
 import edu.unh.cs.cs619.bulletzone.rest.BZRestErrorhandler;
 import edu.unh.cs.cs619.bulletzone.rest.BulletZoneRestClient;
 import edu.unh.cs.cs619.bulletzone.util.BooleanWrapper;
-
 
 /**
  * Made by Alec Rydeen
@@ -39,5 +42,22 @@ public class ClientController {
 
     BooleanWrapper deductBalance(long userId, double amount) {
         return restClient.deductBalance(userId, amount);
+    }
+
+    @Background
+    public void handleItemPickup(int itemType) {  // Made this public
+        if (itemType == 1) { // Thingamajig
+            // Random amount between 100 and 1000
+            double amount = 100 + new Random().nextInt(901);
+            try {
+                // Add credits to user's account
+                BooleanWrapper result = restClient.depositBalance(PlayerData.getPlayerData().getUserId(), amount);
+                if (result != null && result.isResult()) {
+                    EventBus.getDefault().post(new ItemPickupEvent(itemType, amount));
+                }
+            } catch (Exception e) {
+                Log.e("ClientController", "Error handling item pickup", e);
+            }
+        }
     }
 }
