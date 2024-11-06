@@ -15,18 +15,18 @@ import edu.unh.cs.cs619.bulletzone.model.events.TurnEvent;
 public class TurnCommand implements Command {
 
     Game game;
-    long tankId;
+    Tank tank;
     Direction direction;
     long millis;
 
     /**
      * Constructor for TurnCommand called each time
      * turn() is called in InGameMemoryRepository
-     * @param tankId id of tank to turn
+     * @param tank id of tank to turn
      * @param direction direction to move tank
      */
-    public TurnCommand(long tankId, Game game, Direction direction, long currentTimeMillis) {
-        this.tankId = tankId;
+    public TurnCommand(Tank tank, Game game, Direction direction, long currentTimeMillis) {
+        this.tank = tank;
         this.game = game;
         this.direction = direction;
         this.millis = currentTimeMillis;
@@ -42,7 +42,6 @@ public class TurnCommand implements Command {
     @Override
     public boolean execute() throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException  {
 
-        Tank tank = game.getTanks().get(tankId);
         if (millis < tank.getLastFireTime()) {
             return false;
         }

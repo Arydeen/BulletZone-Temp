@@ -23,7 +23,7 @@ import edu.unh.cs.cs619.bulletzone.model.events.TurnEvent;
 public class MoveCommand implements Command {
 
     Game game;
-    long tankId;
+    Tank tank;
     Direction direction;
     long millis;
     private static final int FIELD_DIM = 16;
@@ -32,11 +32,11 @@ public class MoveCommand implements Command {
      * Constructor for MoveCommand called each time
      * move() is called in InGameMemoryRepository
      *
-     * @param tankId    id of tank to move
+     * @param tank    id of tank to move
      * @param direction direction for tank to move
      */
-    public MoveCommand(long tankId, Game game, Direction direction, long currentTimeMillis) {
-        this.tankId = tankId;
+    public MoveCommand(Tank tank, Game game, Direction direction, long currentTimeMillis) {
+        this.tank = tank;
         this.direction = direction;
         this.game = game;
         this.millis = currentTimeMillis;
@@ -52,7 +52,6 @@ public class MoveCommand implements Command {
      */
     @Override
     public boolean execute() throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
-        Tank tank = game.getTanks().get(tankId);
         if (millis < tank.getLastMoveTime()) {
             return false;
         }
