@@ -23,6 +23,7 @@ public class Soldier extends Playable {
 
         allowedMoveInterval = 1000; // Soldiers can move no faster than once per second
         lastMoveTime = 0;
+        moveMultiplier = 1;
 
         allowedTurnInterval = 0; // Soldiers can turn as fast as they want
         lastTurnTime = 0;
