@@ -44,7 +44,7 @@ public class GridPollerTask {
     @Background(id = "grid_poller_task")
     public void doPoll(GameEventProcessor eventProcessor) {
         try {
-            Log.d(TAG, "Starting GridPollerTask");
+            //Log.d(TAG, "Starting GridPollerTask");
             currentProcessor = eventProcessor;
 
             // Get initial grid state
@@ -55,7 +55,7 @@ public class GridPollerTask {
             eventProcessor.setBoard(grid.getGrid());
 
             while (isRunning) {
-                Log.d(TAG, "Polling for updates");
+                //Log.d(TAG, "Polling for updates");
                 try {
                     grid = restClient.grid();
 
@@ -88,7 +88,7 @@ public class GridPollerTask {
                     boolean haveEvents = false;
 
                     for (GameEvent event : events.getEvents()) {
-                        Log.d(TAG, "Processing event: " + event);
+                        //Log.d(TAG, "Processing event: " + event);
                         if (currentProcessor != null && currentProcessor.isRegistered()) {
                             EventBus.getDefault().post(event);
                             previousTimeStamp = event.getTimeStamp();
@@ -112,7 +112,7 @@ public class GridPollerTask {
     }
 
     public void stop() {
-        Log.d(TAG, "Stopping GridPollerTask");
+        //Log.d(TAG, "Stopping GridPollerTask");
         isRunning = false;
         currentProcessor = null;
     }
