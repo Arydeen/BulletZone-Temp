@@ -17,6 +17,7 @@ public abstract class Playable extends FieldEntity {
 
     protected long lastMoveTime;
     protected int allowedMoveInterval;
+    protected int moveMultiplier;
 
     protected long lastTurnTime;
     protected int allowedTurnInterval;
@@ -55,6 +56,10 @@ public abstract class Playable extends FieldEntity {
 
     public long getAllowedMoveInterval() {
         return allowedMoveInterval;
+    }
+
+    public long getmoveMultiplier(){
+        return moveMultiplier;
     }
 
     public long getLastFireTime() {
@@ -100,6 +105,10 @@ public abstract class Playable extends FieldEntity {
         this.allowedMoveInterval = allowedMoveInterval;
     }
 
+    public void setMoveMultiplier(int moveMultiplier){
+        this.moveMultiplier = moveMultiplier;
+    }
+
     public void setLastFireTime(long lastFireTime) {
         this.lastFireTime = lastFireTime;
     }
@@ -121,5 +130,9 @@ public abstract class Playable extends FieldEntity {
 
     public String toString() {
         return "";
+    }
+
+    public long getMoveMultiplier() {
+        return moveMultiplier;
     }
 }

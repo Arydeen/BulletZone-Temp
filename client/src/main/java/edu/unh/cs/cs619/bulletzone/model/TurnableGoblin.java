@@ -32,7 +32,7 @@ public class TurnableGoblin extends TankItem{
 
     @Override
     public int getRotation() {
-        Log.d("Orientation: ", String.valueOf(orientation));
+        //Log.d("Orientation: ", String.valueOf(orientation));
         return 45 * (orientation - 2); }
 
 }

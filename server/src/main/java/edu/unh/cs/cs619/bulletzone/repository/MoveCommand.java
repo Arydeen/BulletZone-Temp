@@ -3,6 +3,8 @@ package edu.unh.cs.cs619.bulletzone.repository;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.greenrobot.eventbus.EventBus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Random;
@@ -13,17 +15,20 @@ import edu.unh.cs.cs619.bulletzone.model.FieldHolder;
 import edu.unh.cs.cs619.bulletzone.model.Game;
 import edu.unh.cs.cs619.bulletzone.model.IllegalTransitionException;
 import edu.unh.cs.cs619.bulletzone.model.Improvement;
+import edu.unh.cs.cs619.bulletzone.model.Item;
 import edu.unh.cs.cs619.bulletzone.model.LimitExceededException;
 import edu.unh.cs.cs619.bulletzone.model.Tank;
 import edu.unh.cs.cs619.bulletzone.model.TankDoesNotExistException;
 import edu.unh.cs.cs619.bulletzone.model.Wall;
 import edu.unh.cs.cs619.bulletzone.model.events.MoveEvent;
+import edu.unh.cs.cs619.bulletzone.model.events.RemoveEvent;
+import edu.unh.cs.cs619.bulletzone.model.events.SpawnEvent;
 import edu.unh.cs.cs619.bulletzone.model.events.TurnEvent;
 
 public class MoveCommand implements Command {
-
+    private static final Logger log = LoggerFactory.getLogger(MoveCommand.class);
     Game game;
-    Tank tank;
+    long tankId;
     Direction direction;
     long millis;
     private static final int FIELD_DIM = 16;
@@ -32,13 +37,13 @@ public class MoveCommand implements Command {
      * Constructor for MoveCommand called each time
      * move() is called in InGameMemoryRepository
      *
-     * @param tank    id of tank to move
+     * @param tankId    id of tank to move
      * @param direction direction for tank to move
      */
-    public MoveCommand(Tank tank, Game game, Direction direction, long currentTimeMillis) {
-        this.tank = tank;
-        this.direction = direction;
+    public MoveCommand(long tankId, Game game, Direction direction, long currentTimeMillis) {
+        this.tankId = tankId;
         this.game = game;
+        this.direction = direction;
         this.millis = currentTimeMillis;
     }
 
@@ -52,80 +57,114 @@ public class MoveCommand implements Command {
      */
     @Override
     public boolean execute() throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
+        Tank tank = game.getTanks().get(tankId);
         if (millis < tank.getLastMoveTime()) {
             return false;
         }
         FieldHolder currentField = tank.getParent();
-        System.out.println("DIRECTION TO MOVE:" + direction);
         FieldHolder nextField = currentField.getNeighbor(direction);
-        checkNotNull(currentField.getNeighbor(direction), "Neightbor is not available");
+        checkNotNull(currentField.getNeighbor(direction), "Neighbor is not available");
 
-        boolean isVisible = currentField.isPresent()
-                && (currentField.getEntity() == tank);
+        boolean isVisible = currentField.isPresent() && (currentField.getEntity() == tank);
 
-        // Get the current direction of the tank
         Direction currentDirection = tank.getDirection();
 
+        // Handle turning
         if (currentDirection != direction) {
-            // Check if the direction is a valid turn (sideways)
             if ((currentDirection == Direction.Up && (direction == Direction.Left || direction == Direction.Right))
                     || (currentDirection == Direction.Down && (direction == Direction.Left || direction == Direction.Right))
                     || (currentDirection == Direction.Left && (direction == Direction.Up || direction == Direction.Down))
                     || (currentDirection == Direction.Right && (direction == Direction.Up || direction == Direction.Down))) {
-                // Turn the tank and trigger a TurnEvent
                 tank.setDirection(direction);
-                EventBus.getDefault().post(new TurnEvent(tank.getIntValue(), tank.getPosition()));  // Trigger turn event
-                System.out.println("Tank is turning to " + direction);
-                return true;  // Tank has turned, no movement yet
+                EventBus.getDefault().post(new TurnEvent(tank.getIntValue(), tank.getPosition()));
+                return true;
             }
         }
+
+        // Handle movement to empty space
         if (!nextField.isPresent()) {
-            // If the next field is empty move the user
-            int fieldIndex = currentField.getPosition();
-            int row = fieldIndex / FIELD_DIM;
-            int col = fieldIndex % FIELD_DIM;
+            moveUnit(currentField, nextField, tank, direction);
+            tank.setLastMoveTime(millis + tank.getAllowedMoveInterval());
+            return true;
+        }
+        // Handle item pickups
+        else if (nextField.getEntity() instanceof Item) {
+            Item item = (Item) nextField.getEntity();
+            log.debug("Tank {} picking up item type {}", tankId, item.getType());
 
-            // Check if the tank is at the gameboard edges and trying to move out of bounds
-            boolean isAtLeftEdge = (col == 0) && direction == Direction.Left;
-            boolean isAtRightEdge = (col == FIELD_DIM - 1) && direction == Direction.Right;
-            boolean isAtTopEdge = (row == 0) && direction == Direction.Up;
-            boolean isAtBottomEdge = (row == FIELD_DIM - 1) && direction == Direction.Down;
+            // Capture item info before clearing
+            int itemValue = item.getIntValue();
+            int itemPos = nextField.getPosition();
 
-            if (isAtLeftEdge || isAtRightEdge || isAtTopEdge || isAtBottomEdge) {
-                System.out.println("Next field is out of bounds, movement blocked.");
-                return false;
-            }
+            // Process the item
+            handleItemPickup(item, tank);
 
-            // Check if the tank is visible on the field (just to prevent weird cases)
-            if (!isVisible) {
-                System.out.println("You have already been eliminated.");
-                return false;
-            }
-
+            // Move tank and clear item
+            nextField.clearField();
             int oldPos = tank.getPosition();
             currentField.clearField();
             nextField.setFieldEntity(tank);
             tank.setParent(nextField);
-            int newPos = tank.getPosition();
             tank.setDirection(direction);
-            EventBus.getDefault().post(new MoveEvent(tank.getIntValue(), oldPos, newPos));
 
-        } else if (nextField.getEntity() instanceof Wall) {
+            // Post events in correct order
+            EventBus.getDefault().post(new RemoveEvent(itemValue, itemPos));
+            EventBus.getDefault().post(new MoveEvent(tank.getIntValue(), oldPos, nextField.getPosition()));
+
+            tank.setLastMoveTime(millis + tank.getAllowedMoveInterval());
+            return true;
+        }
+        // Handle wall collisions
+        else if (nextField.getEntity() instanceof Wall) {
             Wall w = (Wall) nextField.getEntity();
             if (w.getIntValue() > 1000 && w.getIntValue() <= 2000) {
-                System.out.println("Next field contains a wall, movement blocked.");
                 tank.setDirection(direction);
                 return false;
             }
-
-        } else if (nextField.getEntity() instanceof Tank) {
-            System.out.println("Next field contains a tank, movement blocked.");
+        }
+        // Handle tank collisions
+        else if (nextField.getEntity() instanceof Tank) {
             tank.setDirection(direction);
             return false;
         }
-        tank.setLastMoveTime(millis + tank.getAllowedMoveInterval());
 
-        return true;
+        tank.setLastMoveTime(millis + tank.getAllowedMoveInterval());
+        return false;
+    }
+
+    /**
+     * Handle pickup of items
+     * @param item Item being picked up
+     * @param tank Tank picking up the item
+     */
+    private void handleItemPickup(Item item, Tank tank) {
+        if (item.getType() == 1) { // Thingamajig
+            log.debug("Processing Thingamajig pickup for tank {}", tankId);
+            double credits = item.getCredits();
+            game.addCredits(tank.getId(), credits);
+        } else if (item.isAntiGrav()) {
+            log.debug("Processing AntiGrav pickup for tank {}", tankId);
+            tank.addPowerUp(item);
+        } else if (item.isFusionReactor()) {
+            log.debug("Processing FusionReactor pickup for tank {}", tankId);
+            tank.addPowerUp(item);
+        }
+    }
+
+    /**
+     * Move unit from one field to another
+     * @param currentField Current position
+     * @param nextField Target position
+     * @param tank Tank to move
+     * @param direction Direction of movement
+     */
+    private void moveUnit(FieldHolder currentField, FieldHolder nextField, Tank tank, Direction direction) {
+        int oldPos = tank.getPosition();
+        currentField.clearField();
+        nextField.setFieldEntity(tank);
+        tank.setParent(nextField);
+        tank.setDirection(direction);
+        EventBus.getDefault().post(new MoveEvent(tank.getIntValue(), oldPos, nextField.getPosition()));
     }
 
     /**
@@ -137,15 +176,4 @@ public class MoveCommand implements Command {
     public Long executeJoin() {
         return null;
     }
-
-//    private boolean surroundedByWalls(FieldHolder fieldHolder) {
-//        Map<Direction, FieldHolder> neighbors = fieldHolder.getNeighborsMap();
-//        for (Map.Entry<Direction, FieldHolder> entry : neighbors.entrySet()) {
-//            if (!(entry.getValue().getEntity() instanceof Wall)) {
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
-
 }

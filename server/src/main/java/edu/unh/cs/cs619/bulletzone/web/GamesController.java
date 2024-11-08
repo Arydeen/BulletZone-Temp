@@ -114,4 +114,14 @@ class GamesController {
     String handleBadRequests(Exception e) {
         return e.getMessage();
     }
+
+    @RequestMapping(method = RequestMethod.PUT, value = "{tankId}/eject", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    ResponseEntity<BooleanWrapper> ejectPowerUp(@PathVariable long tankId)
+            throws TankDoesNotExistException {
+        return new ResponseEntity<BooleanWrapper>(
+                new BooleanWrapper(gameRepository.ejectPowerUp(tankId)),
+                HttpStatus.OK
+        );
+    }
 }

@@ -32,6 +32,11 @@
             android:exported="true">
         </activity>
 
+        <activity
+            android:name=".ReplayActivity_"
+            android:exported="true">
+        </activity>
+
     </application>
 
 </manifest>

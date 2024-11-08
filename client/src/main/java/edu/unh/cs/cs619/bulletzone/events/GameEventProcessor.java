@@ -5,22 +5,29 @@ import android.util.Log;
 import org.androidannotations.annotations.EBean;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import androidx.annotation.VisibleForTesting;
 
 @EBean
 public class GameEventProcessor {
     private static final String TAG = "GameEventProcessor";
     private int[][] board;
     private boolean isRegistered = false;
+    private EventBus eb = EventBus.getDefault();
 
     public void setBoard(int[][] newBoard) {
         board = newBoard;
         Log.d(TAG, "Board updated");
     }
 
+    @VisibleForTesting
+    public void setEventBus(EventBus eventBus) {
+        this.eb = eventBus;
+    }
+
     public void start() {
         if (!isRegistered) {
             Log.d(TAG, "Attempting to register with EventBus");
-            EventBus.getDefault().register(this);
+            eb.register(this); // Use injected EventBus
             isRegistered = true;
             Log.d(TAG, "Successfully registered with EventBus");
         } else {
@@ -32,7 +39,7 @@ public class GameEventProcessor {
         if (isRegistered) {
             Log.d(TAG, "Attempting to unregister from EventBus");
             try {
-                EventBus.getDefault().unregister(this);
+                eb.unregister(this); // Use injected EventBus
                 Log.d(TAG, "Successfully unregistered from EventBus");
             } catch (IllegalArgumentException e) {
                 Log.e(TAG, "Error unregistering: " + e.getMessage());

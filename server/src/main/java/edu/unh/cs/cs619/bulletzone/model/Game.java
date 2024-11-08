@@ -13,20 +13,14 @@ import org.greenrobot.eventbus.EventBus;
 import edu.unh.cs.cs619.bulletzone.model.events.SpawnEvent;
 
 public final class Game {
-    /**
-     * Field dimensions
-     */
     private static final int FIELD_DIM = 16;
     private final long id;
     private final ArrayList<FieldHolder> holderGrid = new ArrayList<>();
-
     private final ConcurrentMap<Long, Tank> tanks = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, Long> playersIP = new ConcurrentHashMap<>();
-
     private final ConcurrentMap<Long, Builder> builders = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, Long> playersIPBuilders = new ConcurrentHashMap<>();
-
-//    private GameBoard gameBoard;
+    private final ConcurrentMap<Long, Double> playerCredits = new ConcurrentHashMap<>();
 
     public Game() {
         this.id = 0;
@@ -46,8 +40,18 @@ public final class Game {
         synchronized (tanks) {
             tanks.put(tank.getId(), tank);
             playersIP.put(ip, tank.getId());
+            playerCredits.put(tank.getId(), 0.0); // Initialize credits for new tank
         }
         EventBus.getDefault().post(new SpawnEvent(tank.getIntValue(), tank.getPosition()));
+    }
+
+    public void addCredits(long tankId, double amount) {
+        playerCredits.compute(tankId, (key, oldValue) ->
+                (oldValue == null ? 0 : oldValue) + amount);
+    }
+
+    public double getCredits(long tankId) {
+        return playerCredits.getOrDefault(tankId, 0.0);
     }
 
     public Tank getTank(Long tankId) {
@@ -67,7 +71,6 @@ public final class Game {
                 if (holder.isPresent()) {
                     entity = holder.getEntity();
                     entity = entity.copy();
-
                     entities.add(Optional.of(entity));
                 } else {
                     entities.add(Optional.empty());
@@ -89,6 +92,7 @@ public final class Game {
             Tank t = tanks.remove(tankId);
             if (t != null) {
                 playersIP.remove(t.getIp());
+                playerCredits.remove(tankId);
             }
         }
     }
@@ -143,12 +147,4 @@ public final class Game {
 
         return grid;
     }
-
-//    public GameBoard getGameBoard() {
-//        return gameBoard;
-//    }
-//
-//    public void setGameBoard(GameBoard gameBoard) {
-//        this.gameBoard = gameBoard;
-//    }
 }

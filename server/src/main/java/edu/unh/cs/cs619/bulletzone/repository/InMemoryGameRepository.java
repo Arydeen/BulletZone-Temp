@@ -9,15 +9,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicLong;
 
-import edu.unh.cs.cs619.bulletzone.model.Builder;
 import edu.unh.cs.cs619.bulletzone.model.Bullet;
 import edu.unh.cs.cs619.bulletzone.model.Direction;
 import edu.unh.cs.cs619.bulletzone.model.FieldHolder;
 import edu.unh.cs.cs619.bulletzone.model.Game;
-import edu.unh.cs.cs619.bulletzone.model.GameBoard;
 import edu.unh.cs.cs619.bulletzone.model.IllegalTransitionException;
+import edu.unh.cs.cs619.bulletzone.model.Item;
 import edu.unh.cs.cs619.bulletzone.model.LimitExceededException;
-import edu.unh.cs.cs619.bulletzone.model.Playable;
 import edu.unh.cs.cs619.bulletzone.model.Tank;
 import edu.unh.cs.cs619.bulletzone.repository.GameBoardBuilder;
 import edu.unh.cs.cs619.bulletzone.model.TankDoesNotExistException;
@@ -55,6 +53,9 @@ public class InMemoryGameRepository implements GameRepository {
     private final int[] bulletDamage = {10, 30, 50};
     private final int[] bulletDelay = {500, 1000, 1500};
     private final int[] trackActiveBullets = {0, 0};
+    private final Timer itemSpawnTimer = new Timer();
+    private static final int ITEM_SPAWN_INTERVAL = 15000; // 15 seconds
+    private static final Random random = new Random();
 
     private final FireCommand fireCommand;
     private GameBoardBuilder gameBoardBuilder;
@@ -66,25 +67,20 @@ public class InMemoryGameRepository implements GameRepository {
     }
 
     @Override
-    public Playable join(String ip) {
+    public Tank join(String ip) {
         synchronized (this.monitor) {
             Tank tank;
-            Builder builder;
             if (game == null) {
                 this.create();
             }
 
-            if( (tank = game.getTank(ip)) != null){
+            if ((tank = game.getTank(ip)) != null) {
                 return tank;
             }
-            if( (builder = game.getBuilder(ip)) != null){
-                return builder;
-            }
 
-            Long Id = this.idGenerator.getAndIncrement();
+            Long tankId = this.idGenerator.getAndIncrement();
 
-            tank = new Tank(Id, Direction.Up, ip);
-            builder = new Builder(Id, Direction.Up, ip);
+            tank = new Tank(tankId, Direction.Up, ip);
 
             Random random = new Random();
             int x;
@@ -102,20 +98,7 @@ public class InMemoryGameRepository implements GameRepository {
                 }
             }
 
-            // This may run for forever.. If there is no free space. XXX
-            for (; ; ) {
-                x = random.nextInt(FIELD_DIM);
-                y = random.nextInt(FIELD_DIM);
-                FieldHolder fieldElement = game.getHolderGrid().get(x * FIELD_DIM + y);
-                if (!fieldElement.isPresent()) {
-                    fieldElement.setFieldEntity(builder);
-                    builder.setParent(fieldElement);
-                    break;
-                }
-            }
-
             game.addTank(ip, tank);
-            game.addBuilder(ip, builder);
             return tank;
         }
     }
@@ -131,26 +114,21 @@ public class InMemoryGameRepository implements GameRepository {
     }
 
     @Override
-    public boolean turn(long Id, Direction direction)
+    public boolean turn(long tankId, Direction direction)
             throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
         synchronized (this.monitor) {
             checkNotNull(direction);
 
             // Find user
-            Tank tank = game.getTanks().get(Id);
-            Builder builder = game.getBuilders().get(Id);
-            if (tank == null ) {
+            Tank tank = game.getTanks().get(tankId);
+            if (tank == null) {
                 //Log.i(TAG, "Cannot find user with id: " + tankId);
-                throw new TankDoesNotExistException(Id);
-            }
-            if (builder == null) {
-                //Log.i(TAG, "Cannot find user with id: " + tankId);
-                throw new TankDoesNotExistException(Id);
+                throw new TankDoesNotExistException(tankId);
             }
 
             long millis = System.currentTimeMillis();
 
-            TurnCommand turnCommand = new TurnCommand(tank, game, direction, millis);
+            TurnCommand turnCommand = new TurnCommand(tankId, game, direction, millis);
 
             /*try {
                 Thread.sleep(500);
@@ -162,21 +140,20 @@ public class InMemoryGameRepository implements GameRepository {
     }
 
     @Override
-    public boolean move(long Id, Direction direction)
+    public boolean move(long tankId, Direction direction)
             throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
         synchronized (this.monitor) {
             // Find tank
 
-            Tank tank = game.getTanks().get(Id);
-            Builder builder = game.getBuilders().get(Id);
+            Tank tank = game.getTanks().get(tankId);
             if (tank == null) {
                 //Log.i(TAG, "Cannot find user with id: " + tankId);
                 //return false;
-                throw new TankDoesNotExistException(Id);
+                throw new TankDoesNotExistException(tankId);
             }
 
             long millis = System.currentTimeMillis();
-            MoveCommand moveCommand = new MoveCommand(tank, game, direction, millis);
+            MoveCommand moveCommand = new MoveCommand(tankId, game, direction, millis);
 
             return moveCommand.execute();
         }
@@ -200,7 +177,7 @@ public class InMemoryGameRepository implements GameRepository {
             Direction direction = tank.getDirection();
             FieldHolder parent = tank.getParent();
             tank.setNumberOfBullets(tank.getNumberOfBullets() + 1);
-            if(!fireCommand.canFire(tank, millis, bulletType, bulletDelay)){
+            if (!fireCommand.canFire(tank, millis, bulletType, bulletDelay)) {
                 return false;
             }
 
@@ -210,7 +187,7 @@ public class InMemoryGameRepository implements GameRepository {
                 return false;
             }
             // Create a new bullet to fire
-            final Bullet bullet = new Bullet(tankId, direction, bulletDamage[bulletType-1]);
+            final Bullet bullet = new Bullet(tankId, direction, bulletDamage[bulletType - 1]);
             // Set the same parent for the bullet.
             // This should be only a one way reference.
             bullet.setParent(parent);
@@ -223,32 +200,13 @@ public class InMemoryGameRepository implements GameRepository {
                 @Override
                 public void run() {
                     synchronized (monitor) {
-                        System.out.println("Active Bullet: "+tank.getNumberOfBullets()+"---- Bullet ID: "+bullet.getIntValue());
+                        System.out.println("Active Bullet: " + tank.getNumberOfBullets() + "---- Bullet ID: " + bullet.getIntValue());
                         fireCommand.moveBulletAndHandleCollision(game, bullet, tank, trackActiveBullets, this);
                     }
                 }
             }, 0, BULLET_PERIOD);
 
             return true;
-        }
-    }
-
-    @Override
-    public boolean eject(long tankId, Direction direction) throws TankDoesNotExistException {
-        synchronized (this.monitor) {
-
-            // Find the tank
-            Tank tank = game.getTanks().get(tankId);
-            if (tank == null) {
-                throw new TankDoesNotExistException(tankId);
-            }
-
-            long millis = System.currentTimeMillis();
-
-            EjectCommand ejectCommand = new EjectCommand(tankId, game, direction, millis);
-
-            return ejectCommand.execute();
-
         }
     }
 
@@ -283,9 +241,95 @@ public class InMemoryGameRepository implements GameRepository {
             return;
         }
         synchronized (this.monitor) {
+            System.out.println("Creating new game and starting item spawner...");
             this.game = new Game();
+            createFieldHolderGrid(game);
             gameBoardBuilder.setupGame(game);
+            startItemSpawner();
         }
     }
 
+    private void createFieldHolderGrid(Game game) {
+        synchronized (this.monitor) {
+            game.getHolderGrid().clear();
+            for (int i = 0; i < FIELD_DIM * FIELD_DIM; i++) {
+                game.getHolderGrid().add(new FieldHolder(i));
+            }
+
+            FieldHolder targetHolder;
+            FieldHolder rightHolder;
+            FieldHolder downHolder;
+            FieldHolder leftHolder;
+            FieldHolder upHolder;
+
+            // Build connections
+            for (int i = 0; i < FIELD_DIM; i++) {
+                for (int j = 0; j < FIELD_DIM; j++) {
+                    targetHolder = game.getHolderGrid().get(i * FIELD_DIM + j);
+
+                    rightHolder = game.getHolderGrid().get(i * FIELD_DIM
+                            + ((j + 1) % FIELD_DIM));
+                    downHolder = game.getHolderGrid().get(((i + 1) % FIELD_DIM)
+                            * FIELD_DIM + j);
+
+                    targetHolder.addNeighbor(Direction.Right, rightHolder);
+                    rightHolder.addNeighbor(Direction.Left, targetHolder);
+
+                    targetHolder.addNeighbor(Direction.Down, downHolder);
+                    downHolder.addNeighbor(Direction.Up, targetHolder);
+                }
+            }
+        }
+    }
+
+    private void spawnRandomItem() {
+        // Add this debug print at the start
+        System.out.println("Attempting to spawn random item...");
+
+        for (int attempts = 0; attempts < 10; attempts++) {
+            int x = random.nextInt(FIELD_DIM);
+            int y = random.nextInt(FIELD_DIM);
+            FieldHolder fieldElement = game.getHolderGrid().get(x * FIELD_DIM + y);
+            if (!fieldElement.isPresent()) {
+                // Weighted random selection
+                int itemType = random.nextInt(3) + 1; // 1=Thingamajig, 2=AntiGrav, 3=FusionReactor
+                Item item = new Item(itemType);
+                fieldElement.setFieldEntity(item);
+                item.setParent(fieldElement);
+
+                // Add these debug prints
+                System.out.println("Successfully spawned item!");
+                System.out.println("Item type: " + itemType);
+                System.out.println("Item value: " + item.getIntValue());
+                System.out.println("Position: [" + x + "," + y + "]");
+
+                EventBus.getDefault().post(new SpawnEvent(item.getIntValue(), fieldElement.getPosition()));
+                break;
+            }
+        }
+    }
+
+    private void startItemSpawner() {
+        System.out.println("Starting item spawner timer...");
+        itemSpawnTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                synchronized (monitor) {
+                    spawnRandomItem();
+                }
+            }
+        }, 5000, 15000); // First spawn after 5 seconds, then every 15 seconds
+    }
+
+    @Override
+    public boolean ejectPowerUp(long tankId) throws TankDoesNotExistException {
+        synchronized (this.monitor) {
+            Tank tank = game.getTanks().get(tankId);
+            if (tank == null) {
+                throw new TankDoesNotExistException(tankId);
+            }
+
+            return tank.tryEjectPowerUp(tank.getParent());
+        }
+    }
 }

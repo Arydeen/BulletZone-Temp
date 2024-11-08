@@ -1,51 +1,75 @@
 package edu.unh.cs.cs619.bulletzone;
 
-import org.androidannotations.annotations.EBean;
-
-/**
- * Made by Alec Rydeen
- * Singleton class to keep track of client side player data, such as tankId, userId, health etc.
- * will be used instead of passing more intent variables when swapping activities.
- */
 public class PlayerData {
-
     private static PlayerData playerData = null;
-
     private long tankId = -1;
     private long userId = -1;
+    private int moveInterval = 500;  // Base move interval
+    private int fireInterval = 1500; // Base fire interval
+    private int activePowerUps = 0; // Track number of active power-ups
 
-    //Unused
-    private long tankHealth;
-    private long tankSpeed;
+    private PlayerData() {} // Private constructor for singleton
 
-    private PlayerData() {}
-
-    /**
-     * @return
-     * PlayerData singleton constructor, returns singleton class, or creates if does not already exist.
-     */
     public static synchronized PlayerData getPlayerData() {
         if (playerData == null) {
             playerData = new PlayerData();
         }
-
         return playerData;
-    }
-
-    public long getTankId() {
-        return tankId;
     }
 
     public void setTankId(long tankId) {
         this.tankId = tankId;
     }
 
-    public long getUserId() {
-        return userId;
-    }
-
     public void setUserId(long userId) {
         this.userId = userId;
     }
 
+    public int getMoveInterval() {
+        return moveInterval;
+    }
+
+    public void setMoveInterval(int interval) {
+        if (interval > 0) {
+            this.moveInterval = interval;
+        }
+    }
+
+    public int getFireInterval() {
+        return fireInterval;
+    }
+
+    public void setFireInterval(int interval) {
+        if (interval > 0) {
+            this.fireInterval = interval;
+        }
+    }
+
+    public void incrementPowerUps() {
+        activePowerUps++;
+    }
+
+    public void decrementPowerUps() {
+        if (activePowerUps > 0) {
+            activePowerUps--;
+        }
+    }
+
+    public int getActivePowerUps() {
+        return activePowerUps;
+    }
+
+    public void resetPowerUps() {
+        activePowerUps = 0;
+        moveInterval = 500;   // Reset to base value
+        fireInterval = 1500;  // Reset to base value
+    }
+
+    public long getTankId() {
+        return tankId;
+    }
+
+    public long getUserId() {
+        return userId;
+    }
 }

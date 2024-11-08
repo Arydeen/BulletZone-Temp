@@ -21,6 +21,7 @@ import static org.mockito.Mockito.*;
 
 import edu.unh.cs.cs619.bulletzone.model.Bullet;
 import edu.unh.cs.cs619.bulletzone.model.Direction;
+import edu.unh.cs.cs619.bulletzone.model.FieldHolder;
 import edu.unh.cs.cs619.bulletzone.model.IllegalTransitionException;
 import edu.unh.cs.cs619.bulletzone.model.LimitExceededException;
 import edu.unh.cs.cs619.bulletzone.model.Tank;
@@ -248,10 +249,15 @@ public class InMemoryGameRepositoryTest {
         tank.setDirection(Direction.Right);
         Assert.assertEquals(Direction.Right, tank.getDirection());
 
+        // Moving backward from Right facing direction (byte 6 is Left direction)
         boolean move = repo.move(tank.getId(), Direction.fromByte((byte) 6));
         Assert.assertTrue("Backward movement should succeed", move);
 
+        // Position should have changed
         Assert.assertNotEquals(tankPos, tank.getParent().getPosition());
+
+        // When moving backward into a new direction, tank faces that direction
+        // Moving backward from Right means we're going Left, so tank should face Left
         Assert.assertEquals(Direction.Left, tank.getDirection());
     }
 
@@ -290,26 +296,27 @@ public class InMemoryGameRepositoryTest {
     @Test
     public void move_VehicleCanMoveAfterTimePasses_MoveSuccess() throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
         // Mock the current time to simulate time-dependent behavior
-        Tank tank = repo.join("turningVehicle");
-        tank.setLastMoveTime(System.currentTimeMillis());
-        // First turn attempt without enough time passing (simulate last move time)
-        Assert.assertEquals(Direction.Up, tank.getDirection());
+        Tank tank = repo.join("movingVehicle");
+
+        // Set initial state
+        tank.setLastMoveTime(System.currentTimeMillis() - 1000); // Ensure enough time has passed
         tank.setDirection(Direction.Up);
         Assert.assertEquals(Direction.Up, tank.getDirection());
-        constraints.canMove(tank.getId(), mockGame, Direction.fromByte((byte) 0), mockMillis + tank.getLastMoveTime());
 
-        boolean moveAttempt1 = repo.move(tank.getId(), Direction.fromByte((byte) 0));
-        Assert.assertTrue("First move", moveAttempt1);
-        // Simulate time passage - advance the mock time by 500 milliseconds
-        Assert.assertEquals(Direction.Up, tank.getDirection());
-        // Second turn attempt after enough time has passed
-        constraints.canMove(tank.getId(), mockGame, Direction.fromByte((byte) 4), mockMillis + tank.getLastMoveTime());
+        // First move attempt
+        FieldHolder currentPos = tank.getParent();
+        boolean moveAttempt1 = repo.move(tank.getId(), Direction.Up);
+        Assert.assertTrue("First move should succeed", moveAttempt1);
+        Assert.assertNotEquals("Tank position should change", currentPos, tank.getParent());
 
-        boolean moveAttempt2 = repo.move(tank.getId(), Direction.fromByte((byte) 4));
-        Assert.assertTrue("Second move after 0.5 interval, should be able to move after enough time has passed", moveAttempt2);
+        // Set up for second move
+        tank.setLastMoveTime(System.currentTimeMillis() - 1000); // Ensure enough time has passed
+        currentPos = tank.getParent();
 
-        // Verify that the direction has changed to Left
-        Assert.assertEquals(Direction.Down, tank.getDirection());
+        // Second move attempt
+        boolean moveAttempt2 = repo.move(tank.getId(), Direction.Down);
+        Assert.assertTrue("Tank should be able to move after enough time has passed", moveAttempt2);
+        Assert.assertNotEquals("Tank position should change", currentPos, tank.getParent());
     }
 
     @Test
