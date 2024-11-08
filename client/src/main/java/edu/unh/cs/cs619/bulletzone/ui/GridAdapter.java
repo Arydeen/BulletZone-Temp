@@ -19,6 +19,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import edu.unh.cs.cs619.bulletzone.R;
 import edu.unh.cs.cs619.bulletzone.events.UpdateBoardEvent;
 import edu.unh.cs.cs619.bulletzone.model.BoardCell;
+import edu.unh.cs.cs619.bulletzone.model.BoardCellBlock;
 import edu.unh.cs.cs619.bulletzone.model.SimulationBoard;
 import edu.unh.cs.cs619.bulletzone.model.TankItem;
 import edu.unh.cs.cs619.bulletzone.model.TurnableGoblin;
@@ -30,6 +31,7 @@ public class GridAdapter extends BaseAdapter {
     @SystemService
     protected LayoutInflater inflater;
     private int[][] mEntities = new int[16][16];
+    private int[][] terrainEntities = new int[16][16];
     private SimulationBoard simBoard;
     public boolean isUpdated = false;
     private long tankId = -1;
@@ -38,11 +40,12 @@ public class GridAdapter extends BaseAdapter {
      * Updates the entities array of new input after events have changed it from the server
      * @param entities Game board array
      */
-    public void updateList(int[][] entities) {
+    public void updateList(int[][] entities, int[][] tEntities) {
         synchronized (monitor) {
             this.mEntities = entities;
+            this.terrainEntities = tEntities;
             this.notifyDataSetChanged();
-            simBoard.setUsingBoard(mEntities); // Not sure if this is needed here
+            simBoard.setUsingBoard(mEntities, terrainEntities); // Not sure if this is needed here
             this.isUpdated = true;
         }
     }
@@ -59,7 +62,7 @@ public class GridAdapter extends BaseAdapter {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void handleUpdate(UpdateBoardEvent event) {
         this.notifyDataSetChanged();
-        simBoard.setUsingBoard(mEntities); // Updates simulation board when events are posted
+        simBoard.setUsingBoard(mEntities, terrainEntities); // Updates simulation board when events are posted
         this.isUpdated = true;
     }
 
@@ -109,24 +112,28 @@ public class GridAdapter extends BaseAdapter {
         }
 
         if (this.isUpdated) {
-            BoardCell currCell = simBoard.getCell(position);
+            BoardCellBlock currCell = simBoard.getCell(position);
+            BoardCell playerCell = currCell.getPlayerData();
+            BoardCell itemCell = currCell.getItemData();
+            BoardCell terrainCell = currCell.getTerrainData();
+
             // Check if the current cell is a Tank
-            if (currCell.getCellType().equals("Tank")) {
+            if (playerCell.getCellType().equals("Tank")) {
                 // If it is a tank, set get the TankID from the raw value;
-                int tankIdTest = (currCell.getRawValue() / 10000) - 1000;
+                int tankIdTest = (playerCell.getRawValue() / 10000) - 1000;
 //                Log.d("tankID", "TankId: " + tankIdTest);
 //                Log.d("userTankID", "UserTankID: " + this.tankId);
                 // If the tankID is equal to the user's tank ID, set the resource different
                 if (tankIdTest == this.tankId) {
                     imageView.setImageResource(R.drawable.small_goblin_red);
                 } else { // Else set it to what it should be
-                    imageView.setImageResource(currCell.getResourceID());
+                    imageView.setImageResource(playerCell.getResourceID());
                 }
             } else {
-                imageView.setImageResource(currCell.getResourceID());
+                imageView.setImageResource(playerCell.getResourceID());
             }
 //            Log.d("fromAdapter", "Rotate Goblin");
-            imageView.setRotation(currCell.getRotation());
+            imageView.setRotation(playerCell.getRotation());
         } else {
             imageView.setImageResource(R.drawable.blank);
         }

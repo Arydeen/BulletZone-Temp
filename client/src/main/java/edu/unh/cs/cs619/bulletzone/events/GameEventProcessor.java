@@ -9,11 +9,15 @@ import org.greenrobot.eventbus.Subscribe;
 @EBean
 public class GameEventProcessor {
     private static final String TAG = "GameEventProcessor";
-    private int[][] board;
+    private int[][] playerLayer;
+    private int[][] itemLayer;
+    private int[][] terrainLayer;
     private boolean isRegistered = false;
 
-    public void setBoard(int[][] newBoard) {
-        board = newBoard;
+    public void setBoard(int[][] newPlayerBoard, int[][] newTerrainBoard) {
+        Log.d("Event Processor", "Setting Event Processor");
+        playerLayer = newPlayerBoard;
+        terrainLayer = newTerrainBoard;
         Log.d(TAG, "Board updated");
     }
 
@@ -45,9 +49,9 @@ public class GameEventProcessor {
 
     @Subscribe
     public void onNewEvent(GameEvent event) {
-        if (board != null) {
+        if (playerLayer != null) {
             Log.d(TAG, "Applying " + event);
-            event.applyTo(board);
+            event.applyTo(playerLayer);
         } else {
             Log.w(TAG, "Board is null, cannot apply event: " + event);
         }

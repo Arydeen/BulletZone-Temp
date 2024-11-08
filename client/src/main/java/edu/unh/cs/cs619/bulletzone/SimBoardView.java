@@ -19,15 +19,15 @@ public class SimBoardView {
     @Bean
     protected GridAdapter adapter;
 
-    private Object gridEventHandler = new Object() {
+    public Object gridEventHandler = new Object() {
         @Subscribe
         public void onUpdateGrid(GridUpdateEvent event) {
-            updateGrid(event.gw);
+            updateGrid(event.gw, event.tw);
         }
     };
 
-    public void updateGrid(GridWrapper gw) {
-        adapter.updateList(gw.getGrid());
+    public void updateGrid(GridWrapper gw, GridWrapper tw) {
+        adapter.updateList(gw.getGrid(), tw.getGrid());
     }
 
     public void attach(GridView gView, Long tankID) {

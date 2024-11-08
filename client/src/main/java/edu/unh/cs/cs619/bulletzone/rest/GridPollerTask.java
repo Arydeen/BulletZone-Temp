@@ -42,12 +42,13 @@ public class GridPollerTask {
             currentProcessor = eventProcessor;
 
             // Get initial grid state
-            GridWrapper grid = restClient.grid();
-            onGridUpdate(grid);
+            GridWrapper grid = restClient.playerGrid();
+            GridWrapper tGrid = restClient.terrainGrid();
+            onGridUpdate(grid, tGrid);
             previousTimeStamp = grid.getTimeStamp();
 
             // Set up board but DON'T start the processor
-            eventProcessor.setBoard(grid.getGrid());
+            eventProcessor.setBoard(grid.getGrid(), tGrid.getGrid());
 
             while (isRunning) {
                 Log.d(TAG, "Polling for updates");
@@ -89,7 +90,7 @@ public class GridPollerTask {
     }
 
     @UiThread
-    public void onGridUpdate(GridWrapper gw) {
-        EventBus.getDefault().post(new GridUpdateEvent(gw));
+    public void onGridUpdate(GridWrapper gw, GridWrapper tw) {
+        EventBus.getDefault().post(new GridUpdateEvent(gw, tw));
     }
 }
