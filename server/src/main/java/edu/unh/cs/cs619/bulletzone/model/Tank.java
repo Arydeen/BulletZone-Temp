@@ -20,6 +20,7 @@ public class Tank extends Playable {
 
         allowedMoveInterval = 500;
         lastMoveTime = 0;
+        moveMultiplier = 1;
     }
 
     @Override
