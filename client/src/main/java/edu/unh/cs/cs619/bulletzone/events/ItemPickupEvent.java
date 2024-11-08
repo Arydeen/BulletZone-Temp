@@ -9,6 +9,11 @@ public class ItemPickupEvent {
         this.amount = amount;
     }
 
-    public int getItemType() { return itemType; }
-    public double getAmount() { return amount; }
+    public int getItemType() {
+        return itemType;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
 }

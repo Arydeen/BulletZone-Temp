@@ -40,9 +40,7 @@ public class MenuControllerTest {
 
     @Before
     public void setUp() {
-
         menuActivity = new MenuActivity();
-
         menuActivity.setMenuController(menuControllerMock);
     }
 
@@ -51,5 +49,4 @@ public class MenuControllerTest {
         menuActivity.joinTest();
         verify(menuControllerMock).joinAsync();
     }
-
 }

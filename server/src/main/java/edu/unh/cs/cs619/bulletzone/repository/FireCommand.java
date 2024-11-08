@@ -39,12 +39,9 @@ public class FireCommand {
         if (tank.getNumberOfBullets() == (tank.getAllowedNumberOfBullets())) {
             return false;
         }
-        if (bulletType < 1 || bulletType > 3) {
-            System.out.println("Bullet type must be 1, 2 or 3, set to 1 by default.");
-            bulletType = 1;
-        }
 
-        tank.setLastFireTime(currentTimeMillis + bulletDelay[bulletType - 1]);
+        // Use the tank's current fire interval which includes power-up effects
+        tank.setLastFireTime(currentTimeMillis + tank.getAllowedFireInterval());
         return true;
     }
 

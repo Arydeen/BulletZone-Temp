@@ -16,6 +16,7 @@ import java.util.Set;
 import edu.unh.cs.cs619.bulletzone.ClientController;
 import edu.unh.cs.cs619.bulletzone.events.GameEvent;
 import edu.unh.cs.cs619.bulletzone.events.GameEventProcessor;
+import edu.unh.cs.cs619.bulletzone.events.ItemPickupEvent;
 import edu.unh.cs.cs619.bulletzone.events.UpdateBoardEvent;
 import edu.unh.cs.cs619.bulletzone.util.GameEventCollectionWrapper;
 import edu.unh.cs.cs619.bulletzone.util.GridWrapper;
@@ -35,31 +36,20 @@ public class GridPollerTask {
     private GameEventProcessor currentProcessor = null;
     private boolean isRunning = true;
     private Set<Integer> itemsPresent = new HashSet<>();
-
-    public boolean toggleEventUsage() {
-        updateUsingEvents = !updateUsingEvents;
-        return updateUsingEvents;
-    }
+    private Integer lastRemovedItem = null;
 
     @Background(id = "grid_poller_task")
     public void doPoll(GameEventProcessor eventProcessor) {
         try {
-            //Log.d(TAG, "Starting GridPollerTask");
             currentProcessor = eventProcessor;
-
-            // Get initial grid state
             GridWrapper grid = restClient.grid();
             onGridUpdate(grid);
             previousTimeStamp = grid.getTimeStamp();
-
             eventProcessor.setBoard(grid.getGrid());
 
             while (isRunning) {
-                //Log.d(TAG, "Polling for updates");
                 try {
                     grid = restClient.grid();
-
-                    // Track items and detect pickups
                     Set<Integer> currentItems = new HashSet<>();
                     int[][] boardState = grid.getGrid();
 
@@ -76,7 +66,9 @@ public class GridPollerTask {
                     for (Integer item : itemsPresent) {
                         if (!currentItems.contains(item) && item >= 3000 && item <= 3003) {
                             // Item was picked up
+                            Log.d(TAG, "Item pickup detected: " + (item - 3000));
                             clientController.handleItemPickup(item - 3000);
+                            EventBus.getDefault().post(new ItemPickupEvent(item - 3000, 0.0));
                         }
                     }
 
@@ -88,7 +80,6 @@ public class GridPollerTask {
                     boolean haveEvents = false;
 
                     for (GameEvent event : events.getEvents()) {
-                        //Log.d(TAG, "Processing event: " + event);
                         if (currentProcessor != null && currentProcessor.isRegistered()) {
                             EventBus.getDefault().post(event);
                             previousTimeStamp = event.getTimeStamp();
@@ -112,7 +103,6 @@ public class GridPollerTask {
     }
 
     public void stop() {
-        //Log.d(TAG, "Stopping GridPollerTask");
         isRunning = false;
         currentProcessor = null;
     }

@@ -5,12 +5,16 @@ import java.util.Deque;
 
 public class PowerUpManager {
     private final Deque<Item> powerUps = new ArrayDeque<>();
-    private int baseMovementDelay;
-    private int baseFireDelay;
+    private final int baseMovementDelay;
+    private final int baseFireDelay;
+    private int currentMovementDelay;
+    private int currentFireDelay;
 
     public PowerUpManager(int baseMovementDelay, int baseFireDelay) {
         this.baseMovementDelay = baseMovementDelay;
         this.baseFireDelay = baseFireDelay;
+        this.currentMovementDelay = baseMovementDelay;
+        this.currentFireDelay = baseFireDelay;
     }
 
     public void addPowerUp(Item powerUp) {
@@ -28,27 +32,21 @@ public class PowerUpManager {
     }
 
     private void recalculateDelays() {
-        double movementMultiplier = 1.0;
-        double fireRateMultiplier = 1.0;
-        int movementPenalty = 0;
-        int fireRatePenalty = 0;
+        // Reset to base values
+        currentMovementDelay = baseMovementDelay;
+        currentFireDelay = baseFireDelay;
 
+        // Apply each power-up's effects in order
         for (Item powerUp : powerUps) {
             if (powerUp.isAntiGrav()) {
-                movementMultiplier *= 0.5; // Double speed (half delay)
-                fireRatePenalty += 100; // Add 0.1s to fire rate
+                currentMovementDelay = currentMovementDelay / 2;  // Double speed (half delay)
+                currentFireDelay += 100;  // Add 0.1s to fire rate
             } else if (powerUp.isFusionReactor()) {
-                fireRateMultiplier *= 0.5; // Double fire rate (half delay)
-                movementPenalty += 100; // Add 0.1s to movement
+                currentFireDelay = currentFireDelay / 2;  // Double fire rate (half delay)
+                currentMovementDelay += 100;  // Add 0.1s to movement
             }
         }
-
-        currentMovementDelay = (int)((baseMovementDelay * movementMultiplier) + movementPenalty);
-        currentFireDelay = (int)((baseFireDelay * fireRateMultiplier) + fireRatePenalty);
     }
-
-    private int currentMovementDelay;
-    private int currentFireDelay;
 
     public int getCurrentMovementDelay() {
         return currentMovementDelay;
@@ -64,5 +62,14 @@ public class PowerUpManager {
 
     public int getPowerUpCount() {
         return powerUps.size();
+    }
+
+    // For UI display
+    public int getAntiGravCount() {
+        return (int) powerUps.stream().filter(Item::isAntiGrav).count();
+    }
+
+    public int getFusionReactorCount() {
+        return (int) powerUps.stream().filter(Item::isFusionReactor).count();
     }
 }

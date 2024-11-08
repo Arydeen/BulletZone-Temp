@@ -40,12 +40,12 @@ public class ClientController {
         return restClient.getBalance(userId);
     }
 
-    BooleanWrapper deductBalance(long userId, double amount) {
-        return restClient.deductBalance(userId, amount);
-    }
+//    BooleanWrapper deductBalance(long userId, double amount) {
+//        return restClient.deductBalance(userId, amount);
+//    }
 
     @Background
-    public void handleItemPickup(int itemType) {  // Made this public
+    public void handleItemPickup(int itemType) {
         if (itemType == 1) { // Thingamajig
             // Random amount between 100 and 1000
             double amount = 100 + new Random().nextInt(901);

@@ -24,26 +24,75 @@
             android:text="User ID: Not logged in"
             android:textSize="18sp" />
 
-        <!-- Power-up Status Section -->
+        <!-- Balance Display -->
+        <TextView
+            android:id="@+id/balanceTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Balance: $0.00"
+            android:textSize="16sp"
+            android:layout_marginTop="4dp"/>
+
+        <!-- Power-up and Stats Section -->
         <LinearLayout
             android:id="@+id/powerUpStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="8dp">
+            android:padding="8dp"
+            android:background="#F5F5F5"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp">
 
+            <!-- Vehicle Stats Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Vehicle Stats"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp"/>
+
+            <TextView
+                android:id="@+id/movementSpeedText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Movement Speed: 500ms"
+                android:textColor="#000000"/>
+
+            <TextView
+                android:id="@+id/fireRateText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fire Rate: 1500ms"
+                android:textColor="#000000"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- Power-ups Section -->
             <TextView
                 android:id="@+id/powerUpLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Active Power-ups:"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp"/>
 
             <TextView
                 android:id="@+id/activeEffects"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#4CAF50" />
+                android:textColor="#4CAF50"
+                android:text="None"/>
+
+            <TextView
+                android:id="@+id/itemInfoText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#2196F3"
+                android:textStyle="italic"
+                android:layout_marginTop="4dp"/>
+
         </LinearLayout>
 
         <!-- GridView for the game board -->
@@ -55,6 +104,7 @@
             android:background="#FFFFFF"
             android:numColumns="16"
             tools:listitem="@layout/field_item" />
+
     </LinearLayout>
 
     <!-- Right Panel: Controls -->
@@ -94,37 +144,6 @@
                 android:layout_marginLeft="8dp"
                 android:text="Leave" />
         </LinearLayout>
-
-        <!-- Status and Balance -->
-        <TextView
-            android:id="@+id/balanceTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Balance: $0.00"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/itemInfoText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="#2196F3" />
-
-        <!-- Test Buttons -->
-        <Button
-            android:id="@+id/buttonTest"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Test Deduct 100" />
-
-        <Button
-            android:id="@+id/buttonTestEventBus"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Test EventBus" />
 
         <!-- Fire Button -->
         <Button
@@ -175,29 +194,31 @@
             </LinearLayout>
         </LinearLayout>
 
+        <!-- Eject Power-up Button -->
+        <Button
+            android:id="@+id/buttonEject"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Eject Power-up"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"/>
+
         <!-- Status Messages -->
         <TextView
             android:id="@+id/statusTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:textColor="#FF0000" />
+            android:textColor="#FF0000"
+            android:layout_gravity="center"/>
 
         <TextView
             android:id="@+id/eventBusStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textColor="#FF0000" />
-
-        <Button
-            android:id="@+id/buttonEject"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Eject Power-up"
-            android:layout_below="@id/buttonFire"
-            android:layout_alignParentRight="true"
-            android:layout_marginTop="8dp"/>
+            android:textColor="#FF0000"
+            android:layout_gravity="center"/>
 
     </LinearLayout>
 </LinearLayout>
