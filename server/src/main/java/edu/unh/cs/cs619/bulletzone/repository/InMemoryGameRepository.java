@@ -9,6 +9,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicLong;
 
+import edu.unh.cs.cs619.bulletzone.model.Builder;
 import edu.unh.cs.cs619.bulletzone.model.Bullet;
 import edu.unh.cs.cs619.bulletzone.model.Direction;
 import edu.unh.cs.cs619.bulletzone.model.FieldHolder;
@@ -16,6 +17,7 @@ import edu.unh.cs.cs619.bulletzone.model.Game;
 import edu.unh.cs.cs619.bulletzone.model.GameBoard;
 import edu.unh.cs.cs619.bulletzone.model.IllegalTransitionException;
 import edu.unh.cs.cs619.bulletzone.model.LimitExceededException;
+import edu.unh.cs.cs619.bulletzone.model.Playable;
 import edu.unh.cs.cs619.bulletzone.model.Tank;
 import edu.unh.cs.cs619.bulletzone.repository.GameBoardBuilder;
 import edu.unh.cs.cs619.bulletzone.model.TankDoesNotExistException;
@@ -64,9 +66,10 @@ public class InMemoryGameRepository implements GameRepository {
     }
 
     @Override
-    public Tank join(String ip) {
+    public Playable join(String ip) {
         synchronized (this.monitor) {
             Tank tank;
+            Builder builder;
             if (game == null) {
                 this.create();
             }
@@ -74,10 +77,14 @@ public class InMemoryGameRepository implements GameRepository {
             if( (tank = game.getTank(ip)) != null){
                 return tank;
             }
+            if( (builder = game.getBuilder(ip)) != null){
+                return builder;
+            }
 
-            Long tankId = this.idGenerator.getAndIncrement();
+            Long Id = this.idGenerator.getAndIncrement();
 
-            tank = new Tank(tankId, Direction.Up, ip);
+            tank = new Tank(Id, Direction.Up, ip);
+            builder = new Builder(Id, Direction.Up, ip);
 
             Random random = new Random();
             int x;
@@ -95,7 +102,20 @@ public class InMemoryGameRepository implements GameRepository {
                 }
             }
 
+            // This may run for forever.. If there is no free space. XXX
+            for (; ; ) {
+                x = random.nextInt(FIELD_DIM);
+                y = random.nextInt(FIELD_DIM);
+                FieldHolder fieldElement = game.getHolderGrid().get(x * FIELD_DIM + y);
+                if (!fieldElement.isPresent()) {
+                    fieldElement.setFieldEntity(builder);
+                    builder.setParent(fieldElement);
+                    break;
+                }
+            }
+
             game.addTank(ip, tank);
+            game.addBuilder(ip, builder);
             return tank;
         }
     }
@@ -111,16 +131,21 @@ public class InMemoryGameRepository implements GameRepository {
     }
 
     @Override
-    public boolean turn(long tankId, Direction direction)
+    public boolean turn(long Id, Direction direction)
             throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
         synchronized (this.monitor) {
             checkNotNull(direction);
 
             // Find user
-            Tank tank = game.getTanks().get(tankId);
-            if (tank == null) {
+            Tank tank = game.getTanks().get(Id);
+            Builder builder = game.getBuilders().get(Id);
+            if (tank == null ) {
                 //Log.i(TAG, "Cannot find user with id: " + tankId);
-                throw new TankDoesNotExistException(tankId);
+                throw new TankDoesNotExistException(Id);
+            }
+            if (builder == null) {
+                //Log.i(TAG, "Cannot find user with id: " + tankId);
+                throw new TankDoesNotExistException(Id);
             }
 
             long millis = System.currentTimeMillis();
@@ -137,16 +162,17 @@ public class InMemoryGameRepository implements GameRepository {
     }
 
     @Override
-    public boolean move(long tankId, Direction direction)
+    public boolean move(long Id, Direction direction)
             throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException {
         synchronized (this.monitor) {
             // Find tank
 
-            Tank tank = game.getTanks().get(tankId);
+            Tank tank = game.getTanks().get(Id);
+            Builder builder = game.getBuilders().get(Id);
             if (tank == null) {
                 //Log.i(TAG, "Cannot find user with id: " + tankId);
                 //return false;
-                throw new TankDoesNotExistException(tankId);
+                throw new TankDoesNotExistException(Id);
             }
 
             long millis = System.currentTimeMillis();
