@@ -115,4 +115,32 @@ public class AccountController {
     public String ping() {
         return "AccountController is working";
     }
+
+    @PutMapping("/balance/{userId}/deposit/{amount}")
+    @ResponseBody
+    public ResponseEntity<BooleanWrapper> depositBalance(
+            @PathVariable("userId") long userId,
+            @PathVariable("amount") double amount) {
+        log.debug("Deposit balance called for user {} amount {}", userId, amount);
+        balanceLock.lock();
+        try {
+            double currentBalance = data.getUserBalance(userId);
+            log.debug("Current balance for user {}: {}", userId, currentBalance);
+
+            boolean success = data.depositUserBalance(userId, amount);
+            log.debug("Deposit result for user {}: {}", userId, success);
+
+            if (success) {
+                double newBalance = data.getUserBalance(userId);
+                log.debug("New balance for user {}: {}", userId, newBalance);
+                return new ResponseEntity<>(new BooleanWrapper(true), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(new BooleanWrapper(false), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            log.error("Error depositing balance for user '{}': {}", userId, e.getMessage(), e);
+            return new ResponseEntity<>(new BooleanWrapper(false), HttpStatus.INTERNAL_SERVER_ERROR);
+        } finally {
+            balanceLock.unlock();
+        }
+    }
 }

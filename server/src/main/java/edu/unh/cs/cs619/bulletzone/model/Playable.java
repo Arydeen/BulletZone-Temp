@@ -131,4 +131,8 @@ public abstract class Playable extends FieldEntity {
     public String toString() {
         return "";
     }
+
+    public long getMoveMultiplier() {
+        return moveMultiplier;
+    }
 }

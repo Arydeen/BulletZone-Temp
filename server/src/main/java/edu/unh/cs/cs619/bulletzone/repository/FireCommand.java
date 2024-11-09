@@ -15,6 +15,7 @@ import edu.unh.cs.cs619.bulletzone.model.FieldHolder;
 import edu.unh.cs.cs619.bulletzone.model.Game;
 import edu.unh.cs.cs619.bulletzone.model.IllegalTransitionException;
 import edu.unh.cs.cs619.bulletzone.model.Improvement;
+import edu.unh.cs.cs619.bulletzone.model.Item;
 import edu.unh.cs.cs619.bulletzone.model.LimitExceededException;
 import edu.unh.cs.cs619.bulletzone.model.Tank;
 import edu.unh.cs.cs619.bulletzone.model.TankDoesNotExistException;
@@ -32,21 +33,15 @@ public class FireCommand {
     private static final int FIELD_DIM = 16;
 
     public boolean canFire(Tank tank, long currentTimeMillis, int bulletType, int[] bulletDelay) {
-        // Check if the tank is allowed to fire (0.5-second interval)
-
         if (currentTimeMillis < tank.getLastFireTime()) {
             return false;
         }
         if (tank.getNumberOfBullets() == (tank.getAllowedNumberOfBullets())) {
             return false;
         }
-        if (bulletType < 1 || bulletType > 3) {
-            System.out.println("Bullet type must be 1, 2 or 3, set to 1 by default.");
-            bulletType = 1;
-        }
 
-        // Update the tank's last fire time
-        tank.setLastFireTime(currentTimeMillis + bulletDelay[bulletType - 1]);
+        // Use the tank's current fire interval which includes power-up effects
+        tank.setLastFireTime(currentTimeMillis + tank.getAllowedFireInterval());
         return true;
     }
 
@@ -69,48 +64,57 @@ public class FireCommand {
 
         boolean isVisible = currentField.isPresent() && (currentField.getEntity() == bullet);
 
-        if (nextField.isPresent()) {
-            nextField.getEntity().hit(bullet.getDamage());
+        try {
+            if (nextField.isPresent()) {
+                nextField.getEntity().hit(bullet.getDamage());
 
-            if (nextField.getEntity() instanceof Tank) {
-                Tank t = (Tank) nextField.getEntity();
-                System.out.println("Tank is hit, tank life: " + t.getLife());
-                if (t.getLife() <= 0) {
-                    t.getParent().clearField();
-                    t.setParent(null);
-                    game.removeTank(t.getId());
+                if (nextField.getEntity() instanceof Tank) {
+                    Tank t = (Tank) nextField.getEntity();
+                    System.out.println("Tank is hit, tank life: " + t.getLife());
+                    if (t.getLife() <= 0) {
+                        t.getParent().clearField();
+                        t.setParent(null);
+                        game.removeTank(t.getId());
+                    }
+                } else if (nextField.getEntity() instanceof Wall) {
+                    Wall w = (Wall) nextField.getEntity();
+                    if (w.getIntValue() > 1000 && w.getIntValue() <= 2000) {
+                        game.getHolderGrid().get(w.getPos()).clearField();
+                    }
+                } else if (nextField.getEntity() instanceof Item) {
+                    Item item = (Item) nextField.getEntity();
+                    nextField.clearField();
+                    EventBus.getDefault().post(new RemoveEvent(item.getIntValue(), item.getPosition()));
                 }
-            } else if (nextField.getEntity() instanceof Wall) {
-                Wall w = (Wall) nextField.getEntity();
-                if (w.getIntValue() > 1000 && w.getIntValue() <= 2000) {
-                    game.getHolderGrid().get(w.getPos()).clearField();
+
+                if (isVisible) {
+                    currentField.clearField();
                 }
-            }
-
-            if (isVisible) {
-                currentField.clearField();
-            }
-            EventBus.getDefault().post(new RemoveEvent(bullet.getIntValue(), bullet.getPosition()));
-            trackActiveBullets[bullet.getBulletId()] = 0;
-            tank.setNumberOfBullets(tank.getNumberOfBullets() - 1);
-            timerTask.cancel();
-        } else {
-            if (isVisible) {
-                currentField.clearField();
-            }
-
-            int oldPos = bullet.getPosition();
-            nextField.setFieldEntity(bullet);
-            bullet.setParent(nextField);
-            int newPos = bullet.getPosition();
-            if(oldPos == tank.getPosition()){
-                System.out.println("Spawning");
-                EventBus.getDefault().post(new MoveEvent(bullet.getIntValue(), newPos, newPos));
+                EventBus.getDefault().post(new RemoveEvent(bullet.getIntValue(), bullet.getPosition()));
+                trackActiveBullets[bullet.getBulletId()] = 0;
+                tank.setNumberOfBullets(Math.max(0, tank.getNumberOfBullets() - 1));
+                timerTask.cancel();
             } else {
-                System.out.println("Moving");
-                EventBus.getDefault().post(new MoveEvent(bullet.getIntValue(), oldPos, newPos));
+                if (isVisible) {
+                    currentField.clearField();
+                }
+
+                int oldPos = bullet.getPosition();
+                nextField.setFieldEntity(bullet);
+                bullet.setParent(nextField);
+                int newPos = bullet.getPosition();
+                if (oldPos == tank.getPosition()) {
+                    System.out.println("Spawning");
+                    EventBus.getDefault().post(new MoveEvent(bullet.getIntValue(), newPos, newPos));
+                } else {
+                    System.out.println("Moving");
+                    EventBus.getDefault().post(new MoveEvent(bullet.getIntValue(), oldPos, newPos));
+                }
             }
+        } catch (Exception e) {
+            System.err.println("Error handling bullet collision: " + e.getMessage());
+            e.printStackTrace();
+            // Optionally log or notify the server about the error if needed
         }
     }
-
 }

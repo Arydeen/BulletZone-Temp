@@ -3,6 +3,8 @@ package edu.unh.cs.cs619.bulletzone;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
@@ -12,30 +14,26 @@ import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import org.androidannotations.annotations.*;
 import org.androidannotations.rest.spring.annotations.RestService;
 import org.androidannotations.api.BackgroundExecutor;
 
 import edu.unh.cs.cs619.bulletzone.events.GameEventProcessor;
+import edu.unh.cs.cs619.bulletzone.events.ItemPickupEvent;
+import edu.unh.cs.cs619.bulletzone.events.PowerUpEjectEvent;
 import edu.unh.cs.cs619.bulletzone.rest.BZRestErrorhandler;
 import edu.unh.cs.cs619.bulletzone.rest.BulletZoneRestClient;
 import edu.unh.cs.cs619.bulletzone.rest.GridPollerTask;
-import edu.unh.cs.cs619.bulletzone.rest.GridUpdateEvent;
 import edu.unh.cs.cs619.bulletzone.ui.GridAdapter;
-import edu.unh.cs.cs619.bulletzone.util.BooleanWrapper;
 import edu.unh.cs.cs619.bulletzone.util.ClientActivityShakeDriver;
-import edu.unh.cs.cs619.bulletzone.util.GridWrapper;
-import edu.unh.cs.cs619.bulletzone.AuthenticateActivity;
-import edu.unh.cs.cs619.bulletzone.util.ClientActivityShakeDriver;
+import androidx.annotation.VisibleForTesting;
 
 @EActivity(R.layout.activity_client)
 public class ClientActivity extends Activity {
 
     private static final String TAG = "ClientActivity";
-
-//    @Bean
-//    protected GridAdapter mGridAdapter;
 
     @Bean
     protected GameEventProcessor eventProcessor;
@@ -55,6 +53,21 @@ public class ClientActivity extends Activity {
     @ViewById
     protected TextView eventBusStatus;
 
+    @ViewById
+    protected TextView activeEffects;
+
+    @ViewById
+    protected TextView itemInfoText;
+
+    @ViewById
+    protected TextView powerUpLabel;
+
+    @ViewById
+    protected TextView movementSpeedText;
+
+    @ViewById
+    protected TextView fireRateText;
+
     @NonConfigurationInstance
     @Bean
     GridPollerTask gridPollTask;
@@ -71,21 +84,39 @@ public class ClientActivity extends Activity {
     @Bean
     SimBoardView simBoardView;
 
+    @Bean
+    PowerUpController powerUpController;
+
     ClientActivityShakeDriver shakeDriver;
 
     PlayerData playerData = PlayerData.getPlayerData();
 
-    /**
-     * Remote tank identifier
-     */
     private long tankId = -1;
     private long userId = -1;
+
+    // For testing purposes only
+    @VisibleForTesting
+    public void setTankEventController(TankEventController controller) {
+        this.tankEventController = controller;
+    }
+
+    // For testing purposes only
+    @VisibleForTesting
+    public void moveTest(View view) {
+        onButtonMove(view);
+    }
+
+    // For testing purposes only
+    @VisibleForTesting
+    public void fireTest() {
+        onButtonFire();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
 
-        // Initializes the shake driver / listener and defines what action to take when device is shaken
         shakeDriver = new ClientActivityShakeDriver(this, new ClientActivityShakeDriver.OnShakeListener() {
             @Override
             public void onShake() {
@@ -98,47 +129,24 @@ public class ClientActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
         super.onDestroy();
         Log.d(TAG, "onDestroy called");
 
-        // Stop the grid poller
         gridPollTask.stop();
         BackgroundExecutor.cancelAll("grid_poller_task", true);
 
-        // Clean up event bus registrations
-//        if (gridEventHandler != null) {
-//            EventBus.getDefault().unregister(gridEventHandler);
-//        }
         simBoardView.detach();
         if (eventProcessor != null) {
             eventProcessor.stop();
         }
 
-        // Clean up other resources
         shakeDriver.stop();
-        Log.d(TAG, "onDestroy completed");
     }
-
-    /**
-     * Otto has a limitation (as per design) that it will only find
-     * methods on the immediate class type. As a result, if at runtime this instance
-     * actually points to a subclass implementation, the methods registered in this class will
-     * not be found. This immediately becomes a problem when using the AndroidAnnotations
-     * framework as it always produces a subclass of annotated classes.
-     *
-     * To get around the class hierarchy limitation, one can use a separate anonymous class to
-     * handle the events.
-     */
-//    private Object gridEventHandler = new Object() {
-//        @Subscribe
-//        public void onUpdateGrid(GridUpdateEvent event) {
-//            updateGrid(event.gw);
-//        }
-//    };
 
     @AfterViews
     protected void afterViewInjection() {
-        Log.d(TAG, "afterViewInjection");
+        Log.d(TAG, "afterViewInjection called");
         userId = playerData.getUserId();
         tankId = playerData.getTankId();
         if (userId != -1) {
@@ -148,25 +156,84 @@ public class ClientActivity extends Activity {
             userIdTextView.setText("User ID: Not logged in");
             updateBalanceUI(null);
         }
+
+        // Initialize stat displays with base values
+        playerData.resetPowerUps(); // Ensure we start with base values
+        updateStatsDisplay();
+
         SystemClock.sleep(500);
         simBoardView.attach(gridView, tankId);
-        // Set the TankID to be used when determining if it is the user's tank
-//        mGridAdapter.setTankId(tankId);
-//        gridView.setAdapter(mGridAdapter);
     }
 
     @Background
     void fetchAndUpdateBalance() {
         try {
-            // Add debug logging
             Log.d(TAG, "Fetching balance for userId: " + userId);
             Double balance = clientController.getBalance(userId);
             Log.d(TAG, "Received balance: " + balance);
             updateBalanceUI(balance);
         } catch (Exception e) {
-            // Enhanced error logging
             Log.e(TAG, "Error fetching balance for userId: " + userId, e);
             updateBalanceUI(null);
+        }
+    }
+
+    @UiThread
+    void showPowerUpMessage(String message) {
+        if (itemInfoText != null) {
+            itemInfoText.setText(message);
+            // Clear message after delay
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                if (itemInfoText != null) {
+                    itemInfoText.setText("");
+                }
+            }, 3000);
+        }
+    }
+
+    @UiThread
+    void updateBalanceUI(Double balance) {
+        if (balanceTextView != null) {
+            if (balance != null) {
+                balanceTextView.setText(String.format("Balance: $%.2f", balance));
+            } else {
+                balanceTextView.setText("Balance: Unavailable");
+            }
+        }
+    }
+
+    @UiThread
+    protected void updateStatsDisplay() {
+        Log.d(TAG, "Updating stats display - Move: " + playerData.getMoveInterval() + "ms, Fire: " + playerData.getFireInterval() + "ms");
+
+        if (movementSpeedText != null) {
+            movementSpeedText.setText("Movement Speed: " + playerData.getMoveInterval() + "ms");
+        }
+        if (fireRateText != null) {
+            fireRateText.setText("Fire Rate: " + playerData.getFireInterval() + "ms");
+        }
+
+        if (activeEffects != null) {
+            StringBuilder effects = new StringBuilder();
+            int powerUps = playerData.getActivePowerUps();
+
+            Log.d(TAG, "Active power-ups: " + powerUps);
+
+            if (powerUps > 0) {
+                if (playerData.getMoveInterval() < 500) {
+                    effects.append("• Anti-Grav Speed Boost\n");
+                    effects.append("  Movement: " + playerData.getMoveInterval() + "ms\n");
+                }
+                if (playerData.getFireInterval() < 1500) {
+                    effects.append("• Fusion Reactor Fire Boost\n");
+                    effects.append("  Fire Rate: " + playerData.getFireInterval() + "ms\n");
+                }
+                activeEffects.setText(effects.toString().trim());
+            } else {
+                activeEffects.setText("None");
+            }
+
+            Log.d(TAG, "Active effects text set to: " + effects.toString());
         }
     }
 
@@ -174,32 +241,9 @@ public class ClientActivity extends Activity {
     void afterInject() {
         Log.d(TAG, "afterInject");
         clientController.setErrorHandler(bzRestErrorhandler);
-//        EventBus.getDefault().register(gridEventHandler);
-        // Start the event processor before starting the poller
         eventProcessor.start();
-
-        // Now start polling
         gridPollTask.doPoll(eventProcessor);
     }
-
-//    public void updateGrid(GridWrapper gw) {
-//        mGridAdapter.updateList(gw.getGrid());
-//    }
-
-    //Remove functionality for now
-
-    /*@Click(R.id.eventSwitch)
-    protected void onEventSwitch() {
-
-        if (gridPollTask.toggleEventUsage()) {
-            Log.d("EventSwitch", "ON");
-            eventProcessor.setBoard(mGridAdapter.getBoard());
-            eventProcessor.start();
-        } else {
-            Log.d("EventSwitch", "OFF");
-            eventProcessor.stop();
-        }
-    }*/
 
     @Click({R.id.buttonUp, R.id.buttonDown, R.id.buttonLeft, R.id.buttonRight})
     protected void onButtonMove(View view) {
@@ -217,9 +261,6 @@ public class ClientActivity extends Activity {
                 break;
             case R.id.buttonRight:
                 direction = 2;
-                break;
-            default:
-//                Log.e(TAG, "Unknown movement button id: " + viewId);
                 break;
         }
         tankEventController.turnOrMove(viewId, tankId, direction);
@@ -250,6 +291,11 @@ public class ClientActivity extends Activity {
         logoutUI();
     }
 
+    @Click(R.id.buttonEject)
+    protected void onButtonEject() {
+        powerUpController.ejectPowerUpAsync(tankId);
+    }
+
     @UiThread
     void leaveUI() {
         Log.d(TAG, "leaveUI() called");
@@ -272,130 +318,149 @@ public class ClientActivity extends Activity {
         finish();
     }
 
-    public void moveTest(View view) {
-        this.onButtonMove(view);
-    }
-
-    public void fireTest() {
-        this.onButtonFire();
-    }
-
-    public void setTankEventController(TankEventController tankEventController) {
-        this.tankEventController = tankEventController;
-    }
-
     @UiThread
-    void updateBalanceUI(Double balance) {
-        if (balanceTextView != null) {
-            if (balance != null) {
-                balanceTextView.setText(String.format("Balance: $%.2f", balance));
-            } else {
-                balanceTextView.setText("Balance: Unavailable");
-            }
-        }
-    }
+    void updatePowerUpStatus(int powerUpType) {
+        StringBuilder status = new StringBuilder();
+        boolean hasActivePowerUps = false;
 
-    @Click(R.id.buttonTest)
-    void testDeduction() {
-        deductBalanceAsync();
-    }
+        // Update stats based on power-up type
+        if (powerUpType == 2) { // AntiGrav
+            hasActivePowerUps = true;
 
-    @Background
-    void deductBalanceAsync() {
-        try {
-            Log.d(TAG, "Attempting to deduct 100 credits for user: " + userId);
-            // Try to deduct 100 credits
-            BooleanWrapper result = clientController.deductBalance(userId, 100.0);
-            if (result != null && result.isResult()) {
-                Log.d(TAG, "Successfully deducted 100 credits");
-                showStatus("Successfully deducted 100 credits");
-                fetchAndUpdateBalance();
-            } else {
-                Log.d(TAG, "Failed to deduct balance, result: " + (result != null ? result.isResult() : "null"));
-                showStatus("Failed to deduct balance");
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error deducting balance", e);
-            showStatus("Error: " + e.getMessage());
-        }
-    }
+            // Calculate new values
+            int newMoveInterval = playerData.getMoveInterval() / 2;
+            int newFireInterval = playerData.getFireInterval() + 100;
 
-    @UiThread
-    void showStatus(String message) {
-        if (statusTextView != null) {
-            statusTextView.setText(message);
-        }
-        // Also show as a Toast for better visibility
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
+            // Update status display
+            status.append("• Anti-Grav:\n");
+            status.append("  - 2x Movement Speed\n");
+            status.append("  - +0.1s Fire Delay");
 
-    @Click(R.id.buttonTestEventBus)
-    protected void runEventBusTest() {
-        Log.d(TAG, "Starting EventBus tests");
-        updateEventBusStatus("Starting tests...");
-        BackgroundExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    runTestSequence();
-                } catch (Exception e) {
-                    Log.e(TAG, "Test sequence failed", e);
-                    updateEventBusStatus("Tests failed: " + e.getMessage());
-                }
-            }
-        });
-    }
+            // Update player data
+            playerData.setMoveInterval(newMoveInterval);
+            playerData.setFireInterval(newFireInterval);
 
-    private void runTestSequence() {
-        try {
-            // Test 1: Basic Registration
-            updateEventBusStatus("Test 1: Basic Registration");
-            Log.d(TAG, "=== Test 1: Basic Registration ===");
-            eventProcessor.start();
-            SystemClock.sleep(500);
-
-            // Test 2: Double Registration
-            updateEventBusStatus("Test 2: Double Registration");
-            Log.d(TAG, "=== Test 2: Double Registration ===");
-            eventProcessor.start();
-            SystemClock.sleep(500);
-
-            // Test 3: Stop and Start
-            updateEventBusStatus("Test 3: Stop and Start");
-            Log.d(TAG, "=== Test 3: Stop and Start ===");
-            eventProcessor.stop();
-            SystemClock.sleep(100);
-            eventProcessor.start();
-            SystemClock.sleep(500);
-
-            // Test 4: Rapid Toggle
-            updateEventBusStatus("Test 4: Rapid Toggle");
-            Log.d(TAG, "=== Test 4: Rapid Toggle ===");
-            for (int i = 0; i < 5; i++) {
-                eventProcessor.stop();
-                eventProcessor.start();
-                SystemClock.sleep(100);
+            if (itemInfoText != null) {
+                itemInfoText.setText("Anti-Grav acquired! Speed up, fire slower");
             }
 
-            // Test 5: Event Processing
-            updateEventBusStatus("Test 5: Event Processing");
-            Log.d(TAG, "=== Test 5: Event Processing ===");
-            tankEventController.moveAsync(tankId, (byte)0);
-            SystemClock.sleep(1000);
+        } else if (powerUpType == 3) { // FusionReactor
+            hasActivePowerUps = true;
 
-            updateEventBusStatus("All tests completed successfully!");
+            // Calculate new values
+            int newFireInterval = playerData.getFireInterval() / 2;
+            int newMoveInterval = playerData.getMoveInterval() + 100;
 
-        } catch (Exception e) {
-            Log.e(TAG, "Test sequence failed", e);
-            updateEventBusStatus("Tests failed: " + e.getMessage());
+            // Update status display
+            status.append("• Fusion Reactor:\n");
+            status.append("  - 2x Fire Rate\n");
+            status.append("  - +0.1s Movement Delay");
+
+            // Update player data
+            playerData.setFireInterval(newFireInterval);
+            playerData.setMoveInterval(newMoveInterval);
+
+            if (itemInfoText != null) {
+                itemInfoText.setText("Fusion Reactor acquired! Fire faster, move slower");
+            }
+        }
+
+        // Update active effects display
+        if (!hasActivePowerUps) {
+            status.append("None");
+        }
+
+        if (activeEffects != null) {
+            activeEffects.setText(status.toString());
+        }
+
+        // Update stat displays
+        movementSpeedText.setText("Movement Speed: " + playerData.getMoveInterval() + "ms");
+        fireRateText.setText("Fire Rate: " + playerData.getFireInterval() + "ms");
+
+        // Clear info text after delay
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (itemInfoText != null) {
+                itemInfoText.setText("");
+            }
+        }, 3000);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onItemPickup(ItemPickupEvent event) {
+        Log.d(TAG, "Item pickup event received. Type: " + event.getItemType());
+
+        if (event.getItemType() == 1) { // Thingamajig
+            String message = String.format("Picked up Thingamajig! Added $%.2f credits", event.getAmount());
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+            fetchAndUpdateBalance();
+        } else if (event.getItemType() == 2) { // AntiGrav
+            Log.d(TAG, "AntiGrav pickup: Current move interval = " + playerData.getMoveInterval());
+
+            playerData.incrementPowerUps();
+
+            // Halve the move interval (double speed)
+            int newMoveInterval = playerData.getMoveInterval() / 2;
+            // Add 100ms to fire interval
+            int newFireInterval = playerData.getFireInterval() + 100;
+
+            Log.d(TAG, "AntiGrav applying: New move interval = " + newMoveInterval + ", new fire interval = " + newFireInterval);
+
+            playerData.setMoveInterval(newMoveInterval);
+            playerData.setFireInterval(newFireInterval);
+
+            updateStatsDisplay();
+
+            String effectStr = String.format("Anti-Grav activated!\nSpeed: %dms → %dms\nFire rate: %dms → %dms",
+                    newMoveInterval * 2, newMoveInterval,
+                    newFireInterval - 100, newFireInterval);
+
+            Toast.makeText(this, "Anti-Grav Power-up Acquired!", Toast.LENGTH_SHORT).show();
+            showPowerUpMessage(effectStr);
+
+        } else if (event.getItemType() == 3) { // FusionReactor
+            Log.d(TAG, "FusionReactor pickup: Current fire interval = " + playerData.getFireInterval());
+
+            playerData.incrementPowerUps();
+
+            // Halve the fire interval (double fire rate)
+            int newFireInterval = playerData.getFireInterval() / 2;
+            // Add 100ms to move interval
+            int newMoveInterval = playerData.getMoveInterval() + 100;
+
+            Log.d(TAG, "FusionReactor applying: New fire interval = " + newFireInterval + ", new move interval = " + newMoveInterval);
+
+            playerData.setMoveInterval(newMoveInterval);
+            playerData.setFireInterval(newFireInterval);
+
+            updateStatsDisplay();
+
+            String effectStr = String.format("Fusion Reactor activated!\nFire rate: %dms → %dms\nSpeed: %dms → %dms",
+                    newFireInterval * 2, newFireInterval,
+                    newMoveInterval - 100, newMoveInterval);
+
+            Toast.makeText(this, "Fusion Reactor Power-up Acquired!", Toast.LENGTH_SHORT).show();
+            showPowerUpMessage(effectStr);
         }
     }
 
-    @UiThread
-    void updateEventBusStatus(final String status) {
-        if (eventBusStatus != null) {
-            eventBusStatus.setText(status);
-            Log.d(TAG, "Status updated: " + status);
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPowerUpEjected(PowerUpEjectEvent event) {
+        Log.d(TAG, "Power-up ejected event received");
+
+        playerData.decrementPowerUps();
+
+        if (playerData.getActivePowerUps() == 0) {
+            Log.d(TAG, "No active power-ups remaining, resetting to base values");
+            playerData.resetPowerUps();
+            showPowerUpMessage("Power-up ejected! Stats reset:\nMove Speed: 500ms\nFire Rate: 1500ms");
+        } else {
+            Log.d(TAG, "Power-up ejected, remaining: " + playerData.getActivePowerUps());
+            String status = String.format("Power-up ejected!\nCurrent Move Speed: %dms\nCurrent Fire Rate: %dms",
+                    playerData.getMoveInterval(), playerData.getFireInterval());
+            showPowerUpMessage(status);
         }
+
+        updateStatsDisplay();
     }
 }
