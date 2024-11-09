@@ -18,6 +18,8 @@ public class BoardCellFactory {
             return new TankItem(val, row, col);
         } else if (val >= 4000 && val <= 4003) {
             return new Terrain(val, row, col);
+        } else if (val >= 3001 && val <= 3003){
+            return new PowerUp(val,row,col);
         } else if (val >= 2000) {
             return new BoardCell(val, row, col);
         } else if (val < 2000 && val >= 1000) {

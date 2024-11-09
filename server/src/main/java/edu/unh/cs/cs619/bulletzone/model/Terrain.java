@@ -1,3 +1,7 @@
+/**
+ * Class created by Kyle Goodwin
+ * Defines terrain and gives its derived methods from FieldEntity
+ */
 package edu.unh.cs.cs619.bulletzone.model;
 
 public class Terrain extends FieldEntity {
