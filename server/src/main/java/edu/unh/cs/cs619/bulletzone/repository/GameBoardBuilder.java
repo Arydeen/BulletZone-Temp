@@ -8,6 +8,7 @@ import java.util.HashMap;
 import edu.unh.cs.cs619.bulletzone.datalayer.terrain.TerrainType;
 import edu.unh.cs.cs619.bulletzone.model.Game;
 //import edu.unh.cs.cs619.bulletzone.model.GameBoard;
+import edu.unh.cs.cs619.bulletzone.model.Terrain;
 import edu.unh.cs.cs619.bulletzone.model.Wall;
 import jdk.jfr.Category;
 
@@ -69,6 +70,11 @@ public class GameBoardBuilder {
         game.getHolderGrid().get(41).setFieldEntity(new Wall());
         game.getHolderGrid().get(57).setFieldEntity(new Wall());
         game.getHolderGrid().get(73).setFieldEntity(new Wall());
+
+        //Terrain test cells
+        game.getHolderGrid().get(115).setFieldEntity(new Terrain(4001, 115));
+        game.getHolderGrid().get(118).setFieldEntity(new Terrain(4002, 118));
+        game.getHolderGrid().get(121).setFieldEntity(new Terrain(4003, 121));
     }
 
     // Enables horizontal wrapping

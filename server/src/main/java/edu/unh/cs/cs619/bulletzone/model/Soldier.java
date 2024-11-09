@@ -29,6 +29,7 @@ public class Soldier extends Playable {
         lastTurnTime = 0;
 
         recentlyEnteredTank = false;
+        powerUpManager = new PowerUpManager(allowedMoveInterval, allowedFireInterval);
     }
 
     // Copy method for Soldier

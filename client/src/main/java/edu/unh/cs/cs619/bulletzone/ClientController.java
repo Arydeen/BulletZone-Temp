@@ -27,8 +27,8 @@ public class ClientController {
     public ClientController() {}
 
     @Background
-    void leaveGameAsync(long tankId) {
-        restClient.leave(tankId);
+    void leaveGameAsync(long playableId) {
+        restClient.leave(playableId);
     }
 
     @Background

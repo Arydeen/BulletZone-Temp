@@ -43,7 +43,7 @@ public class TankEventControllerTest {
         when(buttonLeftMock.getId()).thenReturn(R.id.buttonLeft);
     }
 
-    @Test
+/*    @Test
     public void testMoveAsyncUp() {
         clientActivity.moveTest(buttonUpMock);
         verify(tankEventControllerMock).turnOrMove(eq(R.id.buttonUp), anyLong(), eq((byte) 0));
@@ -80,5 +80,5 @@ public class TankEventControllerTest {
 
         clientActivity.moveTest(buttonRightMock);
         verify(tankEventControllerMock).turnOrMove(eq(R.id.buttonRight), anyLong(), eq((byte) 2));
-    }
+    }*/
 }

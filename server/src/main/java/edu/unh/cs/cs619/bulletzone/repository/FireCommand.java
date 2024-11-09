@@ -17,6 +17,7 @@ import edu.unh.cs.cs619.bulletzone.model.IllegalTransitionException;
 import edu.unh.cs.cs619.bulletzone.model.Improvement;
 import edu.unh.cs.cs619.bulletzone.model.Item;
 import edu.unh.cs.cs619.bulletzone.model.LimitExceededException;
+import edu.unh.cs.cs619.bulletzone.model.Playable;
 import edu.unh.cs.cs619.bulletzone.model.Tank;
 import edu.unh.cs.cs619.bulletzone.model.TankDoesNotExistException;
 import edu.unh.cs.cs619.bulletzone.model.Wall;
@@ -32,16 +33,16 @@ public class FireCommand {
     long millis;
     private static final int FIELD_DIM = 16;
 
-    public boolean canFire(Tank tank, long currentTimeMillis, int bulletType, int[] bulletDelay) {
-        if (currentTimeMillis < tank.getLastFireTime()) {
+    public boolean canFire(Playable playable, long currentTimeMillis, int bulletType, int[] bulletDelay) {
+        if (currentTimeMillis < playable.getLastFireTime()) {
             return false;
         }
-        if (tank.getNumberOfBullets() == (tank.getAllowedNumberOfBullets())) {
+        if (playable.getNumberOfBullets() == (playable.getAllowedNumberOfBullets())) {
             return false;
         }
 
         // Use the tank's current fire interval which includes power-up effects
-        tank.setLastFireTime(currentTimeMillis + tank.getAllowedFireInterval());
+        playable.setLastFireTime(currentTimeMillis + playable.getAllowedFireInterval());
         return true;
     }
 
@@ -57,7 +58,7 @@ public class FireCommand {
         return bulletId;
     }
 
-    public void moveBulletAndHandleCollision(Game game, Bullet bullet, Tank tank, int[] trackActiveBullets, TimerTask timerTask) {
+    public void moveBulletAndHandleCollision(Game game, Bullet bullet, Playable playable, int[] trackActiveBullets, TimerTask timerTask) {
         FieldHolder currentField = bullet.getParent();
         Direction direction = bullet.getDirection();
         FieldHolder nextField = currentField.getNeighbor(direction);
@@ -92,7 +93,7 @@ public class FireCommand {
                 }
                 EventBus.getDefault().post(new RemoveEvent(bullet.getIntValue(), bullet.getPosition()));
                 trackActiveBullets[bullet.getBulletId()] = 0;
-                tank.setNumberOfBullets(Math.max(0, tank.getNumberOfBullets() - 1));
+                playable.setNumberOfBullets(Math.max(0, playable.getNumberOfBullets() - 1));
                 timerTask.cancel();
             } else {
                 if (isVisible) {
@@ -103,7 +104,7 @@ public class FireCommand {
                 nextField.setFieldEntity(bullet);
                 bullet.setParent(nextField);
                 int newPos = bullet.getPosition();
-                if (oldPos == tank.getPosition()) {
+                if (oldPos == playable.getPosition()) {
                     System.out.println("Spawning");
                     EventBus.getDefault().post(new MoveEvent(bullet.getIntValue(), newPos, newPos));
                 } else {

@@ -8,9 +8,11 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Spinner;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -29,6 +31,9 @@ import edu.unh.cs.cs619.bulletzone.rest.GridPollerTask;
 import edu.unh.cs.cs619.bulletzone.ui.GridAdapter;
 import edu.unh.cs.cs619.bulletzone.util.ClientActivityShakeDriver;
 import androidx.annotation.VisibleForTesting;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 @EActivity(R.layout.activity_client)
 public class ClientActivity extends Activity {
@@ -68,6 +73,9 @@ public class ClientActivity extends Activity {
     @ViewById
     protected TextView fireRateText;
 
+    @ViewById
+    protected Spinner selectPlayable;
+
     @NonConfigurationInstance
     @Bean
     GridPollerTask gridPollTask;
@@ -91,8 +99,11 @@ public class ClientActivity extends Activity {
 
     PlayerData playerData = PlayerData.getPlayerData();
 
-    private long tankId = -1;
+    private long playableId = -1;
+    private int playableType = 1;
     private long userId = -1;
+    private ArrayList<?> playableSelections = new ArrayList<>(Arrays.asList("Tank", "Builder", "Soldier"));
+
 
     // For testing purposes only
     @VisibleForTesting
@@ -148,7 +159,7 @@ public class ClientActivity extends Activity {
     protected void afterViewInjection() {
         Log.d(TAG, "afterViewInjection called");
         userId = playerData.getUserId();
-        tankId = playerData.getTankId();
+        playableId = playerData.getTankId();
         if (userId != -1) {
             userIdTextView.setText("User ID: " + userId);
             fetchAndUpdateBalance();
@@ -162,7 +173,8 @@ public class ClientActivity extends Activity {
         updateStatsDisplay();
 
         SystemClock.sleep(500);
-        simBoardView.attach(gridView, tankId);
+        simBoardView.attach(gridView, playableId);
+        selectPlayable.setAdapter(new ArrayAdapter<>(this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, playableSelections));
     }
 
     @Background
@@ -245,6 +257,12 @@ public class ClientActivity extends Activity {
         gridPollTask.doPoll(eventProcessor);
     }
 
+    @ItemSelect({R.id.selectPlayable})
+    protected void onPlayableSelect(boolean checked, int position){
+        Log.d(TAG,"spinnerpositon = " + position);
+        playableType = position+1;
+    }
+
     @Click({R.id.buttonUp, R.id.buttonDown, R.id.buttonLeft, R.id.buttonRight})
     protected void onButtonMove(View view) {
         final int viewId = view.getId();
@@ -263,19 +281,19 @@ public class ClientActivity extends Activity {
                 direction = 2;
                 break;
         }
-        tankEventController.turnOrMove(viewId, tankId, direction);
+        tankEventController.turnOrMove(viewId, playableId, playableType, direction);
     }
 
     @Click(R.id.buttonFire)
     protected void onButtonFire() {
-        tankEventController.fire(tankId);
+        tankEventController.fire(playableId, playableType);
     }
 
     @Click(R.id.buttonLeave)
     void leaveGame() {
-        Log.d(TAG, "leaveGame() called, tank ID: " + tankId);
+        Log.d(TAG, "leaveGame() called, tank ID: " + playableId);
         BackgroundExecutor.cancelAll("grid_poller_task", true);
-        clientController.leaveGameAsync(tankId);
+        clientController.leaveGameAsync(playableId);
         leaveUI();
     }
 
@@ -293,7 +311,7 @@ public class ClientActivity extends Activity {
 
     @Click(R.id.buttonEject)
     protected void onButtonEject() {
-        powerUpController.ejectPowerUpAsync(tankId);
+        powerUpController.ejectPowerUpAsync(playableId);
     }
 
     @UiThread

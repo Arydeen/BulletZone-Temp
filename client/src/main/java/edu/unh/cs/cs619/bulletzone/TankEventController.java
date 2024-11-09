@@ -23,13 +23,13 @@ public class TankEventController {
     public TankEventController() {}
 
     @Background
-    public void moveAsync(long tankId, byte direction) {
-        restClient.move(tankId, direction);
+    public void moveAsync(long playableId, int playableType, byte direction) {
+        restClient.move(playableId, playableType, direction);
     }
 
     @Background
-    public void turnAsync(long tankId, byte direction) {
-        restClient.turn(tankId, direction);
+    public void turnAsync(long playableId, int playableType, byte direction) {
+        restClient.turn(playableId, playableType, direction);
     }
 
     private boolean onePointTurn(int currentButtonId) {
@@ -48,19 +48,19 @@ public class TankEventController {
     }
 
     @Background
-    public void turnOrMove(int currentButtonId, long tankId, byte direction) {
+    public void turnOrMove(int currentButtonId, long playableId, int playableType, byte direction) {
         if (lastPressedButtonId != -1 && onePointTurn(currentButtonId)) {
 //            Log.d(TAG, "One-point turn detected: from " + lastPressedButtonId + " to " + viewId);
-            this.turnAsync(tankId, direction);
+            this.turnAsync(playableId, playableType, direction);
         } else {
-            this.moveAsync(tankId, direction);
+            this.moveAsync(playableId, playableType, direction);
         }
         lastPressedButtonId = currentButtonId;
     }
 
     @Background
-    public void fire(long tankId) {
-        restClient.fire(tankId);
+    public void fire(long playableId, int playableType) {
+        restClient.fire(playableId, playableType);
     }
 
 }

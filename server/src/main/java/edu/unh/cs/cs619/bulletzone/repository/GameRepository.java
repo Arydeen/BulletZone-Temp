@@ -1,5 +1,8 @@
 package edu.unh.cs.cs619.bulletzone.repository;
 
+import org.javatuples.Pair;
+
+import edu.unh.cs.cs619.bulletzone.model.Builder;
 import edu.unh.cs.cs619.bulletzone.model.Direction;
 import edu.unh.cs.cs619.bulletzone.model.IllegalTransitionException;
 import edu.unh.cs.cs619.bulletzone.model.LimitExceededException;
@@ -9,22 +12,22 @@ import edu.unh.cs.cs619.bulletzone.model.TankDoesNotExistException;
 
 public interface GameRepository {
 
-    Tank join(String ip);
+    Pair<Tank, Builder> join(String ip);
 
     Game getGame();
 
-    boolean turn(long tankId, Direction direction)
+    boolean turn(long playableId, int playableType, Direction direction)
             throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException;
 
-    boolean move(long tankId, Direction direction)
+    boolean move(long playableId, int playableType, Direction direction)
             throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException;
 
-    boolean fire(long tankId, int strength)
+    boolean fire(long playableId, int playableType, int strength)
             throws TankDoesNotExistException, LimitExceededException;
 
-    boolean ejectPowerUp(long tankId)
+    boolean ejectPowerUp(long playableId)
             throws TankDoesNotExistException;
 
-    public void leave(long tankId)
+    public void leave(long playableId)
             throws TankDoesNotExistException;
 }

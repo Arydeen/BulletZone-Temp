@@ -26,6 +26,8 @@ public class Builder extends Playable {
         allowedMoveInterval = 1000; // Builders can move no faster than once per second
         lastMoveTime = 0;
         moveMultiplier = 1;
+
+        powerUpManager = new PowerUpManager(allowedMoveInterval, allowedFireInterval);
     }
 
     @Override

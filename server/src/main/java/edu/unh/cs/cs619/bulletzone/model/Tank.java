@@ -8,7 +8,6 @@ import edu.unh.cs.cs619.bulletzone.model.events.SpawnEvent;
 
 public class Tank extends Playable {
     private static final String TAG = "Tank";
-    private final PowerUpManager powerUpManager;
 
     public Tank(long id, Direction direction, String ip) {
         super(id, direction, ip);
@@ -43,62 +42,5 @@ public class Tank extends Playable {
     @Override
     public String toString() {
         return "T";
-    }
-
-    public void addPowerUp(Item powerUp) {
-        powerUpManager.addPowerUp(powerUp);
-        updateIntervals();
-        if (powerUp.isAntiGrav()) {
-            setMoveMultiplier((int)(getMoveMultiplier() * 2)); // Double movement speed
-        } else if (powerUp.isFusionReactor()) {
-            setMoveMultiplier((int)(getMoveMultiplier() * 0.75)); // Reduce speed by 25%
-        }
-    }
-
-    public Item ejectPowerUp() {
-        Item powerUp = powerUpManager.ejectLastPowerUp();
-        updateIntervals();
-        if (powerUp != null) {
-            if (powerUp.isAntiGrav()) {
-                setMoveMultiplier((int)(getMoveMultiplier() / 2)); // Revert speed boost
-            } else if (powerUp.isFusionReactor()) {
-                setMoveMultiplier((int)(getMoveMultiplier() / 0.75)); // Revert speed reduction
-            }
-        }
-        return powerUp;
-    }
-
-    private void updateIntervals() {
-        allowedMoveInterval = powerUpManager.getCurrentMovementDelay();
-        allowedFireInterval = powerUpManager.getCurrentFireDelay();
-    }
-
-    public boolean hasPowerUps() {
-        return powerUpManager.hasPowerUps();
-    }
-
-    public boolean tryEjectPowerUp(FieldHolder currentField) {
-        if (!hasPowerUps()) {
-            return false;
-        }
-
-        Direction[] directions = {Direction.Up, Direction.Right, Direction.Down, Direction.Left};
-
-        for (Direction dir : directions) {
-            FieldHolder neighbor = currentField.getNeighbor(dir);
-            if (!neighbor.isPresent()) {
-                Item powerUp = ejectPowerUp();
-                if (powerUp != null) {
-                    neighbor.setFieldEntity(powerUp);
-                    powerUp.setParent(neighbor);
-                    EventBus.getDefault().post(new SpawnEvent(powerUp.getIntValue(), neighbor.getPosition()));
-                    return true;
-                }
-            }
-        }
-
-        // If no empty square found, just destroy the power-up
-        ejectPowerUp();
-        return true;
     }
 }
