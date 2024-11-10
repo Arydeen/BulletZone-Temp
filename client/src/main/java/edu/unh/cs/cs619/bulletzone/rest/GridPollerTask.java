@@ -55,7 +55,7 @@ public class GridPollerTask {
 
             while (isRunning) {
                 try {
-                    grid = restClient.grid();
+                    grid = restClient.playerGrid();
                     Set<Integer> currentItems = new HashSet<>();
                     int[][] boardState = grid.getGrid();
 
@@ -79,7 +79,7 @@ public class GridPollerTask {
                     }
 
                     itemsPresent = currentItems;
-                    onGridUpdate(grid);
+                    onGridUpdate(grid, tGrid);
 
                     // Process events
                     GameEventCollectionWrapper events = restClient.events(previousTimeStamp);

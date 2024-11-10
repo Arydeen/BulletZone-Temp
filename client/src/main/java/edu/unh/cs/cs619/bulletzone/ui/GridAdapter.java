@@ -71,11 +71,11 @@ public class GridAdapter extends BaseAdapter {
             this.mEntities = entities;
             this.terrainEntities = tEntities;
             if (simBoard != null) {
-                simBoard.setUsingBoard(mEntities);
+                simBoard.setUsingBoard(mEntities, tEntities);
             } else {
                 Log.e(TAG, "SimulationBoard is null in updateList, creating new instance");
                 simBoard = new SimulationBoard(16, 16);
-                simBoard.setUsingBoard(mEntities);
+                simBoard.setUsingBoard(mEntities, tEntities);
             }
             this.notifyDataSetChanged();
             simBoard.setUsingBoard(mEntities, terrainEntities); // Not sure if this is needed here
@@ -91,11 +91,11 @@ public class GridAdapter extends BaseAdapter {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void handleUpdate(UpdateBoardEvent event) {
         if (simBoard != null) {
-            simBoard.setUsingBoard(mEntities);
+            simBoard.setUsingBoard(mEntities, terrainEntities);
         } else {
             Log.e(TAG, "SimulationBoard is null in handleUpdate, creating new instance");
             simBoard = new SimulationBoard(16, 16);
-            simBoard.setUsingBoard(mEntities);
+            simBoard.setUsingBoard(mEntities, terrainEntities);
         }
         this.notifyDataSetChanged();
         simBoard.setUsingBoard(mEntities, terrainEntities); // Updates simulation board when events are posted
@@ -106,7 +106,7 @@ public class GridAdapter extends BaseAdapter {
         if (board != null) {
             this.simBoard = board;
             if (mEntities != null) {
-                simBoard.setUsingBoard(mEntities);
+                simBoard.setUsingBoard(mEntities, terrainEntities);
             }
             //Log.d(TAG, "New SimulationBoard set successfully");
         } else {
@@ -158,22 +158,13 @@ public class GridAdapter extends BaseAdapter {
             imageView = (ImageView) convertView;
         }
 
-        if (this.isUpdated) {
+        if (this.isUpdated && simBoard != null) {
+            int value = mEntities[position / 16][position % 16];
             BoardCellBlock currCell = simBoard.getCell(position);
             BoardCell playerCell = currCell.getPlayerData();
             BoardCell itemCell = currCell.getItemData();
             BoardCell terrainCell = currCell.getTerrainData();
 
-            // Check if the current cell is a Tank
-            if (playerCell.getCellType().equals("Tank")) {
-                // If it is a tank, set get the TankID from the raw value;
-                int tankIdTest = (playerCell.getRawValue() / 10000) - 1000;
-//                Log.d("tankID", "TankId: " + tankIdTest);
-//                Log.d("userTankID", "UserTankID: " + this.tankId);
-                // If the tankID is equal to the user's tank ID, set the resource different
-        if (this.isUpdated && simBoard != null) {
-            int value = mEntities[position / 16][position % 16];
-            BoardCell currCell = simBoard.getCell(position);
 
             // Handle power-ups
             if (value >= 3000 && value <= 3003) {
@@ -193,26 +184,18 @@ public class GridAdapter extends BaseAdapter {
                 }
             }
             // Handle tanks
-            else if (currCell.getCellType().equals("Tank")) {
-                int tankIdTest = (currCell.getRawValue() / 10000) - 1000;
+            else if (playerCell.getCellType().equals("Tank")) {
+                int tankIdTest = (playerCell.getRawValue() / 10000) - 1000;
                 if (tankIdTest == this.tankId) {
                     imageView.setImageResource(R.drawable.small_goblin_red);
                 } else { // Else set it to what it should be
                     imageView.setImageResource(playerCell.getResourceID());
-                } else {
-                    imageView.setImageResource(currCell.getResourceID());
                 }
             } else {
                 imageView.setImageResource(playerCell.getResourceID());
             }
-            // Handle all other cells
-            else {
-                imageView.setImageResource(currCell.getResourceID());
-            }
-//            Log.d("fromAdapter", "Rotate Goblin");
-            imageView.setRotation(playerCell.getRotation());
 
-            imageView.setRotation(currCell.getRotation());
+            imageView.setRotation(playerCell.getRotation());
         } else {
             imageView.setImageResource(R.drawable.blank);
             if (simBoard == null) {
