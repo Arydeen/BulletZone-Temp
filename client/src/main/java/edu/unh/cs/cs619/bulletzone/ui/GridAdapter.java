@@ -201,11 +201,11 @@ public class GridAdapter extends BaseAdapter {
                         imageView.setImageResource(playerCell.getResourceID());
                     }
                 } else {
-
-                    imageView.setImageResource(playerCell.getResourceID());
-//                    if (playerCell.getCellType().equals("Empty")) {
-//                        imageView.setVisibility(View.INVISIBLE);
-//                    }
+                    if (playerCell.getCellType().equals("Empty")) {
+                        imageView.setImageResource(android.R.color.transparent);
+                    } else {
+                        imageView.setImageResource(playerCell.getResourceID());
+                    }
                 }
 
                 imageView.setRotation(playerCell.getRotation());

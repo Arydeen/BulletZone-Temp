@@ -104,7 +104,6 @@
                 android:id="@+id/tGridView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
                 android:background="#FFFFFF"
                 android:numColumns="16"
                 tools:listitem="@layout/field_item">
@@ -114,8 +113,7 @@
                 android:id="@+id/gridView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="#FFFFFF"
+                android:background="@android:color/transparent"
                 android:numColumns="16"
                 tools:listitem="@layout/field_item">
             </GridView>
