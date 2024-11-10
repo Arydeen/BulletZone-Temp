@@ -174,28 +174,11 @@ public class GridAdapter extends BaseAdapter {
 
 
             if (!isTerrainView) {
-                // Handle power-ups
-                if (value >= 3000 && value <= 3003) {
-                    //Log.d(TAG, "Rendering power-up at position " + position + ", type: " + (value - 3000));
-                    switch (value - 3000) {
-                        case 1:
-                            imageView.setImageResource(R.drawable.thingamajig_icon);
-                            break;
-                        case 2:
-                            imageView.setImageResource(R.drawable.anti_grav_icon);
-                            break;
-                        case 3:
-                            imageView.setImageResource(R.drawable.fusion_reactor_icon);
-                            break;
-                        default:
-                            imageView.setImageResource(R.drawable.clear);
-                    }
-                }
                 // Handle tanks
-                else if (playerCell.getCellType().equals("Tank")) {
+                 if (playerCell.getCellType().equals("Tank")) {
                     int tankIdTest = (playerCell.getRawValue() / 10000) - 1000;
                     if (tankIdTest == this.tankId) {
-                        imageView.setImageResource(R.drawable.small_goblin_red);
+                        imageView.setImageResource(R.drawable.trans_goblin);
                     } else { // Else set it to what it should be
                         imageView.setImageResource(playerCell.getResourceID());
                     }
