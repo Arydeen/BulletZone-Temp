@@ -33,6 +33,7 @@ public class GridAdapter extends BaseAdapter {
     private SimulationBoard simBoard;
     public boolean isUpdated = false;
     private long tankId = -1;
+    private long builderId = -1;
 
     @AfterInject
     protected void afterInject() {
@@ -129,6 +130,10 @@ public class GridAdapter extends BaseAdapter {
         this.tankId = tankId;
     }
 
+    public void setBuilderId(long builderId) {
+        this.builderId = builderId;
+    }
+
     /**
      * Updates the desired cell from events in the gridView, using SimulationBoard's Board Cells
      *
@@ -175,6 +180,14 @@ public class GridAdapter extends BaseAdapter {
             else if (currCell.getCellType().equals("Tank")) {
                 int tankIdTest = (currCell.getRawValue() / 10000) - 1000;
                 if (tankIdTest == this.tankId) {
+                    imageView.setImageResource(R.drawable.small_goblin_red);
+                } else {
+                    imageView.setImageResource(currCell.getResourceID());
+                }
+            }
+            else if (currCell.getCellType().equals("Builder")) {
+                int builderIdTest = (currCell.getRawValue() / 10000) - 2000;
+                if (builderIdTest == this.builderId) {
                     imageView.setImageResource(R.drawable.small_goblin_red);
                 } else {
                     imageView.setImageResource(currCell.getResourceID());

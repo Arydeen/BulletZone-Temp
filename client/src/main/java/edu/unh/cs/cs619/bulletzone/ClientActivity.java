@@ -17,16 +17,14 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import org.androidannotations.annotations.*;
-import org.androidannotations.rest.spring.annotations.RestService;
 import org.androidannotations.api.BackgroundExecutor;
 
 import edu.unh.cs.cs619.bulletzone.events.GameEventProcessor;
 import edu.unh.cs.cs619.bulletzone.events.ItemPickupEvent;
 import edu.unh.cs.cs619.bulletzone.events.PowerUpEjectEvent;
 import edu.unh.cs.cs619.bulletzone.rest.BZRestErrorhandler;
-import edu.unh.cs.cs619.bulletzone.rest.BulletZoneRestClient;
 import edu.unh.cs.cs619.bulletzone.rest.GridPollerTask;
-import edu.unh.cs.cs619.bulletzone.ui.GridAdapter;
+import edu.unh.cs.cs619.bulletzone.ui.PlayerViewController;
 import edu.unh.cs.cs619.bulletzone.util.ClientActivityShakeDriver;
 import androidx.annotation.VisibleForTesting;
 
@@ -76,7 +74,7 @@ public class ClientActivity extends Activity {
     BZRestErrorhandler bzRestErrorhandler;
 
     @Bean
-    TankEventController tankEventController;
+    UnitEventController unitEventController;
 
     @Bean
     ClientController clientController;
@@ -89,6 +87,8 @@ public class ClientActivity extends Activity {
 
     ClientActivityShakeDriver shakeDriver;
 
+    PlayerViewController playerViewController = PlayerViewController.getInstance();
+
     PlayerData playerData = PlayerData.getPlayerData();
 
     private long tankId = -1;
@@ -96,8 +96,8 @@ public class ClientActivity extends Activity {
 
     // For testing purposes only
     @VisibleForTesting
-    public void setTankEventController(TankEventController controller) {
-        this.tankEventController = controller;
+    public void setUnitEventController(UnitEventController controller) {
+        this.unitEventController = controller;
     }
 
     // For testing purposes only
@@ -245,30 +245,79 @@ public class ClientActivity extends Activity {
         gridPollTask.doPoll(eventProcessor);
     }
 
+    /**
+     * on click listener for unit group selection button
+     */
+    @Click(R.id.unitGroup)
+    void unitGroup() {
+        playerViewController.unitGroup(this);
+    }
+
+    /**
+     * on click listener for material group selection button
+     */
+    @Click(R.id.materialGroup)
+    void materialGroup() {
+        playerViewController.materialGroup(this);
+    }
+
+    /**
+     * on click listener for tank selection button
+     */
+    @Click(R.id.buttonTank)
+    void buttonTank() {
+        playerViewController.buttonTank(this);
+    }
+
+    /**
+     * on click listener for builder selection button
+     */
+    @Click(R.id.buttonBuilder)
+    void buttonBuilder() {
+        playerViewController.buttonBuilder(this);
+    }
+
+    /**
+     * on click listener for mine or build button
+     */
+    @Click(R.id.buttonBuildOrDismantle)
+    void buttonMineOrBuild() {
+        unitEventController.buildOrDismantle(playerData.getCurId());
+        //Step 1 cont. for facility
+    }
+
+
+    /**
+     * on click listener for destructible wall selection button
+     */
+    @Click(R.id.buttonDesWall)
+    void buttonDesWall() {
+        playerViewController.buttonDesWall(this);
+    }
+
+    /**
+     * on click listener for indestructible wall selection button
+     */
+    @Click(R.id.buttonIndWall)
+    void buttonIndWall() {
+        playerViewController.buttonIndWall(this);
+    }
+
+    //Step 1 for facility
+    @Click(R.id.buttonFacility)
+    void buttonFacility() {
+        playerViewController.buttonFacility(this);
+    }
+
     @Click({R.id.buttonUp, R.id.buttonDown, R.id.buttonLeft, R.id.buttonRight})
     protected void onButtonMove(View view) {
         final int viewId = view.getId();
-        byte direction = 0;
-        switch (viewId) {
-            case R.id.buttonUp:
-                direction = 0;
-                break;
-            case R.id.buttonDown:
-                direction = 4;
-                break;
-            case R.id.buttonLeft:
-                direction = 6;
-                break;
-            case R.id.buttonRight:
-                direction = 2;
-                break;
-        }
-        tankEventController.turnOrMove(viewId, tankId, direction);
+        unitEventController.turnOrMove(viewId);
     }
 
     @Click(R.id.buttonFire)
     protected void onButtonFire() {
-        tankEventController.fire(tankId);
+        unitEventController.fire(tankId);
     }
 
     @Click(R.id.buttonLeave)
