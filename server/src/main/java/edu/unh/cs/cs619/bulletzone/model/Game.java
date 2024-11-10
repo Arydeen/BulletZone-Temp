@@ -116,6 +116,7 @@ public final class Game {
             builders.put(builder.getId(), builder);
             playersIPBuilders.put(ip, builder.getId());
         }
+        EventBus.getDefault().post(new SpawnEvent(builder.getIntValue(), builder.getPosition()));
     }
 
     public void removeBuilder(long builderId){

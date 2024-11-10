@@ -83,7 +83,6 @@ public class GridAdapter extends BaseAdapter {
                 simBoard.setUsingBoard(mEntities, tEntities);
             }
             this.notifyDataSetChanged();
-            simBoard.setUsingBoard(mEntities, terrainEntities); // Not sure if this is needed here
             this.isUpdated = true;
         }
     }
@@ -198,6 +197,13 @@ public class GridAdapter extends BaseAdapter {
                     if (tankIdTest == this.tankId) {
                         imageView.setImageResource(R.drawable.small_goblin_red);
                     } else { // Else set it to what it should be
+                        imageView.setImageResource(playerCell.getResourceID());
+                    }
+                } else if (playerCell.getCellType().equals("Builder")) {
+                    int builderIdTest = (playerCell.getRawValue() / 10000) - 1000;
+                    if (builderIdTest == this.tankId) {
+                        imageView.setImageResource(R.drawable.builder);
+                    } else {
                         imageView.setImageResource(playerCell.getResourceID());
                     }
                 } else {

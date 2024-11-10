@@ -56,17 +56,17 @@ public interface BulletZoneRestClient extends RestClientErrorHandling {
     @Put("/account/login/{username}/{password}")
     LongWrapper login(@Path String username, @Path String password);
 
-    @Put("/{tankId}/move/{direction}")
-    BooleanWrapper move(@Path long tankId, @Path byte direction);
+    @Put("/{playableId}/{playableType}/move/{direction}")
+    BooleanWrapper move(@Path long playableId, @Path int playableType, @Path byte direction);
 
-    @Put("/{tankId}/turn/{direction}")
-    BooleanWrapper turn(@Path long tankId, @Path byte direction);
+    @Put("/{playableId}/{playableType}/turn/{direction}")
+    BooleanWrapper turn(@Path long playableId, @Path int playableType, @Path byte direction);
 
-    @Put("/{tankId}/fire/1")
-    BooleanWrapper fire(@Path long tankId);
+    @Put("/{playableId}/{playableType}/fire/1")
+    BooleanWrapper fire(@Path long playableId, @Path int playableType);
 
-    @Delete("/{tankId}/leave")
-    BooleanWrapper leave(@Path long tankId);
+    @Delete("/{playableId}/leave")
+    BooleanWrapper leave(@Path long playableId);
 
     @Get("/account/balance/{userId}")
     Double getBalance(@Path("userId") long userId) throws RestClientException;
@@ -77,6 +77,6 @@ public interface BulletZoneRestClient extends RestClientErrorHandling {
     @Put("/account/balance/{userId}/deposit/{amount}")
     BooleanWrapper depositBalance(@Path("userId") long userId, @Path("amount") double amount);
 
-    @Put("/{tankId}/eject")
-    BooleanWrapper ejectPowerUp(@Path long tankId);
+    @Put("/{playableId}/eject")
+    BooleanWrapper ejectPowerUp(@Path long playableId);
 }
