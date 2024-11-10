@@ -36,6 +36,14 @@ public class FieldHolder {
         return playerEntityHolder.isPresent();
     }
 
+    public boolean isTerrainPresent() {
+        return terrainEntityHolder.isPresent();
+    }
+
+    public boolean isItemPresent() {
+        return itemEntityHolder.isPresent();
+    }
+
     public FieldEntity getEntity() {
         return playerEntityHolder.get();
     }

@@ -55,7 +55,7 @@ public class SimulationBoard extends GameEventProcessor {
      * @param board Integer array board used by events.
      */
     public void setUsingBoard(int[][] board, int[][] tBoard) {
-        Log.d("SimBoard", "Setting Simulation Board");
+//        Log.d("SimBoard", "Setting Simulation Board");
         int index = 0;
         BoardCellFactory factory = new BoardCellFactory();
 

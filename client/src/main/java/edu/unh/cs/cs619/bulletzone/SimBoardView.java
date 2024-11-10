@@ -19,6 +19,9 @@ public class SimBoardView {
     @Bean
     protected GridAdapter adapter;
 
+    @Bean
+    protected GridAdapter tAdapter;
+
     public Object gridEventHandler = new Object() {
         @Subscribe
         public void onUpdateGrid(GridUpdateEvent event) {
@@ -28,12 +31,19 @@ public class SimBoardView {
 
     public void updateGrid(GridWrapper gw, GridWrapper tw) {
         adapter.updateList(gw.getGrid(), tw.getGrid());
+        tAdapter.updateList(gw.getGrid(), tw.getGrid());
     }
 
-    public void attach(GridView gView, Long tankID) {
+    public void attach(GridView gView, GridView tGridView, Long tankID) {
         adapter.setSimBoard(simBoard);
+        tAdapter.setSimBoard(simBoard);
         adapter.setTankId(tankID);
+
+        adapter.setTerrainView(false);
         gView.setAdapter(adapter);
+
+        tAdapter.setTerrainView(true);
+        tGridView.setAdapter(tAdapter);
         EventBus.getDefault().register(gridEventHandler);
     }
 

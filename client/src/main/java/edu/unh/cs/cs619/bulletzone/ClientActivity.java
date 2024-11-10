@@ -42,6 +42,9 @@ public class ClientActivity extends Activity {
     protected GridView gridView;
 
     @ViewById
+    protected GridView tGridView;
+
+    @ViewById
     protected TextView userIdTextView;
 
     @ViewById
@@ -162,7 +165,7 @@ public class ClientActivity extends Activity {
         updateStatsDisplay();
 
         SystemClock.sleep(500);
-        simBoardView.attach(gridView, tankId);
+        simBoardView.attach(gridView, tGridView, tankId);
     }
 
     @Background

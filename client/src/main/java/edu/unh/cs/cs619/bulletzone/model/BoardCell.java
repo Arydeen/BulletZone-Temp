@@ -30,10 +30,10 @@ public class BoardCell {
                     resourceID = R.drawable.fusion_reactor_icon;
                     break;
                 default:
-                    resourceID = R.drawable.blank;
+                    resourceID = R.drawable.clear;
             }
         } else {
-            resourceID = R.drawable.blank;
+            resourceID = R.drawable.clear;
         }
     }
 
@@ -48,7 +48,7 @@ public class BoardCell {
                 case 3:
                     return R.drawable.fusion_reactor_icon;
                 default:
-                    return R.drawable.blank;
+                    return R.drawable.clear;
             }
         }
         return resourceID;

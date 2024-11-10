@@ -285,40 +285,6 @@ public class InMemoryGameRepository implements GameRepository {
                     downHolder.addNeighbor(Direction.Up, targetHolder);
                 }
             }
-
-            for (int i = 0; i < FIELD_DIM; i++) {
-                for (int j = 0; j < FIELD_DIM; j++) {
-                    targetHolder = game.getItemHolderGrid().get(i * FIELD_DIM + j);
-
-                    rightHolder = game.getItemHolderGrid().get(i * FIELD_DIM
-                            + ((j + 1) % FIELD_DIM));
-                    downHolder = game.getItemHolderGrid().get(((i + 1) % FIELD_DIM)
-                            * FIELD_DIM + j);
-
-                    targetHolder.addNeighbor(Direction.Right, rightHolder);
-                    rightHolder.addNeighbor(Direction.Left, targetHolder);
-
-                    targetHolder.addNeighbor(Direction.Down, downHolder);
-                    downHolder.addNeighbor(Direction.Up, targetHolder);
-                }
-            }
-
-            for (int i = 0; i < FIELD_DIM; i++) {
-                for (int j = 0; j < FIELD_DIM; j++) {
-                    targetHolder = game.getTerrainHolderGrid().get(i * FIELD_DIM + j);
-
-                    rightHolder = game.getTerrainHolderGrid().get(i * FIELD_DIM
-                            + ((j + 1) % FIELD_DIM));
-                    downHolder = game.getTerrainHolderGrid().get(((i + 1) % FIELD_DIM)
-                            * FIELD_DIM + j);
-
-                    targetHolder.addNeighbor(Direction.Right, rightHolder);
-                    rightHolder.addNeighbor(Direction.Left, targetHolder);
-
-                    targetHolder.addNeighbor(Direction.Down, downHolder);
-                    downHolder.addNeighbor(Direction.Up, targetHolder);
-                }
-            }
         }
     }
 

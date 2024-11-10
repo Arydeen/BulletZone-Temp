@@ -69,6 +69,11 @@ public class GameBoardBuilder {
         game.getHolderGrid().get(41).setFieldEntity(new Wall());
         game.getHolderGrid().get(57).setFieldEntity(new Wall());
         game.getHolderGrid().get(73).setFieldEntity(new Wall());
+
+        //TERRAIN TEST
+        game.getHolderGrid().get(0).setTerrainEntityHolder(new Wall());
+        game.getHolderGrid().get(100).setTerrainEntityHolder(new Wall());
+        game.getHolderGrid().get(90).setTerrainEntityHolder(new Wall());
     }
 
     // Enables horizontal wrapping

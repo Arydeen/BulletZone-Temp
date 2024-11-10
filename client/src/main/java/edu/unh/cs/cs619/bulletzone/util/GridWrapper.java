@@ -20,7 +20,7 @@ public class GridWrapper {
     }
 
     public int[][] getGrid() {
-        Log.d("GridWrapper", Arrays.toString(grid));
+//        Log.d("GridWrapper", Arrays.toString(grid));
         return this.grid;
     }
 

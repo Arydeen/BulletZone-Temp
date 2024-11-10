@@ -192,13 +192,13 @@ public final class Game {
     public int[][] getTerrainGrid2D() {
         int[][] grid = new int[FIELD_DIM][FIELD_DIM];
 
-        synchronized (terrainHolderGrid) {
+        synchronized (holderGrid) {
             FieldHolder holder;
             for (int i = 0; i < FIELD_DIM; i++) {
                 for (int j = 0; j < FIELD_DIM; j++) {
                     holder = holderGrid.get(i * FIELD_DIM + j);
-                    if (holder.isPresent()) {
-                        grid[i][j] = holder.getEntity().getIntValue();
+                    if (holder.isTerrainPresent()) {
+                        grid[i][j] = holder.getTerrainEntityHolder().getIntValue();
                     } else {
                         grid[i][j] = 0;
                     }

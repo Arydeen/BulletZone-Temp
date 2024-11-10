@@ -38,6 +38,7 @@ public class GridAdapter extends BaseAdapter {
     private SimulationBoard simBoard;
     public boolean isUpdated = false;
     private long tankId = -1;
+    private boolean isTerrainView = false;
 
     @AfterInject
     protected void afterInject() {
@@ -45,6 +46,10 @@ public class GridAdapter extends BaseAdapter {
         simBoard = new SimulationBoard(16, 16);
         EventBus.getDefault().register(this);
         //Log.d(TAG, "GridAdapter initialized with new SimulationBoard");
+    }
+
+    public void setTerrainView(boolean isTerrainView) {
+        this.isTerrainView = isTerrainView;
     }
 
     /**
@@ -165,39 +170,53 @@ public class GridAdapter extends BaseAdapter {
             BoardCell itemCell = currCell.getItemData();
             BoardCell terrainCell = currCell.getTerrainData();
 
+//            Log.d(TAG, "isTerrainGrid: " + isTerrainView);
+//            Log.d(TAG, "Terrain Cell: " + terrainCell.getCellType());
 
-            // Handle power-ups
-            if (value >= 3000 && value <= 3003) {
-                //Log.d(TAG, "Rendering power-up at position " + position + ", type: " + (value - 3000));
-                switch (value - 3000) {
-                    case 1:
-                        imageView.setImageResource(R.drawable.thingamajig_icon);
-                        break;
-                    case 2:
-                        imageView.setImageResource(R.drawable.anti_grav_icon);
-                        break;
-                    case 3:
-                        imageView.setImageResource(R.drawable.fusion_reactor_icon);
-                        break;
-                    default:
-                        imageView.setImageResource(R.drawable.blank);
+
+            if (!isTerrainView) {
+                // Handle power-ups
+                if (value >= 3000 && value <= 3003) {
+                    //Log.d(TAG, "Rendering power-up at position " + position + ", type: " + (value - 3000));
+                    switch (value - 3000) {
+                        case 1:
+                            imageView.setImageResource(R.drawable.thingamajig_icon);
+                            break;
+                        case 2:
+                            imageView.setImageResource(R.drawable.anti_grav_icon);
+                            break;
+                        case 3:
+                            imageView.setImageResource(R.drawable.fusion_reactor_icon);
+                            break;
+                        default:
+                            imageView.setImageResource(R.drawable.clear);
+                    }
                 }
-            }
-            // Handle tanks
-            else if (playerCell.getCellType().equals("Tank")) {
-                int tankIdTest = (playerCell.getRawValue() / 10000) - 1000;
-                if (tankIdTest == this.tankId) {
-                    imageView.setImageResource(R.drawable.small_goblin_red);
-                } else { // Else set it to what it should be
+                // Handle tanks
+                else if (playerCell.getCellType().equals("Tank")) {
+                    int tankIdTest = (playerCell.getRawValue() / 10000) - 1000;
+                    if (tankIdTest == this.tankId) {
+                        imageView.setImageResource(R.drawable.small_goblin_red);
+                    } else { // Else set it to what it should be
+                        imageView.setImageResource(playerCell.getResourceID());
+                    }
+                } else {
+
                     imageView.setImageResource(playerCell.getResourceID());
+//                    if (playerCell.getCellType().equals("Empty")) {
+//                        imageView.setVisibility(View.INVISIBLE);
+//                    }
                 }
+
+                imageView.setRotation(playerCell.getRotation());
             } else {
-                imageView.setImageResource(playerCell.getResourceID());
+//                Log.d(TAG, "Terrain Cell: " + terrainCell.getCellType());
+                imageView.setImageResource(terrainCell.getResourceID());
+//                imageView.setVisibility(View.VISIBLE);
             }
 
-            imageView.setRotation(playerCell.getRotation());
         } else {
-            imageView.setImageResource(R.drawable.blank);
+            imageView.setImageResource(R.drawable.clear);
             if (simBoard == null) {
                 Log.e(TAG, "SimulationBoard is null in getView");
             }
