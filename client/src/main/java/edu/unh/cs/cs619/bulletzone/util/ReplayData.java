@@ -13,7 +13,6 @@ public class ReplayData {
 
     private GameEvent[] eventHistoryArray;
     private ArrayList<GameEvent> eventHistory = new ArrayList<>();
-    private int gameEventCounter = 0;
 
     private ReplayData() {}
 
@@ -38,8 +37,7 @@ public class ReplayData {
     }
 
     public void addGameEvent(GameEvent event) {
-        eventHistory.add(gameEventCounter, event);
-        gameEventCounter++;
+        eventHistory.add(event);
     }
 
     public GameEvent getEventAt(int index) {
