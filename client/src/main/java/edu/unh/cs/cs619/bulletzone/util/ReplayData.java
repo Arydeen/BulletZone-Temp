@@ -9,6 +9,7 @@ public class ReplayData {
     private static ReplayData replayData = null;
 
     private GridWrapper initialGrid;
+    private GridWrapper initialTerrainGrid;
 
     private GameEvent[] eventHistoryArray;
     private ArrayList<GameEvent> eventHistory = new ArrayList<>();
@@ -23,12 +24,17 @@ public class ReplayData {
         return replayData;
     }
 
-    public void setInitialGrid(GridWrapper initialGrid) {
+    public void setInitialGrids(GridWrapper initialGrid, GridWrapper initialTerrainGrid) {
         this.initialGrid = initialGrid;
+        this.initialTerrainGrid = initialTerrainGrid;
     }
 
     public GridWrapper getInitialGrid() {
         return initialGrid;
+    }
+
+    public GridWrapper getInitialTerrainGrid() {
+        return initialTerrainGrid;
     }
 
     public void addGameEvent(GameEvent event) {

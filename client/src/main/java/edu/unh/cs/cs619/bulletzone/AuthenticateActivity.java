@@ -17,7 +17,7 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 
-import edu.unh.cs.cs619.bulletzone.util.PlayerData;
+import edu.unh.cs.cs619.bulletzone.PlayerData;
 import edu.unh.cs.cs619.bulletzone.util.ResultWrapper;
 
 @EActivity(R.layout.activity_authenticate)

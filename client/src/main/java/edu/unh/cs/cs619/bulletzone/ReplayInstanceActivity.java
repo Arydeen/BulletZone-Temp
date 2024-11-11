@@ -44,7 +44,9 @@ public class ReplayInstanceActivity extends Activity {
         Log.d(TAG, "afterViewInjection");
         simBoardView.replayAttach(replayGridView);
         gameEventProcessor.start();
-        gameEventProcessor.setBoard(replayData.getInitialGrid().getGrid());
+        gameEventProcessor.setBoard(
+                replayData.getInitialGrid().getGrid(), replayData.getInitialTerrainGrid().getGrid()
+        );
     }
 
     @Click(R.id.backToReplaysButton)

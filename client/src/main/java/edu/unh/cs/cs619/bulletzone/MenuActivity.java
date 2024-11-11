@@ -15,7 +15,7 @@ import org.androidannotations.annotations.NonConfigurationInstance;
 import edu.unh.cs.cs619.bulletzone.events.GameEventProcessor;
 import edu.unh.cs.cs619.bulletzone.rest.GridPollerTask;
 import edu.unh.cs.cs619.bulletzone.ui.GridAdapter;
-import edu.unh.cs.cs619.bulletzone.util.PlayerData;
+import edu.unh.cs.cs619.bulletzone.PlayerData;
 
 /**
  * Made by Alec Rydeen

@@ -25,7 +25,7 @@ import edu.unh.cs.cs619.bulletzone.util.ResultWrapper;
  * Created by simon on 10/1/14.
  */
 
-//@Rest(rootUrl = "http://10.0.2.2:61111/games",
+//@Rest(rootUrl = "http://10.0.2.2:61902/games",
 //@Rest(rootUrl = "http://stman1.cs.unh.edu:6192/games",
 @Rest(rootUrl = "http://stman1.cs.unh.edu:61902/games",
         converters = {StringHttpMessageConverter.class, MappingJackson2HttpMessageConverter.class}
@@ -38,8 +38,14 @@ public interface BulletZoneRestClient extends RestClientErrorHandling {
     @Post("")
     LongWrapper join() throws RestClientException;
 
-    @Get("")
-    GridWrapper grid();
+    @Get("/playergrid")
+    GridWrapper playerGrid();
+
+    @Get("/itemgrid")
+    GridWrapper itemGrid();
+
+    @Get("/terraingrid")
+    GridWrapper terrainGrid();
 
     @Get("/events/{sinceTime}")
     GameEventCollectionWrapper events(@Path("sinceTime") long sinceTime);
@@ -50,21 +56,27 @@ public interface BulletZoneRestClient extends RestClientErrorHandling {
     @Put("/account/login/{username}/{password}")
     LongWrapper login(@Path String username, @Path String password);
 
-    @Put("/{tankId}/move/{direction}")
-    BooleanWrapper move(@Path long tankId, @Path byte direction);
+    @Put("/{playableId}/{playableType}/move/{direction}")
+    BooleanWrapper move(@Path long playableId, @Path int playableType, @Path byte direction);
 
-    @Put("/{tankId}/turn/{direction}")
-    BooleanWrapper turn(@Path long tankId, @Path byte direction);
+    @Put("/{playableId}/{playableType}/turn/{direction}")
+    BooleanWrapper turn(@Path long playableId, @Path int playableType, @Path byte direction);
 
-    @Put("/{tankId}/fire/1")
-    BooleanWrapper fire(@Path long tankId);
+    @Put("/{playableId}/{playableType}/fire/1")
+    BooleanWrapper fire(@Path long playableId, @Path int playableType);
 
-    @Delete("/{tankId}/leave")
-    BooleanWrapper leave(@Path long tankId);
+    @Delete("/{playableId}/leave")
+    BooleanWrapper leave(@Path long playableId);
 
     @Get("/account/balance/{userId}")
     Double getBalance(@Path("userId") long userId) throws RestClientException;
 
-    @Put("/account/balance/{userId}/deduct/{amount}")
-    BooleanWrapper deductBalance(@Path("userId") long userId, @Path("amount") double amount);
+//    @Put("/account/balance/{userId}/deduct/{amount}")
+//    BooleanWrapper deductBalance(@Path("userId") long userId, @Path("amount") double amount);
+
+    @Put("/account/balance/{userId}/deposit/{amount}")
+    BooleanWrapper depositBalance(@Path("userId") long userId, @Path("amount") double amount);
+
+    @Put("/{playableId}/eject")
+    BooleanWrapper ejectPowerUp(@Path long playableId);
 }

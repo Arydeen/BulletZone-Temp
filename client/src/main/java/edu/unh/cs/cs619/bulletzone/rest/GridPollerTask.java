@@ -50,7 +50,7 @@ public class GridPollerTask {
             // Get initial grid state
             GridWrapper grid = restClient.playerGrid();
             GridWrapper tGrid = restClient.terrainGrid();
-            replayData.setInitialGrid(grid);
+            replayData.setInitialGrids(grid, tGrid);
             onGridUpdate(grid, tGrid);
             previousTimeStamp = grid.getTimeStamp();
 
