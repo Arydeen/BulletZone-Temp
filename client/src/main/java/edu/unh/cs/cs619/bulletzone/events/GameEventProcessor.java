@@ -7,12 +7,15 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import androidx.annotation.VisibleForTesting;
 
+import edu.unh.cs.cs619.bulletzone.util.ReplayData;
+
 @EBean
 public class GameEventProcessor {
     private static final String TAG = "GameEventProcessor";
     private int[][] playerLayer;
     private int[][] itemLayer;
     private int[][] terrainLayer;
+    ReplayData replayData = ReplayData.getReplayData();
     private boolean isRegistered = false;
     private EventBus eb = EventBus.getDefault();
 
@@ -58,6 +61,7 @@ public class GameEventProcessor {
     public void onNewEvent(GameEvent event) {
         if (playerLayer != null) {
             Log.d(TAG, "Applying " + event);
+            replayData.addGameEvent(event);
             event.applyTo(playerLayer);
         } else {
             Log.w(TAG, "Board is null, cannot apply event: " + event);

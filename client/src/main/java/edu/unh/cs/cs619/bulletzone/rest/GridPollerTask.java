@@ -20,6 +20,7 @@ import edu.unh.cs.cs619.bulletzone.events.ItemPickupEvent;
 import edu.unh.cs.cs619.bulletzone.events.UpdateBoardEvent;
 import edu.unh.cs.cs619.bulletzone.util.GameEventCollectionWrapper;
 import edu.unh.cs.cs619.bulletzone.util.GridWrapper;
+import edu.unh.cs.cs619.bulletzone.util.ReplayData;
 
 @EBean
 public class GridPollerTask {
@@ -30,6 +31,8 @@ public class GridPollerTask {
 
     @Bean
     ClientController clientController;
+
+    ReplayData replayData = ReplayData.getReplayData();
 
     private long previousTimeStamp = -1;
     private boolean updateUsingEvents = false;
@@ -47,6 +50,7 @@ public class GridPollerTask {
             // Get initial grid state
             GridWrapper grid = restClient.playerGrid();
             GridWrapper tGrid = restClient.terrainGrid();
+            replayData.setInitialGrid(grid);
             onGridUpdate(grid, tGrid);
             previousTimeStamp = grid.getTimeStamp();
 
