@@ -17,6 +17,7 @@ import org.springframework.web.client.RestClientException;
 import edu.unh.cs.cs619.bulletzone.events.GameEvent;
 import edu.unh.cs.cs619.bulletzone.util.GameEventCollectionWrapper;
 import edu.unh.cs.cs619.bulletzone.util.GridWrapper;
+import edu.unh.cs.cs619.bulletzone.util.ReplayData;
 
 @EBean
 public class GridPollerTask {
@@ -24,6 +25,8 @@ public class GridPollerTask {
 
     @RestService
     BulletZoneRestClient restClient;
+
+    ReplayData replayData = ReplayData.getReplayData();
 
     private long previousTimeStamp = -1;
     private boolean updateUsingEvents = false;
@@ -43,6 +46,7 @@ public class GridPollerTask {
 
             // Get initial grid state
             GridWrapper grid = restClient.grid();
+            replayData.setInitialGrid(grid);
             onGridUpdate(grid);
             previousTimeStamp = grid.getTimeStamp();
 

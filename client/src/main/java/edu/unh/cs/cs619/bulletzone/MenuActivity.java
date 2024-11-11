@@ -3,7 +3,6 @@ package edu.unh.cs.cs619.bulletzone;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.Log;
 
 import org.androidannotations.annotations.AfterViews;
@@ -16,6 +15,7 @@ import org.androidannotations.annotations.NonConfigurationInstance;
 import edu.unh.cs.cs619.bulletzone.events.GameEventProcessor;
 import edu.unh.cs.cs619.bulletzone.rest.GridPollerTask;
 import edu.unh.cs.cs619.bulletzone.ui.GridAdapter;
+import edu.unh.cs.cs619.bulletzone.util.PlayerData;
 
 /**
  * Made by Alec Rydeen

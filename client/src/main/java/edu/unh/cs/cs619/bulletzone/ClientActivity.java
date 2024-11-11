@@ -10,24 +10,15 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-
 import org.androidannotations.annotations.*;
-import org.androidannotations.rest.spring.annotations.RestService;
 import org.androidannotations.api.BackgroundExecutor;
 
 import edu.unh.cs.cs619.bulletzone.events.GameEventProcessor;
 import edu.unh.cs.cs619.bulletzone.rest.BZRestErrorhandler;
-import edu.unh.cs.cs619.bulletzone.rest.BulletZoneRestClient;
 import edu.unh.cs.cs619.bulletzone.rest.GridPollerTask;
-import edu.unh.cs.cs619.bulletzone.rest.GridUpdateEvent;
-import edu.unh.cs.cs619.bulletzone.ui.GridAdapter;
 import edu.unh.cs.cs619.bulletzone.util.BooleanWrapper;
 import edu.unh.cs.cs619.bulletzone.util.ClientActivityShakeDriver;
-import edu.unh.cs.cs619.bulletzone.util.GridWrapper;
-import edu.unh.cs.cs619.bulletzone.AuthenticateActivity;
-import edu.unh.cs.cs619.bulletzone.util.ClientActivityShakeDriver;
+import edu.unh.cs.cs619.bulletzone.util.PlayerData;
 
 @EActivity(R.layout.activity_client)
 public class ClientActivity extends Activity {

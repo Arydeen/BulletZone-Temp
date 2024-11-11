@@ -6,10 +6,13 @@ import org.androidannotations.annotations.EBean;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import edu.unh.cs.cs619.bulletzone.util.ReplayData;
+
 @EBean
 public class GameEventProcessor {
     private static final String TAG = "GameEventProcessor";
     private int[][] board;
+    ReplayData replayData = ReplayData.getReplayData();
     private boolean isRegistered = false;
 
     public void setBoard(int[][] newBoard) {
@@ -47,6 +50,7 @@ public class GameEventProcessor {
     public void onNewEvent(GameEvent event) {
         if (board != null) {
             Log.d(TAG, "Applying " + event);
+            replayData.addGameEvent(event);
             event.applyTo(board);
         } else {
             Log.w(TAG, "Board is null, cannot apply event: " + event);

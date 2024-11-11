@@ -37,6 +37,12 @@ public class SimBoardView {
         EventBus.getDefault().register(gridEventHandler);
     }
 
+    public void replayAttach(GridView gView) {
+        adapter.setSimBoard(simBoard);
+        adapter.setTankId(-1);
+        gView.setAdapter(adapter);
+    }
+
     public void detach() {
         EventBus.getDefault().unregister(gridEventHandler);
     }
