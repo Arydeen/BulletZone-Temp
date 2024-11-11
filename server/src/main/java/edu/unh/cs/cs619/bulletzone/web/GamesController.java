@@ -107,6 +107,16 @@ class GamesController {
         );
     }
 
+    @RequestMapping(method = RequestMethod.GET, value = "{playableId}/{playableType}/life", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    ResponseEntity<LongWrapper> getLife(@PathVariable long playableId, @PathVariable int playableType)
+            throws TankDoesNotExistException {
+        return new ResponseEntity<LongWrapper>(
+                new LongWrapper(gameRepository.getLife(playableId, playableType)),
+                HttpStatus.OK
+        );
+    }
+
     @RequestMapping(method = RequestMethod.DELETE, value = "{playableId}/leave", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     HttpStatus leave(@PathVariable long playableId)

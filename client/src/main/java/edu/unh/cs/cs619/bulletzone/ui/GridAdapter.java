@@ -16,6 +16,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import edu.unh.cs.cs619.bulletzone.PlayerData;
 import edu.unh.cs.cs619.bulletzone.R;
 import edu.unh.cs.cs619.bulletzone.events.UpdateBoardEvent;
 import edu.unh.cs.cs619.bulletzone.model.BoardCell;
@@ -185,7 +186,7 @@ public class GridAdapter extends BaseAdapter {
                 } else if (playerCell.getCellType().equals("Builder")) {
                     int builderIdTest = (playerCell.getRawValue() / 10000) - 1000;
                     if (builderIdTest == this.tankId) {
-                        imageView.setImageResource(R.drawable.builder);
+                        imageView.setImageResource(R.drawable.trans_builder);
                     } else {
                         imageView.setImageResource(playerCell.getResourceID());
                     }

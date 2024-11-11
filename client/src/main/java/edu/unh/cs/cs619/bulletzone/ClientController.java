@@ -36,6 +36,15 @@ public class ClientController {
         restClient.setRestErrorHandler(bzRestErrorhandler);
     }
 
+    @Background
+    public void getLifeAsync(long playableId) { //TODO: Need to call this after the server says there's been a hit
+        Long newLifeBuilder = restClient.getLife(playableId, 1).getResult();
+        Long newLifeTank = restClient.getLife(playableId, 2).getResult();
+
+        PlayerData.getPlayerData().setTankLife(newLifeTank);
+        PlayerData.getPlayerData().setBuilderLife(newLifeBuilder);
+    }
+
     double getBalance(long userId) {
         return restClient.getBalance(userId);
     }

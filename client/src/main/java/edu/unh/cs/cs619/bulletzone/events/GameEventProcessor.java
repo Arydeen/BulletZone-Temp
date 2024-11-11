@@ -7,6 +7,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import androidx.annotation.VisibleForTesting;
 
+import edu.unh.cs.cs619.bulletzone.PlayerData;
+
 @EBean
 public class GameEventProcessor {
     private static final String TAG = "GameEventProcessor";
@@ -57,7 +59,9 @@ public class GameEventProcessor {
     @Subscribe
     public void onNewEvent(GameEvent event) {
         if (playerLayer != null) {
-            Log.d(TAG, "Applying " + event);
+//            Log.d(TAG, "Builder Life: " + PlayerData.getPlayerData().getBuilderLife() + "\n");
+//            Log.d(TAG, "Tank Life: " + PlayerData.getPlayerData().getTankLife() + "\n");
+//            Log.d(TAG, "Applying " + event);
             event.applyTo(playerLayer);
         } else {
             Log.w(TAG, "Board is null, cannot apply event: " + event);

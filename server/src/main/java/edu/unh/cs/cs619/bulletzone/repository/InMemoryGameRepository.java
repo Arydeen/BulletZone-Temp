@@ -1,6 +1,7 @@
 package edu.unh.cs.cs619.bulletzone.repository;
 
 import org.greenrobot.eventbus.EventBus;
+import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -8,7 +9,6 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicLong;
-import org.java.tuples.Pair; // ???
 
 import edu.unh.cs.cs619.bulletzone.model.Builder;
 import edu.unh.cs.cs619.bulletzone.model.Bullet;
@@ -380,5 +380,25 @@ public class InMemoryGameRepository implements GameRepository {
 
             return tank.tryEjectPowerUp(tank.getParent());
         }
+    }
+
+    @Override
+    public Long getLife(long playableId, int playableType) throws TankDoesNotExistException {
+        Playable playable;
+        if (playableType == 1){
+            playable = game.getTanks().get(playableId);
+        } else if (playableType == 2){
+            playable = game.getBuilders().get(playableId);
+        } else {
+            //code to get soldier (do we want a soldier list too?
+            playable = null;
+        }
+        if (playable == null) {
+            //Log.i(TAG, "Cannot find user with id: " + tankId);
+            //return false;
+            throw new TankDoesNotExistException(playableId);
+        }
+
+        return (long) playable.getLife();
     }
 }

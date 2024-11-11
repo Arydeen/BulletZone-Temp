@@ -11,6 +11,7 @@ import edu.unh.cs.cs619.bulletzone.R;
 public class TurnableGoblin extends TankItem {
     public final int tankType = 1000000;
     private int orientation;
+    private int life;
 
     public static int UP = 0;
     public static int RIGHT = 2;
@@ -22,6 +23,10 @@ public class TurnableGoblin extends TankItem {
         int typeVal = (val / tankType) * tankType;
         int scaleFactor = 1000;
 
+//        int reducedValue = val - 10000000;
+
+//        life = (reducedValue / 10) % 10;
+
         resourceID = R.drawable.trans_greengoblin;
         orientation = (val % 10) - 4;
         cellType = "Tank";
@@ -29,6 +34,10 @@ public class TurnableGoblin extends TankItem {
     }
 
     public int getOrientation() { return orientation; }
+
+    public int getLife() {
+        return life;
+    }
 
     @Override
     public int getRotation() {

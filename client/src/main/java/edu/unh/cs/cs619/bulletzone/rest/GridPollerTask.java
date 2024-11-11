@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import edu.unh.cs.cs619.bulletzone.ClientController;
+import edu.unh.cs.cs619.bulletzone.PlayerData;
 import edu.unh.cs.cs619.bulletzone.events.GameEvent;
 import edu.unh.cs.cs619.bulletzone.events.GameEventProcessor;
 import edu.unh.cs.cs619.bulletzone.events.ItemPickupEvent;
@@ -86,7 +87,7 @@ public class GridPollerTask {
                     boolean haveEvents = false;
 
                     for (GameEvent event : events.getEvents()) {
-                        Log.d(TAG, "Processing event: " + event);
+//                        Log.d(TAG, "Processing event: " + event);
                         if (currentProcessor != null && currentProcessor.isRegistered()) {
                             EventBus.getDefault().post(event);
                             previousTimeStamp = event.getTimeStamp();
@@ -97,6 +98,9 @@ public class GridPollerTask {
                     if (haveEvents) {
                         EventBus.getDefault().post(new UpdateBoardEvent());
                     }
+
+//                    Log.d("LifeCheck", "Builder Life: " + PlayerData.getPlayerData().getBuilderLife() + "\n");
+//                    Log.d("LifeCheck", "Goblin Life: " + PlayerData.getPlayerData().getTankLife() + "\n");
 
                 } catch (Exception e) {
                     Log.e(TAG, "Error in polling", e);

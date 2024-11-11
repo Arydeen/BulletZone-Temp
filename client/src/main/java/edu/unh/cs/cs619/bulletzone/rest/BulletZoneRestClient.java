@@ -79,4 +79,7 @@ public interface BulletZoneRestClient extends RestClientErrorHandling {
 
     @Put("/{playableId}/eject")
     BooleanWrapper ejectPowerUp(@Path long playableId);
+
+    @Get("/{playableId}/{playableType}/life")
+    LongWrapper getLife(@Path long playableId, @Path int playableType);
 }
