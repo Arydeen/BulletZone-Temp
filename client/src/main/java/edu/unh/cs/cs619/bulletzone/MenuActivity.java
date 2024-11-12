@@ -12,10 +12,7 @@ import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.NonConfigurationInstance;
 
-import edu.unh.cs.cs619.bulletzone.events.GameEventProcessor;
 import edu.unh.cs.cs619.bulletzone.rest.GridPollerTask;
-import edu.unh.cs.cs619.bulletzone.ui.GridAdapter;
-import edu.unh.cs.cs619.bulletzone.PlayerData;
 
 /**
  * Made by Alec Rydeen
@@ -28,16 +25,6 @@ import edu.unh.cs.cs619.bulletzone.PlayerData;
 public class MenuActivity extends Activity {
 
     private static final String TAG = "MenuActivity";
-
-    @NonConfigurationInstance
-    @Bean
-    GridPollerTask gridPollTask;
-
-    @Bean
-    protected GridAdapter mGridAdapter;
-
-    @Bean
-    protected GameEventProcessor eventProcessor;
 
     private long userId = -1;
     private long tankId = -1;

@@ -11,6 +11,8 @@ public class ReplayData {
     private GridWrapper initialGrid;
     private GridWrapper initialTerrainGrid;
 
+    private long initialTimeStamp = -1;
+
     private GameEvent[] eventHistoryArray;
     private ArrayList<GameEvent> eventHistory = new ArrayList<>();
 
@@ -41,6 +43,22 @@ public class ReplayData {
     }
 
     public GameEvent getEventAt(int index) {
-        return eventHistory.get(index);
+        if (index < eventHistory.size()) {
+            if (eventHistory.get(index) != null) {
+                return eventHistory.get(index);
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    public void setInitialTimeStamp(long initialTimestamp) {
+        this.initialTimeStamp = initialTimestamp;
+    }
+
+    public long getInitialTimestamp() {
+        return initialTimeStamp;
     }
 }

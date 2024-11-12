@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.EBean;
@@ -21,8 +20,6 @@ import edu.unh.cs.cs619.bulletzone.events.UpdateBoardEvent;
 import edu.unh.cs.cs619.bulletzone.model.BoardCell;
 import edu.unh.cs.cs619.bulletzone.model.BoardCellBlock;
 import edu.unh.cs.cs619.bulletzone.model.SimulationBoard;
-import edu.unh.cs.cs619.bulletzone.model.TankItem;
-import edu.unh.cs.cs619.bulletzone.model.TurnableGoblin;
 
 @EBean
 public class GridAdapter extends BaseAdapter {

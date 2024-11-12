@@ -3,11 +3,13 @@ package edu.unh.cs.cs619.bulletzone;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.Spinner;
 
+import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
@@ -19,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import edu.unh.cs.cs619.bulletzone.events.GameEventProcessor;
+import edu.unh.cs.cs619.bulletzone.events.ReplayEventProcessor;
+import edu.unh.cs.cs619.bulletzone.rest.GridReplayTask;
 import edu.unh.cs.cs619.bulletzone.util.ReplayData;
 
 @EActivity(R.layout.activity_replay_instance)
@@ -37,11 +41,14 @@ public class ReplayInstanceActivity extends Activity {
     SimBoardView simBoardView;
 
     @Bean
-    protected GameEventProcessor gameEventProcessor;
+    GridReplayTask gridReplayTask;
+
+    @Bean
+    protected ReplayEventProcessor replayEventProcessor;
 
     ReplayData replayData = ReplayData.getReplayData();
 
-    int replayPaused = 0;
+    int replayPaused = -1;
     int replaySpeed = 0;
 
     private ArrayList<?> speedSelections = new ArrayList<>(Arrays.asList("1x", "2x", "3x", "4x"));
@@ -52,17 +59,20 @@ public class ReplayInstanceActivity extends Activity {
         Log.e(TAG, "onCreate");
     }
 
-    // Stuff in here needs to change
-    // TODO
     @AfterViews
     protected void afterViewInjection() {
         Log.d(TAG, "afterViewInjection");
+        SystemClock.sleep(500);
         simBoardView.replayAttach(replayGridView, replaytGridView);
-        gameEventProcessor.start();
-        gameEventProcessor.setBoard(
-                replayData.getInitialGrid().getGrid(), replayData.getInitialTerrainGrid().getGrid()
-        );
-        speedMenu.setAdapter(new ArrayAdapter<>(this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item,speedSelections));
+        speedMenu.setAdapter(new ArrayAdapter<>(
+                this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item,speedSelections
+        ));
+    }
+
+    @AfterInject
+    void afterInject() {
+        Log.d(TAG, "afterInject");
+        replayEventProcessor.start();
     }
 
     @ItemSelect({R.id.speedMenu})
@@ -80,10 +90,18 @@ public class ReplayInstanceActivity extends Activity {
 
     @Click(R.id.playPauseButton)
     void playPause() {
-        if (replayPaused == 0) {
-            replayPaused = 1;
-        } else if (replayPaused == 1) {
+        if (replayPaused == -1) {
+            Log.d(TAG, "Starting Replay");
             replayPaused = 0;
+            gridReplayTask.doReplay(replayEventProcessor);
+        } else {
+            if (replayPaused == 0) {
+                Log.d(TAG, "Pausing Replay");
+                replayPaused = 1;
+            } else if (replayPaused == 1) {
+                Log.d(TAG, "Un-pausing Replay");
+                replayPaused = 0;
+            }
         }
     }
 

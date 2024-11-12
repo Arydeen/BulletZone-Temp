@@ -18,7 +18,6 @@ public class SimBoardView {
 
     @Bean
     protected GridAdapter adapter;
-
     @Bean
     protected GridAdapter tAdapter;
 
@@ -57,6 +56,7 @@ public class SimBoardView {
 
         tAdapter.setTerrainView(true);
         tGridView.setAdapter(tAdapter);
+        EventBus.getDefault().register(gridEventHandler);
     }
 
     public void detach() {
