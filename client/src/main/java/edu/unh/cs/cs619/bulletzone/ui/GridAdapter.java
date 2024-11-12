@@ -40,6 +40,7 @@ public class GridAdapter extends BaseAdapter {
     public boolean isUpdated = false;
     private long tankId = -1;
     private boolean isTerrainView = false;
+    private long builderId = -1;
 
     @AfterInject
     protected void afterInject() {
@@ -140,6 +141,10 @@ public class GridAdapter extends BaseAdapter {
 
     public void setTankId(long tankId) {
         this.tankId = tankId;
+    }
+
+    public void setBuilderId(long builderId) {
+        this.builderId = builderId;
     }
 
     /**
