@@ -117,9 +117,8 @@ public class BuildCommand implements Command {
             FieldEntity entityInNextField = nextField.getEntity();
 
             if (entityInNextField instanceof Wall || entityInNextField instanceof MiningFacility) {
-                // If the object is destructible, remove it
                 if (entityInNextField instanceof Wall) {
-                    System.out.println("Dismantling destructible wall...");
+                    System.out.println("Dismantling wall...");
                     nextField.setFieldEntity(null);
                     return true;
                 }

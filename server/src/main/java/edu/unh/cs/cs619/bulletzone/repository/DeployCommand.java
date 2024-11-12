@@ -8,6 +8,7 @@ import java.util.Optional;
 import edu.unh.cs.cs619.bulletzone.model.Direction;
 import edu.unh.cs.cs619.bulletzone.model.FieldHolder;
 import edu.unh.cs.cs619.bulletzone.model.Game;
+import edu.unh.cs.cs619.bulletzone.model.Playable;
 import edu.unh.cs.cs619.bulletzone.model.Soldier;
 import edu.unh.cs.cs619.bulletzone.model.Tank;
 import edu.unh.cs.cs619.bulletzone.model.TankDoesNotExistException;
@@ -15,7 +16,7 @@ import edu.unh.cs.cs619.bulletzone.model.Wall;
 
 public class DeployCommand implements Command {
     Game game;
-    long tankId;
+    long playableId;
     Direction direction;
     long millis;
     boolean isDeployed;
@@ -25,10 +26,11 @@ public class DeployCommand implements Command {
      * Constructor for EjectCommand called each time
      * eject() is called in InGameMemoryRepository
      *
-     * @param tankId       tank to eject power-up
+     * @param playableId
+     * tank to eject power-up
      */
-    public DeployCommand(long tankId, Game game, Direction direction, long currentTimeMillis) {
-        this.tankId = tankId;
+    public DeployCommand(long playableId, Game game, Direction direction, long currentTimeMillis) {
+        this.playableId = playableId;
         this.game = game;
         this.direction = direction;
         this.millis = currentTimeMillis;
@@ -42,14 +44,14 @@ public class DeployCommand implements Command {
      */
     @Override
     public boolean execute() throws TankDoesNotExistException {
-        Tank tank = game.getTanks().get(tankId);
-        if (tank == null) {
-            throw new TankDoesNotExistException(tankId);
+        Playable playable = game.getTanks().get(playableId);
+        if (playable == null) {
+            throw new TankDoesNotExistException(playableId);
         }
 
-        FieldHolder currentField = tank.getParent();
+        FieldHolder currentField = playable.getParent();
         Direction direction = Direction.Up;
-        if (tank.getDirection() == Direction.Up) {
+        if (playable.getDirection() == Direction.Up) {
             if (!(currentField.getNeighbor(Direction.Down).isPresent())) {
                 direction = Direction.Down;
             } else if (!(currentField.getNeighbor(Direction.Left).isPresent())) {
@@ -59,7 +61,7 @@ public class DeployCommand implements Command {
             } else if ((currentField.getNeighbor(Direction.Up).isPresent())) {
                 return false;
             }
-        } else if (tank.getDirection() == Direction.Right) {
+        } else if (playable.getDirection() == Direction.Right) {
             if (!(currentField.getNeighbor(Direction.Left).isPresent())) {
                 direction = Direction.Left;
             } else if (!(currentField.getNeighbor(Direction.Down).isPresent())) {
@@ -69,7 +71,7 @@ public class DeployCommand implements Command {
             } else {
                 return false;
             }
-        } else if (tank.getDirection() == Direction.Left) {
+        } else if (playable.getDirection() == Direction.Left) {
             if (!(currentField.getNeighbor(Direction.Right).isPresent())) {
                 direction = Direction.Right;
             } else if (!(currentField.getNeighbor(Direction.Down).isPresent())) {
@@ -94,31 +96,31 @@ public class DeployCommand implements Command {
         }
 
         boolean isVisible = currentField.isPresent()
-                && (currentField.getEntity() == tank);
+                && (currentField.getEntity() == playable);
 
         FieldHolder nextField = currentField.getNeighbor(direction);
 
         // Check if the destination field is empty
         if (!nextField.isPresent()) {
             // Place soldier in the intended neighboring field
-            return ejectSoldierToField(tank, direction, nextField);
+            return ejectSoldierToField(playable, direction, nextField);
         } else {
             // Try to find any available empty neighboring field
             Optional<FieldHolder> emptyNeighbor = getEmptyNeighbor(currentField);
             if (emptyNeighbor.isPresent()) {
                 FieldHolder alternativeField = emptyNeighbor.get();
-                return ejectSoldierToField(tank, direction, alternativeField);
+                return ejectSoldierToField(playable, direction, alternativeField);
             }
         }
         return false;
     }
 
-    private boolean ejectSoldierToField(Tank tank, Direction direction, FieldHolder targetField) {
+    private boolean ejectSoldierToField(Playable playable, Direction direction, FieldHolder targetField) {
         if (targetField == null || targetField.isPresent()) {
             return false;
         }
 
-        int fieldIndex = tank.getPosition();
+        int fieldIndex = playable.getPosition();
         int row = fieldIndex / FIELD_DIM;
         int col = fieldIndex % FIELD_DIM;
 
@@ -134,10 +136,12 @@ public class DeployCommand implements Command {
         }
 
         // Create and eject the soldier
-        Soldier soldier = new Soldier(tankId, direction, tank.getIp());
+        Soldier soldier = new Soldier(playableId, direction, playable.getIp());
+        game.addSoldier(playable.getIp(), soldier);
+        game.removeTank(playableId);
 
         // Place the soldier on the grid
-        int oldPos = tank.getPosition();
+        int oldPos = playable.getPosition();
         targetField.setFieldEntity(soldier);
         soldier.setParent(targetField);
         int newPos = soldier.getPosition();

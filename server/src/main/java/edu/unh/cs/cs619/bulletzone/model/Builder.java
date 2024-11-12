@@ -6,37 +6,13 @@ package edu.unh.cs.cs619.bulletzone.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class Builder extends FieldEntity {
+public class Builder extends Playable {
 
     private static final String TAG = "Builder";
 
-    private final long id;
-
-    private final String ip;
-
-    private long lastMoveTime;
-    private int allowedMoveInterval;
-
-    private long lastFireTime;
-    private int allowedFireInterval;
-
-    private int numberOfBullets;
-    private int allowedNumberOfBullets;
-
-    private int moveMultiplier;
-    private int allowedTurnInterval;
-    private int lastTurnTime;
-
-    private int life;
-
-    private int damage = 15;
-
-    private Direction direction;
 
     public Builder(long id, Direction direction, String ip) {
-        this.id = id;
-        this.direction = direction;
-        this.ip = ip;
+        super(id, direction, ip);
         life = 80; // Builders start with 80 life points
 
         numberOfBullets = 0;
@@ -63,40 +39,7 @@ public class Builder extends FieldEntity {
 
     @Override
     public int getIntValue() {
-        return (int) (20000000 + 10000 * id + 10 * life + Direction.toByte(direction));
-    }
-
-    public Direction getDirection() {
-        return direction;
-    }
-
-    public void setDirection(Direction direction) {
-        this.direction = direction;
-    }
-
-    public String getIp(){
-        return ip;
-    }
-
-    public long getLastMoveTime() {
-        return lastMoveTime;
-    }
-
-    public void setLastMoveTime(long lastMoveTime) {
-        this.lastMoveTime = lastMoveTime;
-    }
-
-    public long getAllowedMoveInterval() {
-        return allowedMoveInterval;
-    }
-
-    public void setAllowedMoveInterval(int allowedMoveInterval) {
-        this.allowedMoveInterval = allowedMoveInterval;
-    }
-
-    @JsonIgnore
-    public long getId() {
-        return id;
+        return (int) (20000000 + (10000 * getId()) + (10 * getLife()) + Direction.toByte(getDirection()));
     }
 
     @Override
