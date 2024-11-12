@@ -25,10 +25,10 @@ public interface GameRepository {
     boolean fire(long playableId, int playableType, int strength)
             throws TankDoesNotExistException, LimitExceededException;
 
-    boolean build(long builderId, String entity)
+    boolean build(long playableId, int playableType, String entity)
             throws TankDoesNotExistException, LimitExceededException;
 
-    boolean deploy(long tankId, Direction direction)
+    boolean deploy(long playableId, int playableType, Direction direction)
             throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException;
 
     boolean ejectPowerUp(long playableId)

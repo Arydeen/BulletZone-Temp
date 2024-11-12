@@ -259,31 +259,41 @@ public class InMemoryGameRepository implements GameRepository {
     }
 
     @Override
-    public boolean build(long playableId, String entity)
+    public boolean build(long playableId, int playableType, String entity)
             throws TankDoesNotExistException {
         synchronized (this.monitor) {
-            Playable playable = game.getBuilders().get(playableId);
-            if (playable == null) {
-                //Log.i(TAG, "Cannot find user with id: " + tankId);
-                throw new TankDoesNotExistException(playableId);
+            if (playableType == 2) {
+                Playable playable = game.getBuilders().get(playableId);
+                if (playable == null) {
+                    //Log.i(TAG, "Cannot find user with id: " + tankId);
+                    throw new TankDoesNotExistException(playableId);
+                }
+                BuildCommand buildCommand = new BuildCommand(playableId, game, entity);
+                return buildCommand.execute();
+            } else {
+                System.out.println("Player is not controlling the builder, building blocked.");
+                return false;
             }
-            BuildCommand buildCommand = new BuildCommand(playableId, game, entity);
-            return buildCommand.execute();
         }
     }
 
     @Override
-    public boolean deploy(long playableId, Direction direction)
+    public boolean deploy(long playableId, int playableType, Direction direction)
             throws TankDoesNotExistException {
         synchronized (this.monitor) {
-            Playable playable = game.getTanks().get(playableId);
-            if (playable == null) {
-                //Log.i(TAG, "Cannot find user with id: " + tankId);
-                throw new TankDoesNotExistException(playableId);
+            if (playableType == 1) {
+                Playable playable = game.getTanks().get(playableId);
+                if (playable == null) {
+                    //Log.i(TAG, "Cannot find user with id: " + tankId);
+                    throw new TankDoesNotExistException(playableId);
+                }
+                long millis = System.currentTimeMillis();
+                DeployCommand deployCommand = new DeployCommand(playableId, game, direction, millis);
+                return deployCommand.execute();
+            } else {
+                System.out.println("Player is not controlling the tank, deployment blocked.");
+                return false;
             }
-            long millis = System.currentTimeMillis();
-            DeployCommand deployCommand = new DeployCommand(playableId, game, direction, millis);
-            return deployCommand.execute();
         }
     }
 
