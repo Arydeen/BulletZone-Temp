@@ -23,6 +23,9 @@ public class Builder extends Playable {
         allowedTurnInterval = 300; // 300ms between turns
         lastTurnTime = 0;
 
+        lastBuildTime = 0;
+        allowBuildInterval = 2000;
+
         allowedMoveInterval = 1000; // Builders can move no faster than once per second
         lastMoveTime = 0;
         moveMultiplier = 1;

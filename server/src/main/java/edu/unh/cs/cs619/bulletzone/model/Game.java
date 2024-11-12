@@ -59,6 +59,11 @@ public final class Game {
                 (oldValue == null ? 0 : oldValue) + amount);
     }
 
+    public void removeCredits(long tankId, double amount) {
+        playerCredits.compute(tankId, (key, oldValue) ->
+                (oldValue == null ? 0 : oldValue) - amount);
+    }
+
     public double getCredits(long tankId) {
         return playerCredits.getOrDefault(tankId, 0.0);
     }

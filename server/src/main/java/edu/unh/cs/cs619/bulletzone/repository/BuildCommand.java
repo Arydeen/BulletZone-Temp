@@ -84,15 +84,18 @@ public class BuildCommand implements Command {
                 if (game.getCredits(builderId) >= 80) {
                     // //////////INSERT EVENT LOGIC HERE ///////////////
                     game.getHolderGrid().get(nextIndex).setFieldEntity(new Wall(1500, nextIndex));
+                    game.removeCredits(builderId, 80);
                     return true;
                 } else {
                     System.out.println("You don't have enough credits, building blocked.");
                     return false;
                 }
             } else if (Objects.equals(entity, "indestructibleWall")) {
+
                 if (game.getCredits(builderId) >= 150) {
                     // //////////INSERT EVENT LOGIC HERE ///////////////
                     game.getHolderGrid().get(nextIndex).setFieldEntity(new Wall());
+                    game.removeCredits(builderId, 150);
                     return true;
                 } else {
                     System.out.println("You don't have enough credits, building blocked.");
@@ -102,6 +105,7 @@ public class BuildCommand implements Command {
                 if (game.getCredits(builderId) >= 300) {
                     // //////////INSERT EVENT LOGIC HERE ///////////////
                     game.getHolderGrid().get(nextIndex).setFieldEntity(new MiningFacility(920, nextIndex));
+                    game.removeCredits(builderId, 300);
                     return true;
                 } else {
                     System.out.println("You don't have enough credits, building blocked.");

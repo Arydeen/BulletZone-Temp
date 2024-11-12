@@ -33,6 +33,9 @@ public abstract class Playable extends FieldEntity {
     protected long lastFireTime;
     protected int allowedFireInterval;
 
+    protected long lastBuildTime;
+    protected int allowBuildInterval;
+
     protected int numberOfBullets;
     protected int allowedNumberOfBullets;
 
@@ -97,6 +100,14 @@ public abstract class Playable extends FieldEntity {
         return allowedDeployInterval;
     }
 
+    public long getLastBuildTime() {
+        return lastBuildTime;
+    }
+
+    public int getAllowBuildInterval() {
+        return allowBuildInterval;
+    }
+
     public Direction getDirection() {
         return direction;
     }
@@ -138,6 +149,14 @@ public abstract class Playable extends FieldEntity {
 
     public void setAllowedNumberOfBullets(int allowedNumberOfBullets) {
         this.allowedNumberOfBullets = allowedNumberOfBullets;
+    }
+
+    public void setLastBuildTime(long lastBuildTime) {
+        this.lastBuildTime = lastBuildTime;
+    }
+
+    public void setAllowBuildInterval(int allowBuildInterval) {
+        this.allowBuildInterval = allowBuildInterval;
     }
 
     public void setLastEntryTime(long lastMoveTime) {
