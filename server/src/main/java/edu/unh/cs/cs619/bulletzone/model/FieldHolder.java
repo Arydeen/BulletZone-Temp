@@ -47,4 +47,8 @@ public class FieldHolder {
         }
     }
 
+    public Map<Direction, FieldHolder> getNeighborsMap() {
+        return neighbors;
+    }
+
 }

@@ -6,14 +6,39 @@ package edu.unh.cs.cs619.bulletzone.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class Soldier extends Playable {
+public class Soldier extends FieldEntity {
 
     private static final String TAG = "Soldier";
+
+    private final long id;
+
+    private final String ip;
+    private final PowerUpManager powerUpManager;
+    private long lastMoveTime;
+    private int allowedMoveInterval;
+
+    private long lastFireTime;
+    private int allowedFireInterval;
+
+    private int numberOfBullets;
+    private int allowedNumberOfBullets;
+
+    private int moveMultiplier;
+    private int allowedTurnInterval;
+    private int lastTurnTime;
+
+    private int life;
+
+    private int damage = 15;
+
+    private Direction direction;
 
     private boolean recentlyEnteredTank;  // Tracks if the soldier recently re-entered a tank
 
     public Soldier(long id, Direction direction, String ip) {
-        super(id, direction, ip);
+        this.id = id;
+        this.direction = direction;
+        this.ip = ip;
         life = 25;  // Soldiers start with 25 life points
 
         numberOfBullets = 0;
@@ -29,6 +54,7 @@ public class Soldier extends Playable {
         lastTurnTime = 0;
 
         recentlyEnteredTank = false;
+        powerUpManager = new PowerUpManager(allowedMoveInterval, allowedFireInterval);
     }
 
     // Copy method for Soldier
@@ -37,6 +63,62 @@ public class Soldier extends Playable {
         Soldier copy = new Soldier(id, direction, ip);
         copy.life = this.life;
         return copy;
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public void setDirection(Direction direction) {
+        this.direction = direction;
+    }
+
+    public String getIp(){
+        return ip;
+    }
+
+    @JsonIgnore
+    public long getId() {
+        return id;
+    }
+
+    public long getLastMoveTime() {
+        return lastMoveTime;
+    }
+
+    public void setLastMoveTime(long lastMoveTime) {
+        this.lastMoveTime = lastMoveTime;
+    }
+
+    public long getAllowedMoveInterval() {
+        return allowedMoveInterval;
+    }
+
+    public void setAllowedMoveInterval(int allowedMoveInterval) {
+        this.allowedMoveInterval = allowedMoveInterval;
+    }
+
+    public long getMoveMultiplier(){
+        return moveMultiplier;
+    }
+
+    public void setMoveMultiplier(int moveMultiplier){
+        this.moveMultiplier = moveMultiplier;
+    }
+
+    public void addPowerUp(Item powerUp) {
+        powerUpManager.addPowerUp(powerUp);
+        updateIntervals();
+        if (powerUp.isAntiGrav()) {
+            setMoveMultiplier((int)(getMoveMultiplier() * 2)); // Double movement speed
+        } else if (powerUp.isFusionReactor()) {
+            setMoveMultiplier((int)(getMoveMultiplier() * 0.75)); // Reduce speed by 25%
+        }
+    }
+
+    private void updateIntervals() {
+        allowedMoveInterval = powerUpManager.getCurrentMovementDelay();
+        allowedFireInterval = powerUpManager.getCurrentFireDelay();
     }
 
     // Method to apply damage to the Soldier

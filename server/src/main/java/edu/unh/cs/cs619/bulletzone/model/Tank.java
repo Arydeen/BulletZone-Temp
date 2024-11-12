@@ -6,12 +6,37 @@ import org.greenrobot.eventbus.EventBus;
 
 import edu.unh.cs.cs619.bulletzone.model.events.SpawnEvent;
 
-public class Tank extends Playable {
+public class Tank extends FieldEntity {
     private static final String TAG = "Tank";
     private final PowerUpManager powerUpManager;
 
+    private final long id;
+
+    private final String ip;
+
+    private long lastMoveTime;
+    private int allowedMoveInterval;
+
+    private long lastFireTime;
+    private int allowedFireInterval;
+
+    private int numberOfBullets;
+    private int allowedNumberOfBullets;
+
+    private int moveMultiplier;
+    private int allowedTurnInterval;
+    private int lastTurnTime;
+
+    private int life;
+
+    private int damage = 15;
+
+    private Direction direction;
+
     public Tank(long id, Direction direction, String ip) {
-        super(id, direction, ip);
+        this.id = id;
+        this.direction = direction;
+        this.ip = ip;
         life = 100;
 
         numberOfBullets = 0;
@@ -30,6 +55,11 @@ public class Tank extends Playable {
     }
 
     @Override
+    public FieldEntity copy() {
+        return new Tank(id, direction, ip);
+    }
+
+    @Override
     public void hit(int damage) {
         System.out.println("Tank life: " + id + " : " + life);
     }
@@ -40,9 +70,82 @@ public class Tank extends Playable {
         return (int) (10000000 + 10000 * id + 10 * life + Direction.toByte(direction));
     }
 
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public void setDirection(Direction direction) {
+        this.direction = direction;
+    }
+
+    public String getIp(){
+        return ip;
+    }
+
+    @JsonIgnore
+    public long getId() {
+        return id;
+    }
+
     @Override
     public String toString() {
         return "T";
+    }
+
+    public long getMoveMultiplier(){
+        return moveMultiplier;
+    }
+
+    public void setMoveMultiplier(int moveMultiplier){
+        this.moveMultiplier = moveMultiplier;
+    }
+
+    public long getLastMoveTime() {
+        return lastMoveTime;
+    }
+
+    public void setLastMoveTime(long lastMoveTime) {
+        this.lastMoveTime = lastMoveTime;
+    }
+
+    public long getAllowedMoveInterval() {
+        return allowedMoveInterval;
+    }
+
+    public void setAllowedMoveInterval(int allowedMoveInterval) {
+        this.allowedMoveInterval = allowedMoveInterval;
+    }
+
+    public long getLastFireTime() {
+        return lastFireTime;
+    }
+
+    public void setLastFireTime(long lastFireTime) {
+        this.lastFireTime = lastFireTime;
+    }
+
+    public long getAllowedFireInterval() {
+        return allowedFireInterval;
+    }
+
+    public void setAllowedFireInterval(int allowedFireInterval) {
+        this.allowedFireInterval = allowedFireInterval;
+    }
+
+    public int getNumberOfBullets() {
+        return numberOfBullets;
+    }
+
+    public void setNumberOfBullets(int numberOfBullets) {
+        this.numberOfBullets = numberOfBullets;
+    }
+
+    public int getAllowedNumberOfBullets() {
+        return allowedNumberOfBullets;
+    }
+
+    public void setAllowedNumberOfBullets(int allowedNumberOfBullets) {
+        this.allowedNumberOfBullets = allowedNumberOfBullets;
     }
 
     public void addPowerUp(Item powerUp) {

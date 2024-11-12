@@ -95,8 +95,6 @@ public class UnitEventController {
             if (((playerData.getCurEntity().equals("destructibleWall") || playerData.getCurEntity().equals("indestructibleWall")) ||
                     (playerData.getCurEntity().equals("facility")))) {
                 restClient.build(playerData.getBuilderId(), playerData.getCurEntity());
-            } else if (playerData.getCurEntity().equals("power-up")) {
-                restClient.build(playerData.getBuilderId(), playerData.getCurEntity());
             }
         } else {
 //            Log.d(TAG, "Cannot build while controlling another vehicle");
