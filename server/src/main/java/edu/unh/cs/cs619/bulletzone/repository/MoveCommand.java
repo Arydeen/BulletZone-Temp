@@ -152,6 +152,7 @@ public class MoveCommand implements Command {
             game.removeSoldier(playableId);
 
             // Place the soldier on the grid
+            playable.setLastEntryTime(millis + playable.getAllowedDeployInterval());
             int oldPos = playable.getPosition();
             currentField.clearField();
             nextField.setFieldEntity(tank);

@@ -28,6 +28,9 @@ public class Soldier extends Playable {
         allowedTurnInterval = 0; // Soldiers can turn as fast as they want
         lastTurnTime = 0;
 
+        lastEntryTime = 0;
+        allowedDeployInterval = 5000;
+
         recentlyEnteredTank = false;
         powerUpManager = new PowerUpManager(allowedMoveInterval, allowedFireInterval);
     }

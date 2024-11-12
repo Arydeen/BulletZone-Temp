@@ -81,17 +81,33 @@ public class BuildCommand implements Command {
             int currentIndex = currentField.getPosition();
             int currentValue = currentField.getEntity().getIntValue();
             if (Objects.equals(entity, "destructibleWall")) {
-                // //////////INSERT EVENT LOGIC HERE ///////////////
-                game.getHolderGrid().get(nextIndex).setFieldEntity(new Wall(1500, nextIndex));
-                return true;
+                if (game.getCredits(builderId) >= 80) {
+                    // //////////INSERT EVENT LOGIC HERE ///////////////
+                    game.getHolderGrid().get(nextIndex).setFieldEntity(new Wall(1500, nextIndex));
+                    return true;
+                } else {
+                    System.out.println("You don't have enough credits, building blocked.");
+                    return false;
+                }
             } else if (Objects.equals(entity, "indestructibleWall")) {
-                // //////////INSERT EVENT LOGIC HERE ///////////////
-                game.getHolderGrid().get(nextIndex).setFieldEntity(new Wall());
-                return true;
+                if (game.getCredits(builderId) >= 150) {
+                    // //////////INSERT EVENT LOGIC HERE ///////////////
+                    game.getHolderGrid().get(nextIndex).setFieldEntity(new Wall());
+                    return true;
+                } else {
+                    System.out.println("You don't have enough credits, building blocked.");
+                    return false;
+                }
             } else if (Objects.equals(entity, "miningFacility")) {
-                // //////////INSERT EVENT LOGIC HERE ///////////////
-                game.getHolderGrid().get(nextIndex).setFieldEntity(new MiningFacility(920, nextIndex));
-                return true;
+                if (game.getCredits(builderId) >= 300) {
+                    // //////////INSERT EVENT LOGIC HERE ///////////////
+                    game.getHolderGrid().get(nextIndex).setFieldEntity(new MiningFacility(920, nextIndex));
+                    return true;
+                } else {
+                    System.out.println("You don't have enough credits, building blocked.");
+                    return false;
+                }
+
             }
         } else {
             int fieldIndex = currentField.getPosition();

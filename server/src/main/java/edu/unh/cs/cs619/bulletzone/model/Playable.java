@@ -18,6 +18,7 @@ public abstract class Playable extends FieldEntity {
 
     protected PowerUpManager powerUpManager;
 
+
     protected final long id;
 
     protected final String ip;
@@ -34,6 +35,9 @@ public abstract class Playable extends FieldEntity {
 
     protected int numberOfBullets;
     protected int allowedNumberOfBullets;
+
+    protected long lastEntryTime;
+    protected int allowedDeployInterval;
 
     protected int life;
 
@@ -85,6 +89,14 @@ public abstract class Playable extends FieldEntity {
         return allowedNumberOfBullets;
     }
 
+    public long getLastEntryTime() {
+        return lastEntryTime;
+    }
+
+    public int getAllowedDeployInterval() {
+        return allowedDeployInterval;
+    }
+
     public Direction getDirection() {
         return direction;
     }
@@ -126,6 +138,14 @@ public abstract class Playable extends FieldEntity {
 
     public void setAllowedNumberOfBullets(int allowedNumberOfBullets) {
         this.allowedNumberOfBullets = allowedNumberOfBullets;
+    }
+
+    public void setLastEntryTime(long lastMoveTime) {
+        this.lastEntryTime = lastMoveTime;
+    }
+
+    public void setAllowedDeployInterval(int allowedDeployInterval) {
+        this.allowedDeployInterval = allowedDeployInterval;
     }
 
     public void setDirection(Direction direction) {

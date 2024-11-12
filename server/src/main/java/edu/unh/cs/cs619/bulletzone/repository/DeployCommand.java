@@ -49,6 +49,9 @@ public class DeployCommand implements Command {
             throw new TankDoesNotExistException(playableId);
         }
 
+        if (millis < playable.getLastEntryTime()) {
+            return false;
+        }
         FieldHolder currentField = playable.getParent();
         Direction direction = Direction.Up;
         if (playable.getDirection() == Direction.Up) {

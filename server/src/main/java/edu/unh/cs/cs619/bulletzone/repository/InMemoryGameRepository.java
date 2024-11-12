@@ -53,7 +53,7 @@ public class InMemoryGameRepository implements GameRepository {
     private final AtomicLong idGenerator = new AtomicLong();
     private final Object monitor = new Object();
     private Game game = null;
-    private final int[] bulletDamage = {10, 30, 50};
+    private final int[] bulletDamage = {5, 10, 30};
     private final int[] bulletDelay = {500, 1000, 1500};
     private final int[] trackActiveBullets = {0, 0};
     private final Timer itemSpawnTimer = new Timer();

@@ -25,6 +25,9 @@ public class Tank extends Playable {
         lastMoveTime = 0;
         moveMultiplier = 1;  // Initialize move multiplier
 
+        lastEntryTime = 0;
+        allowedDeployInterval = 5000;
+
         powerUpManager = new PowerUpManager(allowedMoveInterval, allowedFireInterval);
     }
 
