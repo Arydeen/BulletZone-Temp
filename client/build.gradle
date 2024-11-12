@@ -40,6 +40,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.5'
     implementation 'org.greenrobot:eventbus:3.3.1'
     testImplementation 'org.mockito:mockito-core:5.+'
+    implementation 'org.javatuples:javatuples:1.2'
+
 }
 
 android {

@@ -8,25 +8,32 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Spinner;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import org.androidannotations.annotations.*;
+import org.androidannotations.rest.spring.annotations.RestService;
 import org.androidannotations.api.BackgroundExecutor;
 
 import edu.unh.cs.cs619.bulletzone.events.GameEventProcessor;
 import edu.unh.cs.cs619.bulletzone.events.ItemPickupEvent;
 import edu.unh.cs.cs619.bulletzone.events.PowerUpEjectEvent;
 import edu.unh.cs.cs619.bulletzone.rest.BZRestErrorhandler;
+import edu.unh.cs.cs619.bulletzone.rest.BulletZoneRestClient;
 import edu.unh.cs.cs619.bulletzone.rest.GridPollerTask;
-import edu.unh.cs.cs619.bulletzone.ui.PlayerViewController;
+import edu.unh.cs.cs619.bulletzone.ui.GridAdapter;
 import edu.unh.cs.cs619.bulletzone.util.ClientActivityShakeDriver;
 import androidx.annotation.VisibleForTesting;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 @EActivity(R.layout.activity_client)
 public class ClientActivity extends Activity {
@@ -66,6 +73,9 @@ public class ClientActivity extends Activity {
     @ViewById
     protected TextView fireRateText;
 
+    @ViewById
+    protected Spinner selectPlayable;
+
     @NonConfigurationInstance
     @Bean
     GridPollerTask gridPollTask;
@@ -74,7 +84,7 @@ public class ClientActivity extends Activity {
     BZRestErrorhandler bzRestErrorhandler;
 
     @Bean
-    UnitEventController unitEventController;
+    TankEventController tankEventController;
 
     @Bean
     ClientController clientController;
@@ -87,17 +97,18 @@ public class ClientActivity extends Activity {
 
     ClientActivityShakeDriver shakeDriver;
 
-    PlayerViewController playerViewController = PlayerViewController.getInstance();
-
     PlayerData playerData = PlayerData.getPlayerData();
 
-    private long tankId = -1;
+    private long playableId = -1;
+    private int playableType = 1;
     private long userId = -1;
+    private ArrayList<?> playableSelections = new ArrayList<>(Arrays.asList("Tank", "Builder", "Soldier"));
+
 
     // For testing purposes only
     @VisibleForTesting
-    public void setUnitEventController(UnitEventController controller) {
-        this.unitEventController = controller;
+    public void setTankEventController(TankEventController controller) {
+        this.tankEventController = controller;
     }
 
     // For testing purposes only
@@ -148,7 +159,7 @@ public class ClientActivity extends Activity {
     protected void afterViewInjection() {
         Log.d(TAG, "afterViewInjection called");
         userId = playerData.getUserId();
-        tankId = playerData.getTankId();
+        playableId = playerData.getTankId();
         if (userId != -1) {
             userIdTextView.setText("User ID: " + userId);
             fetchAndUpdateBalance();
@@ -162,7 +173,8 @@ public class ClientActivity extends Activity {
         updateStatsDisplay();
 
         SystemClock.sleep(500);
-        simBoardView.attach(gridView, tankId);
+        simBoardView.attach(gridView, playableId);
+        selectPlayable.setAdapter(new ArrayAdapter<>(this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, playableSelections));
     }
 
     @Background
@@ -245,86 +257,43 @@ public class ClientActivity extends Activity {
         gridPollTask.doPoll(eventProcessor);
     }
 
-    /**
-     * on click listener for unit group selection button
-     */
-    @Click(R.id.unitGroup)
-    void unitGroup() {
-        playerViewController.unitGroup(this);
-    }
-
-    /**
-     * on click listener for material group selection button
-     */
-    @Click(R.id.materialGroup)
-    void materialGroup() {
-        playerViewController.materialGroup(this);
-    }
-
-    /**
-     * on click listener for tank selection button
-     */
-    @Click(R.id.buttonTank)
-    void buttonTank() {
-        playerViewController.buttonTank(this);
-    }
-
-    /**
-     * on click listener for builder selection button
-     */
-    @Click(R.id.buttonBuilder)
-    void buttonBuilder() {
-        playerViewController.buttonBuilder(this);
-    }
-
-    /**
-     * on click listener for mine or build button
-     */
-    @Click(R.id.buttonBuildOrDismantle)
-    void buttonMineOrBuild() {
-        unitEventController.buildOrDismantle(playerData.getCurId());
-        //Step 1 cont. for facility
-    }
-
-
-    /**
-     * on click listener for destructible wall selection button
-     */
-    @Click(R.id.buttonDesWall)
-    void buttonDesWall() {
-        playerViewController.buttonDesWall(this);
-    }
-
-    /**
-     * on click listener for indestructible wall selection button
-     */
-    @Click(R.id.buttonIndWall)
-    void buttonIndWall() {
-        playerViewController.buttonIndWall(this);
-    }
-
-    //Step 1 for facility
-    @Click(R.id.buttonFacility)
-    void buttonFacility() {
-        playerViewController.buttonFacility(this);
+    @ItemSelect({R.id.selectPlayable})
+    protected void onPlayableSelect(boolean checked, int position){
+        Log.d(TAG,"spinnerpositon = " + position);
+        playableType = position+1;
     }
 
     @Click({R.id.buttonUp, R.id.buttonDown, R.id.buttonLeft, R.id.buttonRight})
     protected void onButtonMove(View view) {
         final int viewId = view.getId();
-        unitEventController.turnOrMove(viewId);
+        byte direction = 0;
+        switch (viewId) {
+            case R.id.buttonUp:
+                direction = 0;
+                break;
+            case R.id.buttonDown:
+                direction = 4;
+                break;
+            case R.id.buttonLeft:
+                direction = 6;
+                break;
+            case R.id.buttonRight:
+                direction = 2;
+                break;
+        }
+        tankEventController.turnOrMove(viewId, playableId, playableType, direction);
     }
 
     @Click(R.id.buttonFire)
     protected void onButtonFire() {
-        unitEventController.fire(tankId);
+        tankEventController.fire(playableId, playableType);
     }
 
     @Click(R.id.buttonLeave)
     void leaveGame() {
-        Log.d(TAG, "leaveGame() called, tank ID: " + tankId);
+        Log.d(TAG, "leaveGame() called, tank ID: " + playableId);
         BackgroundExecutor.cancelAll("grid_poller_task", true);
-        clientController.leaveGameAsync(tankId);
+        clientController.leaveGameAsync(playableId);
         leaveUI();
     }
 
@@ -342,7 +311,7 @@ public class ClientActivity extends Activity {
 
     @Click(R.id.buttonEject)
     protected void onButtonEject() {
-        powerUpController.ejectPowerUpAsync(tankId);
+        powerUpController.ejectPowerUpAsync(playableId);
     }
 
     @UiThread

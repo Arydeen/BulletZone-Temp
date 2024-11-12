@@ -67,6 +67,7 @@ public class GridAdapter extends BaseAdapter {
             this.mEntities = entities;
             if (simBoard != null) {
                 simBoard.setUsingBoard(mEntities);
+                simBoard.setUsingBoard(mEntities);
             } else {
                 Log.e(TAG, "SimulationBoard is null in updateList, creating new instance");
                 simBoard = new SimulationBoard(16, 16);
@@ -181,6 +182,13 @@ public class GridAdapter extends BaseAdapter {
                 int tankIdTest = (currCell.getRawValue() / 10000) - 1000;
                 if (tankIdTest == this.tankId) {
                     imageView.setImageResource(R.drawable.small_goblin_red);
+                } else {
+                    imageView.setImageResource(currCell.getResourceID());
+                }
+            } else if (currCell.getCellType().equals("Builder")) {
+                int builderIdTest = (currCell.getRawValue() / 10000) - 1000;
+                if (builderIdTest == this.tankId) {
+                    imageView.setImageResource(R.drawable.builder);
                 } else {
                     imageView.setImageResource(currCell.getResourceID());
                 }

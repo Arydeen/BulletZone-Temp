@@ -14,27 +14,20 @@ public interface GameRepository {
 
     Pair<Tank, Builder> join(String ip);
 
-
     Game getGame();
 
-    boolean turn(long tankId, Direction direction)
+    boolean turn(long playableId, int playableType, Direction direction)
             throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException;
 
-    boolean move(long tankId, Direction direction)
+    boolean move(long playableId, int playableType, Direction direction)
             throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException;
 
-    boolean fire(long tankId, int strength)
+    boolean fire(long playableId, int playableType, int strength)
             throws TankDoesNotExistException, LimitExceededException;
 
-    boolean build(long builderId, String entity)
-            throws TankDoesNotExistException, LimitExceededException;
-
-    boolean deploy(long tankId, Direction direction)
-            throws TankDoesNotExistException, IllegalTransitionException, LimitExceededException;
-
-    boolean ejectPowerUp(long tankId)
+    boolean ejectPowerUp(long playableId)
             throws TankDoesNotExistException;
 
-    public void leave(long tankId)
+    public void leave(long playableId)
             throws TankDoesNotExistException;
 }

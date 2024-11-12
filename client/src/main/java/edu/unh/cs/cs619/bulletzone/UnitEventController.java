@@ -1,7 +1,5 @@
 package edu.unh.cs.cs619.bulletzone;
 
-import android.util.Log;
-
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.rest.spring.annotations.RestService;
@@ -16,23 +14,22 @@ import edu.unh.cs.cs619.bulletzone.rest.BulletZoneRestClient;
 
 // Controller Class to move rest client calls for tank controls outside of ClientActivity
 @EBean
-public class UnitEventController {
+public class TankEventController {
 
     @RestService
     BulletZoneRestClient restClient;
     private int lastPressedButtonId = -1;
-    PlayerData playerData;
 
-    public UnitEventController() {}
+    public TankEventController() {}
 
     @Background
-    public void moveAsync(long tankId, byte direction) {
-        restClient.move(tankId, direction);
+    public void moveAsync(long playableId, int playableType, byte direction) {
+        restClient.move(playableId, playableType, direction);
     }
 
     @Background
-    public void turnAsync(long tankId, byte direction) {
-        restClient.turn(tankId, direction);
+    public void turnAsync(long playableId, int playableType, byte direction) {
+        restClient.turn(playableId, playableType, direction);
     }
 
     private boolean onePointTurn(int currentButtonId) {
@@ -51,55 +48,19 @@ public class UnitEventController {
     }
 
     @Background
-    public void turnOrMove(int currentButtonId) {
-        long unitId = playerData.getCurId();
-        byte direction = 0;
-        switch (currentButtonId) {
-            case R.id.buttonUp:
-                direction = 0;
-                break;
-            case R.id.buttonDown:
-                direction = 4;
-                break;
-            case R.id.buttonLeft:
-                direction = 6;
-                break;
-            case R.id.buttonRight:
-                direction = 2;
-                break;
-        }
+    public void turnOrMove(int currentButtonId, long playableId, int playableType, byte direction) {
         if (lastPressedButtonId != -1 && onePointTurn(currentButtonId)) {
 //            Log.d(TAG, "One-point turn detected: from " + lastPressedButtonId + " to " + viewId);
-            this.turnAsync(unitId, direction);
+            this.turnAsync(playableId, playableType, direction);
         } else {
-            this.moveAsync(unitId, direction);
+            this.moveAsync(playableId, playableType, direction);
         }
         lastPressedButtonId = currentButtonId;
     }
 
     @Background
-    public void fire(long tankId) {
-        restClient.fire(tankId);
+    public void fire(long playableId, int playableType) {
+        restClient.fire(playableId, playableType);
     }
-
-    /**
-     * Sends a build or dismantle command depending on what unit is currently selected
-     *
-     * @param curId  unit id currently selected
-     * @param entity currently selected improvement type
-     */
-    @Background
-    public void buildOrDismantle(long curId, String entity) {
-        if (curId == playerData.getBuilderId()) {
-            // send build
-            if (((playerData.getCurEntity().equals("destructibleWall") || playerData.getCurEntity().equals("indestructibleWall")) ||
-                    (playerData.getCurEntity().equals("facility")))) {
-                restClient.build(playerData.getBuilderId(), playerData.getCurEntity());
-            }
-        } else {
-//            Log.d(TAG, "Cannot build while controlling another vehicle");
-        }
-    }
-
 
 }
