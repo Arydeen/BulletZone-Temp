@@ -20,7 +20,6 @@ import org.androidannotations.annotations.ViewById;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import edu.unh.cs.cs619.bulletzone.events.GameEventProcessor;
 import edu.unh.cs.cs619.bulletzone.events.ReplayEventProcessor;
 import edu.unh.cs.cs619.bulletzone.rest.GridReplayTask;
 import edu.unh.cs.cs619.bulletzone.util.ReplayData;
@@ -73,12 +72,14 @@ public class ReplayInstanceActivity extends Activity {
     void afterInject() {
         Log.d(TAG, "afterInject");
         replayEventProcessor.start();
+        gridReplayTask.startReplay(replayEventProcessor);
     }
 
     @ItemSelect({R.id.speedMenu})
     protected void onPlayableSelect(boolean checked, int position){
         Log.d(TAG,"spinnerpositon = " + position);
         replaySpeed = position + 1;
+        gridReplayTask.setSpeed(replaySpeed);
     }
 
     @Click(R.id.backToReplaysButton)
@@ -93,14 +94,17 @@ public class ReplayInstanceActivity extends Activity {
         if (replayPaused == -1) {
             Log.d(TAG, "Starting Replay");
             replayPaused = 0;
-            gridReplayTask.doReplay(replayEventProcessor);
+            gridReplayTask.setPaused(replayPaused);
+            gridReplayTask.doReplay();
         } else {
             if (replayPaused == 0) {
                 Log.d(TAG, "Pausing Replay");
                 replayPaused = 1;
+                gridReplayTask.setPaused(replayPaused);
             } else if (replayPaused == 1) {
                 Log.d(TAG, "Un-pausing Replay");
                 replayPaused = 0;
+                gridReplayTask.setPaused(replayPaused);
             }
         }
     }

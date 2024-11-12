@@ -11,6 +11,8 @@ public class ReplayData {
     private GridWrapper initialGrid;
     private GridWrapper initialTerrainGrid;
 
+    public int[][] initialGridToSet;
+
     private long initialTimeStamp = -1;
 
     private GameEvent[] eventHistoryArray;
@@ -60,5 +62,18 @@ public class ReplayData {
 
     public long getInitialTimestamp() {
         return initialTimeStamp;
+    }
+
+    public String toString() {
+        StringBuilder returnString  = new StringBuilder();
+        int[][] grid = initialGridToSet;
+        for (int i = 0; i < grid.length; i++) {
+            for (int j = 0; j < grid[i].length; j++) {
+                returnString.append(grid[i][j]);
+                returnString.append("(").append(i).append(",").append(j).append(")");
+                returnString.append(" ");
+            }
+        }
+        return returnString.toString();
     }
 }

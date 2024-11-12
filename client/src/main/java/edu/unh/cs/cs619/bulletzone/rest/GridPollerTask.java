@@ -44,6 +44,7 @@ public class GridPollerTask {
 
     @Background(id = "grid_poller_task")
     public void doPoll(GameEventProcessor eventProcessor) {
+        replayData.initialGridToSet = restClient.playerGrid().getGrid();
         try {
             Log.d(TAG, "Starting GridPollerTask");
             currentProcessor = eventProcessor;
@@ -52,6 +53,7 @@ public class GridPollerTask {
             GridWrapper grid = restClient.playerGrid();
             GridWrapper tGrid = restClient.terrainGrid();
             replayData.setInitialGrids(grid, tGrid);
+            Log.d(TAG, replayData.toString());
             onGridUpdate(grid, tGrid);
             previousTimeStamp = grid.getTimeStamp();
 
@@ -116,6 +118,7 @@ public class GridPollerTask {
 
     public void stop() {
         Log.d(TAG, "Stopping GridPollerTask");
+        Log.d(TAG, replayData.toString());
         isRunning = false;
         currentProcessor = null;
     }

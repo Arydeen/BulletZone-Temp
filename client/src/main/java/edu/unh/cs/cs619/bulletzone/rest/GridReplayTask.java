@@ -25,26 +25,48 @@ public class GridReplayTask {
     ReplayData replayData = ReplayData.getReplayData();
     private int replayIndex = 0;
     private long diffStamp = 0; //Used to calculate the difference between time stamps
+    private int speed = 1;
+    private int paused = 0;
+
+    public void startReplay(ReplayEventProcessor eventProcessor) {
+        currentProcessor = eventProcessor;
+
+        GridWrapper grid = replayData.getInitialGrid();
+        grid.setGrid(replayData.initialGridToSet);
+        GridWrapper tGrid = replayData.getInitialTerrainGrid();
+        onGridUpdate(grid, tGrid);
+
+        eventProcessor.setBoard(grid.getGrid(), tGrid.getGrid());
+    }
+
+    public void setPaused(int value) {
+        paused = value;
+    }
+
+    public void setSpeed(int value) {
+        speed = value;
+    }
 
     @Background(id = "grid_replay_task")
-    public void doReplay(ReplayEventProcessor eventProcessor) {
+    public void doReplay() {
         try {
             Log.d(TAG, "Stating GridReplayTask");
-            currentProcessor = eventProcessor;
 
-            GridWrapper grid = replayData.getInitialGrid();
-            GridWrapper tGrid = replayData.getInitialTerrainGrid();
-            onGridUpdate(grid, tGrid);
-
-            eventProcessor.setBoard(grid.getGrid(), tGrid.getGrid());
+//            GridWrapper grid = replayData.getInitialGrid();
+//            GridWrapper tGrid = replayData.getInitialTerrainGrid();
+//            onGridUpdate(grid, tGrid);
+//
+//            eventProcessor.setBoard(grid.getGrid(), tGrid.getGrid());
 
             while (replayData.getEventAt(replayIndex) != null) {
+
+                while (paused == 1);
 
                 GameEvent currEvent = replayData.getEventAt(replayIndex);
 
 //                Log.d(TAG, "DiffStamp: " + diffStamp);
 //                Log.d(TAG, "Curr Event Delta: " + currEvent.getDeltaTimeStamp());
-                long waitForMillis = currEvent.getDeltaTimeStamp() - diffStamp;
+                long waitForMillis = (currEvent.getDeltaTimeStamp() - diffStamp) / speed;
                 diffStamp = currEvent.getDeltaTimeStamp();
 //                Log.d(TAG, "Waiting for: " + waitForMillis + " Milliseconds");
 

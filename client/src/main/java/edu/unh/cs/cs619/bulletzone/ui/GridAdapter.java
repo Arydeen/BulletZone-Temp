@@ -93,6 +93,7 @@ public class GridAdapter extends BaseAdapter {
     public void handleUpdate(UpdateBoardEvent event) {
         if (simBoard != null) {
             simBoard.setUsingBoard(mEntities, terrainEntities);
+            Log.d(TAG, "Setting simboard using Board");
         } else {
             Log.e(TAG, "SimulationBoard is null in handleUpdate, creating new instance");
             simBoard = new SimulationBoard(16, 16);
@@ -171,6 +172,7 @@ public class GridAdapter extends BaseAdapter {
 
 
             if (!isTerrainView) {
+//                Log.d(TAG, "Setting Tank Cell");
                 // Handle tanks
                  if (playerCell.getCellType().equals("Tank")) {
                     int tankIdTest = (playerCell.getRawValue() / 10000) - 1000;
@@ -196,6 +198,7 @@ public class GridAdapter extends BaseAdapter {
 
                 imageView.setRotation(playerCell.getRotation());
             } else {
+//                Log.d(TAG, "Setting Terrain Cell");
 //                Log.d(TAG, "Terrain Cell: " + terrainCell.getCellType());
                 imageView.setImageResource(terrainCell.getResourceID());
 //                imageView.setVisibility(View.VISIBLE);
