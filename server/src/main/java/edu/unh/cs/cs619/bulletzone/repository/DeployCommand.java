@@ -142,7 +142,6 @@ public class DeployCommand implements Command {
         Soldier soldier = new Soldier(playableId, direction, playable.getIp());
         game.addSoldier(playable.getIp(), soldier);
         game.removeTank(playableId);
-
         // Place the soldier on the grid
         int oldPos = playable.getPosition();
         targetField.setFieldEntity(soldier);

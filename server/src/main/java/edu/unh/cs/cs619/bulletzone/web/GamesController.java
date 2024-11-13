@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +21,7 @@ import edu.unh.cs.cs619.bulletzone.model.Builder;
 import edu.unh.cs.cs619.bulletzone.model.FieldEntity;
 import edu.unh.cs.cs619.bulletzone.model.FieldHolder;
 import edu.unh.cs.cs619.bulletzone.model.Playable;
+import edu.unh.cs.cs619.bulletzone.util.PlayableWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import com.google.common.base.Preconditions;
 
@@ -49,7 +51,7 @@ class GamesController {
     @RequestMapping(method = RequestMethod.POST, value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    ResponseEntity<LongWrapper> join(HttpServletRequest request) {
+    ResponseEntity<PlayableWrapper> join(HttpServletRequest request) {
         Pair<Tank, Builder> ret;
         Playable tank;
         Playable builder;
@@ -59,8 +61,8 @@ class GamesController {
             builder = ret.getValue1();
             log.info("Player joined: Id={} IP={}", tank.getId(), request.getRemoteAddr());
 
-            return new ResponseEntity<LongWrapper>(
-                    new LongWrapper(tank.getId()),
+            return new ResponseEntity<PlayableWrapper>(
+                    new PlayableWrapper(tank.getId(), builder.getId()),
                     HttpStatus.CREATED
             );
         } catch (RestClientException e) {

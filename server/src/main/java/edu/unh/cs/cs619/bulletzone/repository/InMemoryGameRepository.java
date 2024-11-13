@@ -64,7 +64,7 @@ public class InMemoryGameRepository implements GameRepository {
     private GameBoardBuilder gameBoardBuilder;
 
     @Autowired
-    public InMemoryGameRepository(Constraints tankConstraintChecker, GameBoardBuilder gameBoardBuilder) {
+    public InMemoryGameRepository(FireCommand fireCommand, GameBoardBuilder gameBoardBuilder) {
         this.fireCommand = new FireCommand();
         this.gameBoardBuilder = new GameBoardBuilder();
     }

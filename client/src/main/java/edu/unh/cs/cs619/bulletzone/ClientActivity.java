@@ -76,6 +76,9 @@ public class ClientActivity extends Activity {
     @ViewById
     protected Spinner selectPlayable;
 
+    @ViewById
+    protected Spinner selectImprovement;
+
     @NonConfigurationInstance
     @Bean
     GridPollerTask gridPollTask;
@@ -101,9 +104,10 @@ public class ClientActivity extends Activity {
 
     private long playableId = -1;
     private int playableType = 1;
+    private int improvementType = 1;
     private long userId = -1;
     private ArrayList<?> playableSelections = new ArrayList<>(Arrays.asList("Tank", "Builder", "Soldier"));
-
+    private ArrayList<String> improvementSelections = new ArrayList<>(Arrays.asList("destructibleWall", "indestructibleWall", "miningFacility"));
 
     // For testing purposes only
     @VisibleForTesting
@@ -174,6 +178,7 @@ public class ClientActivity extends Activity {
 
         SystemClock.sleep(500);
         simBoardView.attach(gridView, playableId);
+        selectImprovement.setAdapter(new ArrayAdapter<>(this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, improvementSelections));
         selectPlayable.setAdapter(new ArrayAdapter<>(this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, playableSelections));
     }
 
@@ -189,6 +194,7 @@ public class ClientActivity extends Activity {
             updateBalanceUI(null);
         }
     }
+
 
     @UiThread
     void showPowerUpMessage(String message) {
@@ -263,6 +269,12 @@ public class ClientActivity extends Activity {
         playableType = position+1;
     }
 
+    @ItemSelect({R.id.selectImprovement})
+    protected void onBuildSelect(boolean checked, int position){
+        Log.d(TAG,"spinnerpositon = " + position);
+        improvementType = position+1;
+    }
+
     @Click({R.id.buttonUp, R.id.buttonDown, R.id.buttonLeft, R.id.buttonRight})
     protected void onButtonMove(View view) {
         final int viewId = view.getId();
@@ -287,6 +299,16 @@ public class ClientActivity extends Activity {
     @Click(R.id.buttonFire)
     protected void onButtonFire() {
         tankEventController.fire(playableId, playableType);
+    }
+
+    @Click(R.id.buttonBuildOrDismantle)
+    protected void onButtonBuild() {
+        if (improvementType >= 0 && improvementType < improvementSelections.size()) {
+            tankEventController.buildAsync(playableId, playableType, playerData.getImprovement(improvementType));
+        } else {
+            // Handle the case where improvementType is out of bounds
+            Log.e("onButtonBuild", "Invalid improvement type index: " + improvementType);
+        }
     }
 
     @Click(R.id.buttonLeave)
